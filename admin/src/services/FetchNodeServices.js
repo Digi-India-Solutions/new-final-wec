@@ -14,6 +14,7 @@ const postData = async (url, body) => {
   }
 };
 
+
 const getData = async (url) => {
   try {
     var response = await axios.get(`${serverURL}/${url}`);

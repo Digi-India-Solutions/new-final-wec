@@ -195,7 +195,7 @@ export default function WalletPage() {
         userEmail: selectedUser.email,
         type: transactionType,
         amount: finalAmount,
-        description: `Wallet ${transactionType} - ${percentage}% of ₹${clientAmount.toLocaleString()}`,
+        description: `Wallet ${transactionType} - ₹${finalAmount?.toLocaleString()}`,
         clientAmount,
         percentage,
         createdBy: user?.name || 'System',
@@ -533,14 +533,14 @@ export default function WalletPage() {
                   )
                   .map((user) => (
                     <div
-                      key={user.id}
+                      key={user?.id}
                       onClick={() => setSelectedUser(user)}
                       className="p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
                     >
                       <div className="flex items-center justify-between">
                         <div>
-                          <p className="font-medium text-gray-900">{user.name}</p>
-                          <p className="text-sm text-gray-500">{user.email}</p>
+                          <p className="font-medium text-gray-900">{user?.name}</p>
+                          <p className="text-sm text-gray-500">{user?.email}</p>
                         </div>
                         <div className="text-right">
                           <span

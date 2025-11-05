@@ -1,10 +1,10 @@
 
 import { useState } from 'react';
-import { useAuthStore } from '../../store/authStore';
 import Button from '../../components/base/Button';
 import Input from '../../components/base/Input';
 import { useToast } from '../../components/base/Toast';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
+import { getData } from '../../services/FetchNodeServices';
 
 export const mockAMCs = [
   {
@@ -416,14 +416,26 @@ export const mockRetailers = [
 ];
 
 export default function ReportsPage() {
-  const { user } = useAuthStore();
+  const [user, setUser] = useState(() => {
+    const storedUser = sessionStorage.getItem('user');
+    return storedUser ? JSON.parse(storedUser) : null;
+  });
   const { showToast, ToastContainer } = useToast();
   const [dateRange, setDateRange] = useState({ start: '2024-01-01', end: '2024-12-31' });
   const [selectedPeriod, setSelectedPeriod] = useState('monthly');
   const [selectedProduct, setSelectedProduct] = useState('all');
+  const [amcs, setAmcs] = useState(mockAMCs || 0);
+  const [salesData, setSalesData] = useState([]);
+  const [productData, setProductData] = useState([]);
+  const [recentActivities, setRecentActivities] = useState([]);
+  const [totaleActiveAcount, setTotaleActiveAcount] = useState(0);
+  const [totalExpiringThisMonth, setTotalExpiringThisMonth] = useState(0);
+  const [totalRevenue, setTotalRevenue] = useState(0);
+  const [totalDistributors, setTotalDistributors] = useState(0);
+  const [totalRetailers, setTotalRetailers] = useState(0);
 
   // Mock data
-  const amcs = mockAMCs;
+
   const distributors = mockDistributors;
   const retailers = mockRetailers;
 
@@ -494,7 +506,7 @@ export default function ReportsPage() {
     }, {});
 
     const colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4'];
-    
+
     return Object.entries(categories).map(([name, value], index) => ({
       name,
       value,
@@ -511,7 +523,7 @@ export default function ReportsPage() {
     return userData.distributors.map(distributor => {
       const distributorAMCs = userData.amcs.filter(amc => amc.distributorId === distributor.id);
       const revenue = distributorAMCs.reduce((sum, amc) => sum + amc.amcAmount, 0);
-      
+
       return {
         name: distributor.name,
         amcs: distributorAMCs.length,
@@ -528,7 +540,7 @@ export default function ReportsPage() {
     return userData.retailers.map(retailer => {
       const retailerAMCs = userData.amcs.filter(amc => amc.retailerId === retailer.id);
       const revenue = retailerAMCs.reduce((sum, amc) => sum + amc.amcAmount, 0);
-      
+
       return {
         name: retailer.name,
         amcs: retailerAMCs.length,
@@ -563,10 +575,46 @@ export default function ReportsPage() {
     </div>
   );
 
+ ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  const fetchReports = async () => {
+    try {
+      if (!user?.id) return;
+
+      const queryJson = new URLSearchParams({
+        userId: user?.id?.toString() || "",
+        role: user?.role?.toString() || "",
+        createdByEmail: JSON.stringify({
+          email: user?.email?.toString() || "",
+          name: user?.name?.toString() || "",
+        }),
+      });
+
+      const response = await getData(`api/reports/get-all-reports-total?${queryJson}`);
+      console.log("response ===>", response);
+      // setAmcs(response?.data.totalAmc || 0);
+      // setTotaleActiveAcount(response?.data?.totalActiveAccount || 0);
+      // setTotalExpiringThisMonth(response?.data?.totalExpiringThisMonth || 0);
+      // setTotalDistributors(response?.data?.totalDistributors || 0);
+      // setTotalRetailers(response?.data?.totalRetailers || 0);
+      // setTotalRevenue(response?.data?.totalRevenue || 0);
+      // setSalesData(response?.data?.amcSalesData || []);
+      // setProductData(response?.data?.amcProductData || []);
+      // setRecentActivities(response?.data?.amcRecentActivities || []);
+
+    } catch (error) {
+      console.error("Error fetching AMC:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchReports()
+  }, [])
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   return (
     <div className="p-6 space-y-6">
       <ToastContainer />
-      
+
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Reports & Analytics</h1>
         <div className="flex space-x-3">
@@ -648,14 +696,14 @@ export default function ReportsPage() {
       {/* Summary Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
-          title="Total AMCs"
+          title="Total WECs"
           value={stats.totalAMCs.toLocaleString()}
           icon="ri-file-shield-line"
           color="bg-blue-500"
           change="+12% from last period"
         />
         <StatCard
-          title="Active AMCs"
+          title="Active WECs"
           value={stats.activeAMCs.toLocaleString()}
           icon="ri-checkbox-circle-line"
           color="bg-green-500"
@@ -681,7 +729,7 @@ export default function ReportsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Monthly Sales Trend */}
         <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Monthly AMC Sales Trend</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Monthly WEC Sales Trend</h3>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={monthlySalesData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -689,7 +737,7 @@ export default function ReportsPage() {
               <YAxis />
               <Tooltip formatter={(value, name) => [
                 name === 'sales' ? `₹${Number(value).toLocaleString()}` : Number(value).toLocaleString(),
-                name === 'sales' ? 'AMC Revenue' : 'AMC Count'
+                name === 'sales' ? 'WEC Revenue' : 'WEC Count'
               ]} />
               <Line type="monotone" dataKey="sales" stroke="#3B82F6" strokeWidth={2} name="sales" />
               <Line type="monotone" dataKey="count" stroke="#10B981" strokeWidth={2} name="count" />
@@ -699,7 +747,7 @@ export default function ReportsPage() {
 
         {/* Product Distribution */}
         <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">AMC Distribution by Product</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">WEC Distribution by Product</h3>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
@@ -730,7 +778,7 @@ export default function ReportsPage() {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Distributor</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total AMCs</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total WECs</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Revenue</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Retailers</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Avg per Retailer</th>
@@ -771,21 +819,20 @@ export default function ReportsPage() {
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Retailer</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total AMCs</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total WECs</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Revenue</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Avg AMC Value</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Avg WEC Value</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {retailerPerformance.map((retailer, index) => (
                   <tr key={index} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-medium ${
-                        index === 0 ? 'bg-yellow-100 text-yellow-800' :
+                      <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-medium ${index === 0 ? 'bg-yellow-100 text-yellow-800' :
                         index === 1 ? 'bg-gray-100 text-gray-800' :
-                        index === 2 ? 'bg-orange-100 text-orange-800' :
-                        'bg-blue-100 text-blue-800'
-                      }`}>
+                          index === 2 ? 'bg-orange-100 text-orange-800' :
+                            'bg-blue-100 text-blue-800'
+                        }`}>
                         {index + 1}
                       </span>
                     </td>
@@ -819,7 +866,7 @@ export default function ReportsPage() {
             <YAxis />
             <Tooltip formatter={(value, name) => [
               `₹${Number(value).toLocaleString()}`,
-              name === 'sales' ? 'AMC Revenue' : 'Product Revenue'
+              name === 'sales' ? 'WEC Revenue' : 'Product Revenue'
             ]} />
             <Bar dataKey="sales" fill="#3B82F6" name="sales" />
             <Bar dataKey="revenue" fill="#10B981" name="revenue" />

@@ -7,7 +7,7 @@ export default function Header() {
   const [showNotifications, setShowNotifications] = useState(false);
 
   const notifications = [
-    { id: 1, message: '5 AMCs expiring this month', type: 'warning', time: '2 hours ago' },
+    { id: 1, message: '5 WECs expiring this month', type: 'warning', time: '2 hours ago' },
     { id: 2, message: 'New retailer registration pending', type: 'info', time: '4 hours ago' },
     { id: 3, message: 'Monthly report generated', type: 'success', time: '1 day ago' },
   ];

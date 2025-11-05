@@ -6,7 +6,7 @@ import Modal from '../../components/base/Modal';
 import Input from '../../components/base/Input';
 import { useToast } from '../../components/base/Toast';
 import { getData, serverURL } from '../../services/FetchNodeServices';
-
+import html2pdf from "html2pdf.js";
 
 export const mockAMCs = [
   {
@@ -305,7 +305,8 @@ export default function CustomersPage() {
   const [totalActive, setTotalActive] = useState(0);
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [totalInActive, setTotalInActive] = useState(0);
-
+  const [companySettings, setCompanySettings] = useState('');
+  const [teamAndConditions, setTeamAndConditions] = useState('');
 
   const [amcs, setAmcs] = useState(mockAMCs);
 
@@ -347,9 +348,9 @@ export default function CustomersPage() {
     { key: 'name', title: 'Customer Name', sortable: true },
     { key: 'email', title: 'Email', sortable: true },
     { key: 'mobile', title: 'Mobile' },
-    { key: 'totalAMCs', title: 'Total AMCs', render: (value) => value || 0 },
+    { key: 'totalAMCs', title: 'Total WECs', render: (value) => value || 0 },
     {
-      key: 'activeAMCs', title: 'Active AMCs', render: (value) => (
+      key: 'activeAMCs', title: 'Active WECs', render: (value) => (
         <span className={`px-2 py-1 rounded-full text-xs font-medium ${value > 0 ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
           }`}>
           {value || 0}
@@ -489,10 +490,169 @@ export default function CustomersPage() {
 
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  //////////////////////////////////////////////////HANDLE PDF///////////////////////////////////////////////////////////////
+  const handleDownloadPdf = (record) => {
+    // Clone your HTML template and inject dynamic values
+    console.log("GGGGGG:==>", record)
+    const template = `
+    <div class="invoice-box">
+      <div class="header">
+        <div class="header-left">
+           <div class="logo">
+            <img src="${companySettings?.logo || ''}" alt="Company Logo" style="width:70px;height:70px;object-fit:contain;border-radius:8px;">
+          </div>
+          <div class="company-info">
+            <h2>${user?.name}</h2>
+            <p>${user?.address || ''}</p>
+            <p>${user?.phone} | ${user?.email}</p>
+          </div>
+        </div>
+        <div class="header-right">
+          <table class="meta-table">
+            <tr><td><strong>WEC No:</strong></td><td>${record?.id}</td></tr>
+            <tr><td><strong>Date:</strong></td><td>${new Date().toLocaleDateString('en-IN')}</td></tr>
+          </table>
+        </div>
+      </div>
+  
+      <div class="invoice-title">Warranty Extended Contract (WEC)</div>
+  
+      <table class="meta-table">
+        <tr><td>Customer Name</td><td>${record.customerName}</td></tr>
+        <tr><td>Address</td><td>${record.customerAddress}</td></tr>
+        <tr><td>Contact No.</td><td>${record.customerMobile}</td></tr>
+        <tr><td>Email</td><td>${record.customerEmail}</td></tr>
+      </table>
+  
+      <table class="details-table">
+        <thead>
+          <tr>
+            <th>#</th><th>Product Name</th><th>Model</th><th>Serial No.</th>
+            <th>Original Warranty</th><th>Extended Till</th><th>Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>${record.productCategory} - ${record?.productBrand} ${record?.productType}</td>
+            <td>${record.productModel}</td>
+            <td>${record.serialNumber || 'N/A'}</td>
+            <td>${new Date(record.startDate).toLocaleDateString('en-IN')}</td>
+            <td>${new Date(record.endDate).toLocaleDateString('en-IN')}</td>
+            <td>₹${record.amcAmount.toLocaleString()}</td>
+          </tr>
+        </tbody>
+      </table>
+  
+      <div class="summary">
+        <table>
+          <tr><td>Subtotal</td><td>₹${record?.amcAmount}</td></tr>
+        </table>
+      </div>
+  
+      <div class="terms">
+        <strong>Terms & Conditions:</strong>
+         <div
+      style={{
+        border: "1px solid #ccc",
+        padding: "15px",
+        borderRadius: "8px",
+        marginTop: "10px",
+        background: "#fafafa",
+      }}
+      dangerouslySetInnerHTML={{ __html: ${teamAndConditions?.termsAndConditions} }}
+    />
+      </div>
+  
+      <div class="signature">
+        <div><div class="sig-line"></div><div>Customer Signature</div></div>
+        <div><div class="sig-line"></div><div>Authorized Signatory</div></div>
+      </div>
+  
+      <div class="footer">
+        Thank you for choosing ${record.companyName}. For support, call ${record.supportPhone} or email ${record.supportEmail}.
+      </div>
+    </div>
+    `;
+
+    // Create a temporary container to hold styled HTML
+    const container = document.createElement("div");
+    container.innerHTML = `
+    <html>
+    <head>
+      <style>
+        body {
+          font-family: "Poppins", Arial, sans-serif;
+          background: #f4f6f8;
+          margin: 0;
+          padding: 20px;
+        }
+        .invoice-box {
+          max-width: 850px;
+          margin: auto;
+          background: #fff;
+          padding: 25px 30px;
+          border: 1px solid #e0e0e0;
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+          border-radius: 8px;
+        }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
+        .logo { width: 70px; height: 70px; background: #007bff; color: #fff; border-radius: 8px; font-weight: bold; font-size: 20px; display: flex; align-items: center; justify-content: center; }
+        .company-info h2 { margin: 0; color: #007bff; }
+        .invoice-title { text-align: center; font-size: 22px; font-weight: 600; color: #222; margin: 25px 0 10px; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 14px; }
+        th { background: #007bff; color: #fff; }
+        .summary table td { border: 1px solid #ddd; }
+        .terms { margin-top: 20px; font-size: 13px; color: #555; }
+        .signature { display: flex; justify-content: space-between; margin-top: 40px; font-size: 14px; }
+        .sig-line { margin-top: 50px; border-top: 1px solid #000; width: 200px; }
+        .footer { text-align: center; font-size: 12px; color: #777; margin-top: 30px; border-top: 1px solid #eee; padding-top: 10px; }
+      </style>
+    </head>
+    <body>${template}</body>
+    </html>`;
+
+    // Generate the PDF
+    const opt = {
+      margin: 0.5,
+      filename: `WEC_${record.id}_${record.customerName.replace(/\s+/g, "_")}.pdf`,
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
+    };
+
+    html2pdf().set(opt).from(container).save();
+  };
+
+
+
+  const fetchTeamAndConditions = async () => {
+    try {
+      const response2 = await getData(`api/company/get-company-settings`);
+      const response = await getData('api/company/get-AMC-settings');
+      console.log("response==>get-team-and-conditions=>", response)
+      if (response?.status === true) {
+        setTeamAndConditions(response?.data);
+        // setAmcPercentage(response?.data?.defaultPercentage);
+      }
+      if (response2?.status === true) {
+        setCompanySettings(response2?.data);
+      }
+    } catch (error) {
+      console.error('Error fetching team and conditions:', error);
+    }
+  }
+
+  useEffect(() => {
+    fetchTeamAndConditions();
+  }, [])
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   return (
     <div className="p-6 space-y-6">
       <ToastContainer />
-
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Customer Database</h1>
         <Button onClick={handleExportData}>
@@ -570,8 +730,8 @@ export default function CustomersPage() {
               className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 pr-8"
             >
               <option value="all">All Customers</option>
-              <option value="active">Active AMCs</option>
-              <option value="inactive">No Active AMCs</option>
+              <option value="active">Active WECs</option>
+              <option value="inactive">No Active WECs</option>
             </select>
             <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
               <i className="ri-arrow-down-s-line text-gray-400 w-4 h-4 flex items-center justify-center"></i>
@@ -628,11 +788,11 @@ export default function CustomersPage() {
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Purchase Summary</h3>
                 <div className="space-y-3">
                   <div>
-                    <label className="text-sm font-medium text-gray-600">Total AMCs</label>
+                    <label className="text-sm font-medium text-gray-600">Total WECs</label>
                     <p className="text-gray-900">{selectedCustomer.totalAMCs}</p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-600">Active AMCs</label>
+                    <label className="text-sm font-medium text-gray-600">Active WECs</label>
                     <p className="text-gray-900">{selectedCustomer.activeAMCs}</p>
                   </div>
                   <div>
@@ -653,12 +813,12 @@ export default function CustomersPage() {
 
             {/* AMC History */}
             <div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">AMC History</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">WEC History</h3>
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">AMC ID</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">WEC ID</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Start Date</th>
@@ -696,7 +856,7 @@ export default function CustomersPage() {
                           <Button
                             size="sm"
                             variant="ghost"
-                            onClick={() => showToast('PDF downloaded successfully', 'success')}
+                            onClick={() => handleDownloadPdf(amc)}
                           >
                             <i className="ri-download-line w-4 h-4 flex items-center justify-center"></i>
                           </Button>

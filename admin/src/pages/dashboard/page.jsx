@@ -47,6 +47,8 @@ export default function Dashboard() {
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [totalDistributors, setTotalDistributors] = useState(0);
   const [totalRetailers, setTotalRetailers] = useState(0);
+  const [totalDistributorWalletAmount, setTotalDistributorWalletAmount] = useState(0);
+  const [totalRetailerWalletAmount, setTotalRetailerWalletAmount] = useState(0);
 
   const stats = mockStats[user?.role || 'admin'];
 
@@ -94,6 +96,8 @@ export default function Dashboard() {
       setSalesData(response?.data?.amcSalesData || []);
       setProductData(response?.data?.amcProductData || []);
       setRecentActivities(response?.data?.amcRecentActivities || []);
+      setTotalDistributorWalletAmount(response?.data?.totalDistributorWalletAmounts || 0);
+      setTotalRetailerWalletAmount(response?.data?.totalRetailerWalletAmounts || 0);
 
     } catch (error) {
       console.error("Error fetching AMC:", error);
@@ -127,7 +131,7 @@ export default function Dashboard() {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
-          title="Total AMCs"
+          title="Total WECs"
           value={amcs.toLocaleString()}
           icon="ri-file-shield-line"
           color="bg-blue-500"
@@ -163,10 +167,26 @@ export default function Dashboard() {
             icon="ri-building-line"
             color="bg-indigo-500"
           />
+
+          <StatCard
+            title="Distributors Wallets"
+            value={`₹${formatAmount(totalDistributorWalletAmount || 0).toLocaleString()}`}
+            icon="ri-wallet-fill"
+            color="bg-indigo-500"
+          // change="+12%"
+          />
+
           <StatCard
             title="Total Retailers"
             value={totalRetailers || 0}
             icon="ri-store-line"
+            color="bg-pink-500"
+          />
+
+          <StatCard
+            title="Retailers Wallets"
+            value={`₹${formatAmount(totalRetailerWalletAmount || 0).toLocaleString()}`}
+            icon="ri-wallet-fill"
             color="bg-pink-500"
           />
         </div>
@@ -179,6 +199,13 @@ export default function Dashboard() {
             value={totalRetailers || 0}
             icon="ri-store-line"
             color="bg-indigo-500"
+          />
+
+          <StatCard
+            title="Retailers Wallets"
+            value={`₹${formatAmount(totalRetailerWalletAmount || 0).toLocaleString()}`}
+            icon="ri-wallet-fill"
+            color="bg-pink-500"
           />
           {/* <StatCard
             title="Commission Earned"
@@ -193,7 +220,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Sales Trend */}
         <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">AMC Sales Trend</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">WEC Sales Trend</h3>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={salesData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -222,7 +249,7 @@ export default function Dashboard() {
 
       {/* Product Distribution */}
       <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">AMC Distribution by Product Category</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">WEC Distribution by Product Category</h3>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>

@@ -23,7 +23,7 @@ export const availableModules = [
   // 'Retailers',
   'User Management',
   'Products',
-  'AMC Management',
+  'WEC Management',
   'Wallet Management',
   'Reports',
   'Claims Management',
@@ -51,7 +51,7 @@ export const mockRoles = [
     permissions: [
       { module: 'Dashboard', permissions: ['read'] },
       { module: 'Claims Management', permissions: ['read', 'write', 'edit'] },
-      { module: 'AMC Management', permissions: ['read', 'edit'] },
+      { module: 'WEC Management', permissions: ['read', 'edit'] },
       { module: 'Reports', permissions: ['read'] }
     ],
     status: 'active',
@@ -80,7 +80,7 @@ export const mockRoles = [
       { module: 'Dashboard', permissions: ['read'] },
       { module: 'Distributors', permissions: ['read', 'write', 'edit'] },
       { module: 'Retailers', permissions: ['read', 'write', 'edit'] },
-      { module: 'AMC Management', permissions: ['read', 'write'] },
+      { module: 'WEC Management', permissions: ['read', 'write'] },
       { module: 'Reports', permissions: ['read'] }
     ],
     status: 'active',

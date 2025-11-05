@@ -35,7 +35,7 @@ export default function Home() {
                 <i className="ri-file-shield-line text-white text-xl w-6 h-6 flex items-center justify-center"></i>
               </div>
               <div>
-                <h1 className="text-xl font-bold text-gray-900">AMC Management</h1>
+                <h1 className="text-xl font-bold text-gray-900">WEC Management</h1>
                 <p className="text-sm text-gray-500">System</p>
               </div>
             </div>
@@ -62,7 +62,7 @@ export default function Home() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="text-center">
           <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-            Complete AMC
+            Complete WEC
             <span className="text-blue-600"> Management Solution</span>
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
@@ -108,9 +108,9 @@ export default function Home() {
             <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
               <i className="ri-file-shield-2-line text-green-600 text-xl w-6 h-6 flex items-center justify-center"></i>
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-3">AMC Management</h3>
+            <h3 className="text-xl font-semibold text-gray-900 mb-3">WEC Management</h3>
             <p className="text-gray-600">
-              Create, track, and manage AMCs with automated PDF generation, email notifications, and renewal alerts.
+              Create, track, and manage WECs with automated PDF generation, email notifications, and renewal alerts.
             </p>
           </div>
 
@@ -143,7 +143,7 @@ export default function Home() {
                 <i className="ri-building-line text-blue-600 text-2xl w-8 h-8 flex items-center justify-center"></i>
               </div>
               <h3 className="font-semibold text-gray-900 mb-2">Distributor Panel</h3>
-              <p className="text-sm text-gray-600 mb-3">Manage retailers, create AMCs, and handle wallet transfers</p>
+              <p className="text-sm text-gray-600 mb-3">Manage retailers, create WECs, and handle wallet transfers</p>
               <p className="text-xs text-gray-500">contact@abcelectronics.com</p>
             </div>
 
@@ -152,7 +152,7 @@ export default function Home() {
                 <i className="ri-store-line text-green-600 text-2xl w-8 h-8 flex items-center justify-center"></i>
               </div>
               <h3 className="font-semibold text-gray-900 mb-2">Retailer Panel</h3>
-              <p className="text-sm text-gray-600 mb-3">Create customer AMCs, track commissions, and manage wallet</p>
+              <p className="text-sm text-gray-600 mb-3">Create customer WECs, track commissions, and manage wallet</p>
               <p className="text-xs text-gray-500">owner@techstoremumbai.com</p>
             </div>
           </div>
@@ -163,7 +163,7 @@ export default function Home() {
       <footer className="bg-white border-t">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center text-gray-500">
-            <p>&copy; 2024 AMC Management System. Demo Application.</p>
+            <p>&copy; 2024 WEC Management System. Demo Application.</p>
           </div>
         </div>
       </footer>

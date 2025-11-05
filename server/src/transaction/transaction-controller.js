@@ -4,59 +4,190 @@ const SuperAdmin = require("../super-admin/super-admin-model");
 const Transaction = require("./transaction-model");
 
 // ✅ Create Transaction
+// exports.createTransactionByAdmin = catchAsyncErrors(async (req, res, next) => {
+//     try {
+//         const { userId, type, amount, createdByEmail, role } = req.body;
+
+//         if (!userId || !type || !amount) {
+//             return res.status(400).json({ status: false, message: "Required fields missing" });
+//         }
+
+//         // 1️⃣ Find Target User
+//         const user = await SuperAdmin.findById(userId);
+//         if (!user) return next(new ErrorHandler("User not found", 404));
+
+//         // 2️⃣ Find Logged-in Admin / Creator
+//         const creator = await SuperAdmin.findOne({
+//             name: createdByEmail?.name,
+//             email: createdByEmail?.email,
+//         });
+
+//         if (!creator) return next(new ErrorHandler("Creator not found", 404));
+
+//         const amt = parseFloat(amount);
+//         if (isNaN(amt) || amt <= 0) {
+//             return res.status(400).json({ status: false, message: "Amount must be greater than 0" });
+//         }
+
+//         // 3️⃣ Wallet Logic
+//         let targetNewBalance = user.walletBalance || 0;
+//         let creatorNewBalance = creator.walletBalance || 0;
+
+//         if (type === "credit") {
+//             // Add money to user
+//             targetNewBalance += amt;
+
+//             // If distributor is giving credit, their wallet decreases
+//             if (role === "distributor" || role === "retailer") {
+//                 if (creatorNewBalance < amt) {
+//                     return res.status(400).json({ status: false, message: "Insufficient creator wallet balance" });
+//                 }
+//                 creatorNewBalance -= amt;
+//             }
+//         }
+//         else if (type === "debit") {
+//             // Remove money from user
+//             if (targetNewBalance < amt) {
+//                 return res.status(400).json({ status: false, message: "Insufficient wallet balance" });
+//             }
+//             targetNewBalance -= amt;
+
+//             // If debit from user goes to distributor/creator
+//             if (role === "distributor" || role === "retailer") {
+//                 creatorNewBalance += amt;
+//             }
+//         }
+//         else {
+//             return res.status(400).json({ status: false, message: "Invalid transaction type" });
+//         }
+
+//         // 4️⃣ Save Balances
+//         user.walletBalance = targetNewBalance;
+//         creator.walletBalance = creatorNewBalance;
+
+//         await user.save();
+//         await creator.save();
+
+//         // 5️⃣ Create Transaction Record
+//         const transaction = await Transaction.create({
+//             ...req.body,
+//             amount: amt,
+//             balanceAfter: targetNewBalance,
+//             createdByEmail,
+//         });
+
+//         return res.status(200).json({
+//             status: true,
+//             message: "Transaction successful",
+//             data: { transaction, userWallet: targetNewBalance },
+//         });
+
+//     } catch (error) {
+//         console.error("Transaction Error:", error);
+//         return next(new ErrorHandler(error.message, 500));
+//     }
+// });
+
+
 exports.createTransactionByAdmin = catchAsyncErrors(async (req, res, next) => {
     try {
-        console.log("transactionRoutes:=>", req.body);
+        const { userId, amount, type, createdByEmail, role } = req.body;
 
-        const { userId, type, amount } = req.body;
+        if (!userId || !type || !amount) {
+            return res.status(400).json({ status: false, message: "Required fields missing" });
+        }
 
-        // 1️⃣ Validate User
         const user = await SuperAdmin.findById(userId);
-        if (!user) {
-            return next(new ErrorHandler("User not found", 404));
+        if (!user) return next(new ErrorHandler("Target user not found", 404));
+
+        const creator = await SuperAdmin.findOne({
+            name: createdByEmail?.name,
+            email: createdByEmail?.email,
+        });
+
+        if (!creator) return next(new ErrorHandler("Creator user not found", 404));
+
+        const amt = parseFloat(amount);
+        if (isNaN(amt) || amt <= 0) {
+            return res.status(400).json({ status: false, message: "Amount must be greater than 0" });
         }
 
-        if (req.body.role === "distributor" || req.body.role === "retailer") {
-            if (user?.walletBalance < amount) {
-                return res.status(200).json({ status: false, massage: "Insufficient wallet balance please add amount" });
-            }
-        }
+        let targetNewBalance = user.walletBalance || 0;
+        let creatorNewBalance = creator.walletBalance || 0;
 
-        // 2️⃣ Determine New Wallet Balance
-        let newWalletBalance = user.walletBalance || 0;
-
+        // ✅ Wallet Logic + Mirrored Wallet Effect
         if (type === "credit") {
-            newWalletBalance += parseFloat(amount);
+            // Retailer/Target gets +amt
+            targetNewBalance += amt;
+
+            // Distributor loses money
+            if (role === "distributor" || role === "retailer") {
+                if (creatorNewBalance < amt) {
+                    return res.status(400).json({ status: false, message: "Insufficient distributor wallet balance" });
+                }
+                creatorNewBalance -= amt;
+            }
         } else if (type === "debit") {
-            newWalletBalance -= parseFloat(amount);
-            if (newWalletBalance < 0) newWalletBalance = 0; // Prevent negative balance
+            // Retailer/Target loses money
+            if (targetNewBalance < amt) {
+                return res.status(400).json({ status: false, message: "Insufficient wallet balance" });
+            }
+            targetNewBalance -= amt;
+
+            // Distributor gains money
+            if (role === "distributor" || role === "retailer") {
+                creatorNewBalance += amt;
+            }
+        } else {
+            return res.status(400).json({ status: false, message: "Invalid transaction type" });
         }
 
-        // 3️⃣ Update Wallet Balance
-        user.walletBalance = newWalletBalance;
+        // ✅ Save Wallets
+        user.walletBalance = targetNewBalance;
+        creator.walletBalance = creatorNewBalance;
         await user.save();
+        await creator.save();
 
-        // 4️⃣ Create Transaction Record
-        const transaction = await Transaction.create({
+        // ✅ Create Transaction for Retailer/User
+        const userTransaction = await Transaction.create({
             ...req.body,
-            balanceAfter: newWalletBalance,
-            createdByEmail: req.body.createdByEmail || {},
+            amount: amt,
+            balanceAfter: targetNewBalance,
+            createdByEmail,
         });
 
-        console.log("💰 Transaction Created:", transaction);
-        console.log("🧾 Updated Wallet:", newWalletBalance);
+        // ✅ Create Reverse Transaction for Creator (Mirror Entry)
+        const creatorTransaction = await Transaction.create({
+            id: Date.now().toString(),
+            createdBy: creator.name,
+            userId: creator?._id,
+            userName: creator.name,
+            userEmail: creator.email,
+            userType: creator.role,
+            type: type === "credit" ? "debit" : "credit", // Mirrored
+            amount: amt,
+            description: `${type === "credit" ? "Sent to" : "Received from"} ${user.name}`,
+            balanceAfter: creatorNewBalance,
+            createdByEmail,
+        });
 
-        // 5️⃣ Send Response
-        res.status(200).json({
+        return res.status(200).json({
             status: true,
-            message: "Transaction created and wallet updated successfully",
-            data: { transaction, updatedWallet: newWalletBalance, },
+            message: "Transaction completed for both parties",
+            data: {
+                userTransaction,
+                creatorTransaction,
+                userWallet: targetNewBalance,
+                creatorWallet: creatorNewBalance,
+            },
         });
+
     } catch (error) {
         console.error("Transaction Error:", error);
         return next(new ErrorHandler(error.message, 500));
     }
 });
+
 
 // ✅ Get Transactions (with pagination, search, status)
 exports.getTransactionByAdminWithPagination = catchAsyncErrors(async (req, res, next) => {

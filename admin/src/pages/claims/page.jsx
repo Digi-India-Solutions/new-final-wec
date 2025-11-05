@@ -57,7 +57,7 @@ export default function ClaimsPage() {
 
   const claimFields = [
     { name: 'customerName', label: 'Customer Name', type: 'text', required: true },
-    { name: 'amcNumber', label: 'AMC No. / Contract ID', type: 'text', required: true },
+    { name: 'amcNumber', label: 'WEC No. / Contract ID', type: 'text', required: true },
     { name: 'claimValue', label: 'Claim Value (₹)', type: 'number', required: true },
     { name: 'productDetails', label: 'Product Details', type: 'textarea', required: true },
     { name: 'billPhoto', label: 'Upload Bill Photo', type: 'file', required: false, accept: '.jpg,.jpeg,.png,.pdf' },
@@ -149,7 +149,7 @@ export default function ClaimsPage() {
   { key: 'claimId', title: 'Claim ID', sortable: true },
   { key: 'customerName', title: 'Customer Name', sortable: true },
   { key: 'productDetails', title: 'Product Details' },
-  { key: 'amcNumber', title: 'AMC No.', sortable: true },
+  { key: 'amcNumber', title: 'WEC No.', sortable: true },
   {
     key: 'claimValue',
     title: 'Claim Value',
@@ -476,7 +476,7 @@ export default function ClaimsPage() {
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="flex-1">
           <Input
-            placeholder="Search by customer name, AMC number, or claim ID..."
+            placeholder="Search by customer name, WEC number, or claim ID..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             icon="ri-search-line"

@@ -8,7 +8,7 @@ const relativeTime = require("dayjs/plugin/relativeTime");
 dayjs.extend(relativeTime);
 
 
-exports.getAllAmcTotal = catchAsyncErrors(async (req, res, next) => {
+exports.getAllReportsTotal = catchAsyncErrors(async (req, res, next) => {
     try {
         const { userId, role, createdByEmail } = req.query;
         const today = new Date();
@@ -65,7 +65,6 @@ exports.getAllAmcTotal = catchAsyncErrors(async (req, res, next) => {
         const totalRetailers = role === "distributor" ? await SuperAdmin.countDocuments({ 'createdByEmail.email': createdBy?.email, role: "retailer" }) :
             await SuperAdmin.countDocuments({ ...filter, role: "retailer" });
 
-
         const usersTransactions = await Transactions.find({ "createdByEmail.email": createdBy?.email, type: 'debit' })
 
         const totalRevenue = usersTransactions.reduce((sum, transaction) => sum + transaction.amount, 0);
@@ -114,21 +113,7 @@ exports.getAllAmcTotal = catchAsyncErrors(async (req, res, next) => {
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        ///////////////////////////////////////////////////////WALLET///////////////////////////////////////////////////////////////
-        const totalDistributorWalletAmount = await SuperAdmin.aggregate([
-            { $match: { role: "distributor" } },
-            { $group: { _id: "$_id", totalAmount: { $sum: "$walletBalance" } } },
-        ]);
-        const totalDistributorWalletAmounts = totalDistributorWalletAmount.reduce((sum, item) => sum + (item.totalAmount || 0), 0)
-
-        const totalRetailerWalletAmount = await SuperAdmin.aggregate([
-            { $match: { role: "retailer" } },
-            { $group: { _id: "$_id", totalAmount: { $sum: "$walletBalance" } } },
-        ]);
-        const totalRetailerWalletAmounts = totalRetailerWalletAmount.reduce((sum, item) => sum + (item.totalAmount || 0), 0)
-
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        console.log("totalAmcData==>", totalAmcData);
+        console.log("totalAmcData==>", totalRetailers);
 
         // ✅ Respond
         res.status(200).json({
@@ -143,15 +128,10 @@ exports.getAllAmcTotal = catchAsyncErrors(async (req, res, next) => {
                 totalRevenue,
                 amcSalesData: salesData,
                 amcProductData: productData,
-                amcRecentActivities: recentActivities,
-                totalDistributorWalletAmounts, 
-                totalRetailerWalletAmounts
-
-
+                amcRecentActivities: recentActivities
             },
             filterUsed: filter,
         });
-
     } catch (error) {
         return next(new ErrorHandler(error.message, 500));
     }

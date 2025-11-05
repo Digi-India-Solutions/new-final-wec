@@ -216,7 +216,7 @@ export default function UsersPage() {
     { key: 'phone', title: 'Mobile' },
     { key: 'createdAt', title: 'Date of Joining', render: (value) => new Date(value).toLocaleDateString('en-IN') },
     { key: 'totalRetailers', title: 'Retailers', render: (value) => value || 0 },
-    { key: 'totalAMCs', title: 'Total AMCs', render: (value) => value || 0 },
+    { key: 'totalAMCs', title: 'Total WECs', render: (value) => value || 0 },
     { key: 'walletBalance', title: 'Wallet Balance', render: (value) => `₹${value.toLocaleString()}` },
     {
       key: 'status', title: 'Status', render: (value) => (
@@ -234,7 +234,7 @@ export default function UsersPage() {
     { key: 'phone', title: 'Mobile' },
     { key: 'createdAt', title: 'Date of Joining', render: (value) => new Date(value).toLocaleDateString('en-IN') },
     ...(user?.role !== 'distributor' && user?.role !== 'retailer' ? [{ key: 'DistributorId', title: 'Distributor', sortable: true }] : []),
-    { key: 'totalAMCs', title: 'Total AMCs', render: (value) => value || 0 },
+    { key: 'totalAMCs', title: 'Total WECs', render: (value) => value || 0 },
     { key: 'walletBalance', title: 'Wallet Balance', render: (value) => `₹${value.toLocaleString()}` },
     {
 

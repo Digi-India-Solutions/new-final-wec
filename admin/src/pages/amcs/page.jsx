@@ -83,19 +83,19 @@ export default function AMCsPage() {
     { name: 'customerEmail', label: 'Customer Email', type: 'email', required: true },
     { name: 'customerMobile', label: 'Customer Mobile', type: 'tel', required: true },
     { name: 'customerAddress', label: 'Customer Address', type: 'textarea', required: true },
-    { name: 'productPicture', label: 'Upload Product Picture', type: 'file', required: false, accept: '.pdf,.jpg,.jpeg,.png' },
-    { name: 'purchaseProof', label: 'Upload Purchase Proof', type: 'file', required: false, accept: '.pdf,.jpg,.jpeg,.png' },
+    { name: 'productPicture', label: 'Upload Product Picture', type: 'file', required: true, accept: '.pdf,.jpg,.jpeg,.png' },
+    { name: 'purchaseProof', label: 'Upload Purchase Proof', type: 'file', required: true, accept: '.pdf,.jpg,.jpeg,.png' },
     { name: 'serialNumber', label: 'Serial / IMEI Number', type: 'text', required: true },
-    { name: 'gst', label: 'GST Number', type: 'text', required: false },
+    // { name: 'gst', label: 'GST Number', type: 'text', required: false },
   ];
 
   const columns = [
-    { key: 'id', title: 'AMC ID', sortable: true },
+    { key: 'id', title: 'WEC ID', sortable: true },
     { key: 'customerName', title: 'Customer', sortable: true },
     { key: 'productCategory', title: 'Category' },
     { key: 'productBrand', title: 'Brand' },
     { key: 'productModel', title: 'Model' },
-    { key: 'amcAmount', title: 'AMC Amount', render: (value) => `₹${value.toLocaleString()}` },
+    { key: 'amcAmount', title: 'WEC Amount', render: (value) => `₹${value.toLocaleString()}` },
     { key: 'startDate', title: 'Start Date', render: (value) => new Date(value).toLocaleDateString('en-IN') },
     { key: 'endDate', title: 'End Date', render: (value) => new Date(value).toLocaleDateString('en-IN') },
     {
@@ -137,7 +137,7 @@ export default function AMCsPage() {
     setSelectedBrand('');
     setSelectedType('');
     setPurchaseValue('');
-    setAmcPercentage('8');
+    setAmcPercentage('0');
     setIsModalOpen(true);
   };
 
@@ -162,7 +162,7 @@ export default function AMCsPage() {
       };
 
       setAmcs(prev => [renewedAMC, ...prev]);
-      showToast('AMC renewed successfully', 'success');
+      showToast('WEC renewed successfully', 'success');
     } catch (error) {
       showToast('Renewal failed', 'error');
     } finally {
@@ -187,7 +187,7 @@ export default function AMCsPage() {
       // const model = mockModels.find(m => m.id === selectedModel);
 
       const newAMC = {
-        id: `AMC${String(Date.now()).slice(-3).padStart(3, '0')}`,
+        id: `WEC${String(Date.now()).slice(-3).padStart(3, '0')}`,
         ...formData,
         productCategory: category?.name || '',
         productBrand: brand?.name || '',
@@ -225,7 +225,7 @@ export default function AMCsPage() {
       formDataToSend.append("retailerName", newAMC?.retailerName || ""); formDataToSend.append("distributorId", newAMC?.distributorId || ""); formDataToSend.append("distributorName", newAMC?.distributorName || "");
       formDataToSend.append("createdDate", newAMC?.createdDate || ""); formDataToSend.append("renewalCount", newAMC?.renewalCount || 0); formDataToSend.append("lastServiceDate", newAMC?.lastServiceDate || "");
       formDataToSend.append("categoryId", newAMC?.categoryId || ""); formDataToSend.append("brandId", newAMC?.brandId || ""); formDataToSend.append("typeId", newAMC?.typeId || ""); formDataToSend.append("userId", user.id || "");
-      formDataToSend.append("gst", newAMC?.gst || "");
+      // formDataToSend.append("gst", newAMC?.gst || "");
       // ✅ Append purchase proof image only if provided
       if (newAMC?.purchaseProof) {
         formDataToSend.append("purchaseProof", newAMC.purchaseProof);
@@ -242,14 +242,14 @@ export default function AMCsPage() {
       console.log("newAMC==>GGG", newAMC, response)
       if (response?.status === true) {
         fetchAMCs()
-        showToast('AMC created successfully', 'success');
+        showToast('WEC created successfully', 'success');
         setIsModalOpen(false);
       } else {
-        showToast(response?.message || 'AMC creation failed', 'error');
+        showToast(response?.message || 'WEC creation failed', 'error');
       }
 
     } catch (error) {
-      showToast('AMC creation failed', 'error');
+      showToast('WEC creation failed', 'error');
     } finally {
       setLoading(false);
     }
@@ -284,133 +284,13 @@ export default function AMCsPage() {
   );
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-  // console.log("amcs==>", teamAndConditions.termsAndConditions)
-  // const handleDownloadPDf = (record) => {
-  //   const doc = new jsPDF();
-  //   const editingAMC = record;
-  //   // Company Information
-  //   doc.setFontSize(16);
-  //   doc.setFont(undefined, 'bold');
-  //   doc.text('Emicare', 14, 15);
-
-  //   doc.setFontSize(10);
-  //   doc.setFont(undefined, 'normal');
-  //   doc.text('C9/7 c-block dilshad colony Delhi-95 Powered by G&I ALLIANCE', 14, 22);
-  //   doc.text('+91-8929391112', 14, 28);
-
-  //   // Horizontal line
-  //   doc.setLineWidth(0.5);
-  //   doc.line(14, 32, 196, 32);
-
-  //   // WEC Number and Date
-  //   doc.text('WEC No:', 14, 38);
-  //   doc.text(`[${editingAMC.id}]`, 30, 38);
-  //   doc.text('Date:', 14, 44);
-  //   doc.text(new Date().toLocaleDateString('en-IN'), 30, 44);
-
-  //   // Warranty Extended Contract Title
-  //   doc.setFont(undefined, 'bold');
-  //   doc.text('Warranty Extended Contract (WEC)', 14, 54);
-
-  //   // Customer Information Table - CORRECTED SYNTAX
-  //   autoTable(doc, {
-  //     startY: 58,
-  //     head: [['Customer Name', 'Address', 'Contact No.', 'Email']],
-  //     body: [[
-  //       editingAMC.customerName,
-  //       editingAMC.customerAddress,
-  //       editingAMC.customerMobile,
-  //       editingAMC.customerEmail
-  //     ]],
-  //     theme: 'grid',
-  //     styles: { fontSize: 9 },
-  //     headStyles: { fillColor: [240, 240, 240] }
-  //   });
-
-  //   // Product Information Table - CORRECTED SYNTAX
-  //   const productTableY = doc.lastAutoTable.finalY + 10;
-
-  //   autoTable(doc, {
-  //     startY: productTableY,
-  //     head: [['#', 'Product Name', 'Model', 'Serial No.', 'Original Warranty', 'Extended Till', 'Amount']],
-  //     body: [[
-  //       1,
-  //       `${editingAMC.productCategory} - ${editingAMC.productBrand} ${editingAMC.productType}`,
-  //       editingAMC.productModel,
-  //       editingAMC.serialNumber || 'N/A',
-  //       new Date(editingAMC.startDate).toLocaleDateString('en-IN'),
-  //       new Date(editingAMC.endDate).toLocaleDateString('en-IN'),
-  //       `₹${editingAMC.amcAmount.toLocaleString()}`
-  //     ]],
-  //     theme: 'grid',
-  //     styles: { fontSize: 8 },
-  //     headStyles: { fillColor: [240, 240, 240] }
-  //   });
-
-  //   // Financial Summary - CORRECTED SYNTAX
-  //   const subtotal = editingAMC.amcAmount;
-  //   const taxRate = 18;
-  //   const taxAmount = (subtotal * taxRate) / 100;
-  //   const totalAmount = subtotal + taxAmount;
-
-  //   const financialY = doc.lastAutoTable.finalY + 10;
-
-  //   autoTable(doc, {
-  //     startY: financialY,
-  //     body: [
-  //       ['Subtotal', `₹${subtotal.toLocaleString()}`],
-  //       [`Tax (${taxRate}%)`, `₹${taxAmount.toLocaleString()}`],
-  //       ['Total', `₹${totalAmount.toLocaleString()}`]
-  //     ],
-  //     theme: 'plain',
-  //     styles: { fontSize: 10, fontStyle: 'bold' },
-  //     columnStyles: {
-  //       0: { cellWidth: 30 },
-  //       1: { cellWidth: 30, halign: 'right' }
-  //     }
-  //   });
-
-  //   // Terms & Conditions
-  //   const termsY = doc.lastAutoTable.finalY + 15;
-
-  //   doc.setFont(undefined, 'bold');
-  //   doc.text('Terms & Conditions:', 14, termsY);
-  //   doc.setFont(undefined, 'normal');
-
-  //   const terms = [
-  //     teamAndConditions?.termsAndConditions?.replace(/<[^>]+>/g, '')?.replace(/\n/g, ' ')?.trim()
-  //   ];
-
-  //   let currentY = termsY + 6;
-  //   terms.forEach(term => {
-  //     // Split long text to fit in page
-  //     const lines = doc.splitTextToSize(term, 180);
-  //     lines.forEach(line => {
-  //       doc.text(`- ${line}`, 14, currentY);
-  //       currentY += 5;
-  //     });
-  //   });
-
-  //   // Customer Signature
-  //   const signatureY = currentY + 10;
-  //   doc.text('Customer Signature', 14, signatureY);
-
-  //   // Footer
-  //   const footerY = signatureY + 15;
-  //   doc.text(`Thank you for choosing Your Company. For support, call +91-8929391113 or sales :- 8929391112 `, 14, footerY);
-
-  //   // Authorized Signatory
-  //   doc.text('Authorized Signatory', 160, signatureY);
-
-  //   // Save PDF
-  //   doc.save(`WEC_${editingAMC.id}_${editingAMC.customerName.replace(/\s+/g, '_')}.pdf`);
-  //   showToast('PDF downloaded successfully', 'success');
-  // };
 
   console.log("companySettings:===>", companySettings)
-
+  //  <tr><td>Tax (18%)</td><td>₹${(record.amcAmount * 0.18).toFixed(2)}</td></tr>
+  //         <tr><td>Total</td><td><strong>₹${(record.amcAmount * 1.18).toFixed(2)}</strong></td></tr>
   const handleDownloadPdf = (record) => {
     // Clone your HTML template and inject dynamic values
+    console.log("GGGGGG:==>",record)
     const template = `
   <div class="invoice-box">
     <div class="header">
@@ -451,7 +331,7 @@ export default function AMCsPage() {
       <tbody>
         <tr>
           <td>1</td>
-          <td>${record.productCategory} - ${record.productBrand} ${record.productType}</td>
+          <td>${record.productCategory} - ${record?.productBrand} ${record?.productType}</td>
           <td>${record.productModel}</td>
           <td>${record.serialNumber || 'N/A'}</td>
           <td>${new Date(record.startDate).toLocaleDateString('en-IN')}</td>
@@ -464,16 +344,21 @@ export default function AMCsPage() {
     <div class="summary">
       <table>
         <tr><td>Subtotal</td><td>₹${record.amcAmount}</td></tr>
-        <tr><td>Tax (18%)</td><td>₹${(record.amcAmount * 0.18).toFixed(2)}</td></tr>
-        <tr><td>Total</td><td><strong>₹${(record.amcAmount * 1.18).toFixed(2)}</strong></td></tr>
       </table>
     </div>
 
     <div class="terms">
       <strong>Terms & Conditions:</strong>
-      <ul>
-       ${teamAndConditions?.termsAndConditions?.replace(/<[^>]+>/g, '')?.replace(/\n/g, ' ')?.trim()}
-      </ul>
+       <div
+    style={{
+      border: "1px solid #ccc",
+      padding: "15px",
+      borderRadius: "8px",
+      marginTop: "10px",
+      background: "#fafafa",
+    }}
+    dangerouslySetInnerHTML={{ __html: ${teamAndConditions?.termsAndConditions} }}
+  />
     </div>
 
     <div class="signature">
@@ -583,6 +468,7 @@ export default function AMCsPage() {
       console.log("response==>get-team-and-conditions=>", response)
       if (response?.status === true) {
         setSetTeamAndConditions(response?.data);
+        setAmcPercentage(response?.data?.defaultPercentage);
       }
       if (response2?.status === true) {
         setCompanySettings(response2?.data);
@@ -597,7 +483,7 @@ export default function AMCsPage() {
     fetchAMCs()
     fetchAllCategories();
     fetchTeamAndConditions();
-  }, [currentPage, pageSize, searchTerm, statusFilter, categoryFilter]);
+  }, [currentPage, pageSize, searchTerm, statusFilter, categoryFilter, purchaseValue]);
 
   const fetchAllBrandsByCategory = async () => {
     try {
@@ -634,11 +520,11 @@ export default function AMCsPage() {
       <ToastContainer />
 
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">AMC Management</h1>
+        <h1 className="text-2xl font-bold text-gray-900">WEC Management</h1>
         {(user?.role === 'retailer' || user?.role === 'distributor') && (
           <Button onClick={handleAdd}>
             <i className="ri-add-line mr-2 w-4 h-4 flex items-center justify-center"></i>
-            Create AMC
+            Create WEC
           </Button>
         )}
       </div>
@@ -648,7 +534,7 @@ export default function AMCsPage() {
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total AMCs</p>
+              <p className="text-sm font-medium text-gray-600">Total WECs</p>
               <p className="text-2xl font-bold text-gray-900">{totalData}</p>
             </div>
             <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
@@ -698,7 +584,7 @@ export default function AMCsPage() {
       <div className="flex flex-col lg:flex-row gap-4">
         <div className="flex-1">
           <Input
-            placeholder="Search by customer name, email, or AMC ID..."
+            placeholder="Search by customer name, email, or WEC ID..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             icon="ri-search-line"
@@ -757,7 +643,7 @@ export default function AMCsPage() {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={editingAMC ? 'AMC Details' : 'Create New AMC'}
+        title={editingAMC ? 'WEC Details' : 'Create New WEC'}
         size="xl"
       >
         {editingAMC ? (
@@ -845,7 +731,7 @@ export default function AMCsPage() {
                     <p className="text-gray-900">₹{editingAMC.purchaseValue.toLocaleString()}</p>
                   </div>
                   <div>
-                    <label className="text-sm font-medium text-gray-600">AMC Amount ({editingAMC.amcPercentage}%)</label>
+                    <label className="text-sm font-medium text-gray-600">WEC Amount ({editingAMC.amcPercentage}%)</label>
                     <p className="text-gray-900 font-semibold">₹{editingAMC.amcAmount.toLocaleString()}</p>
                   </div>
                   {editingAMC?.purchaseProof && (
@@ -896,10 +782,10 @@ export default function AMCsPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">AMC Details</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">WEC Details</h3>
                 <div className="space-y-3">
                   <div>
-                    <label className="text-sm font-medium text-gray-600">AMC ID</label>
+                    <label className="text-sm font-medium text-gray-600">WEC ID</label>
                     <p className="text-gray-900">{editingAMC.id}</p>
                   </div>
                   <div>
@@ -974,7 +860,7 @@ export default function AMCsPage() {
                 onSubmit={handleSubmit}
                 onCancel={() => setIsModalOpen(false)}
                 loading={loading}
-                submitText="Create AMC"
+                submitText="Create WEC"
               />
             </div>
 
@@ -986,6 +872,7 @@ export default function AMCsPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
                   <div className="relative">
                     <select
+                      required={true}
                       value={selectedCategory}
                       onChange={(e) => {
                         setSelectedCategory(e.target.value);
@@ -1009,6 +896,7 @@ export default function AMCsPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Brand *</label>
                   <div className="relative">
                     <select
+                      required={true}
                       value={selectedBrand}
                       onChange={(e) => {
                         setSelectedBrand(e.target.value);
@@ -1033,6 +921,7 @@ export default function AMCsPage() {
                   <div className="relative">
                     <select
                       value={selectedType}
+                      required={true}
                       onChange={(e) => setSelectedType(e.target.value)}
                       disabled={!selectedBrand}
                       className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 pr-8 disabled:bg-gray-100"
@@ -1054,6 +943,7 @@ export default function AMCsPage() {
                   <div className="relative">
                     <input
                       type="text"
+                      required={true}
                       name="productModel"
                       disabled={!selectedType}
                       value={selectedModel}
@@ -1071,6 +961,7 @@ export default function AMCsPage() {
                   type="number"
                   label="Purchase Value *"
                   value={purchaseValue}
+                  required={true}
                   onChange={(e) => setPurchaseValue(e.target.value)}
                   placeholder="Enter purchase value"
                   icon="ri-money-rupee-circle-line"
@@ -1090,7 +981,7 @@ export default function AMCsPage() {
               {purchaseValue && amcPercentage && (
                 <div className="mt-4 bg-blue-50 rounded-lg p-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-600">AMC Amount:</span>
+                    <span className="text-sm font-medium text-gray-600">WEC Amount:</span>
                     <span className="text-xl font-bold text-blue-600">
                       ₹{calculateAMCAmount().toLocaleString('en-IN', { maximumFractionDigits: 2 })}
                     </span>

@@ -39,7 +39,7 @@ exports.createAmcByAdmin = catchAsyncErrors(async (req, res, next) => {
             userEmail: user.email,
             type: "debit",
             amount: Number(amcAmount),
-            description: `Wallet Debit - ${amcPercentage}% of ₹${Number(purchaseValue).toLocaleString()} / (AMC Created (ID:-${req?.body?.id || ""}))`,
+            description: `Wallet Debit - ₹${Number(amcAmount).toLocaleString()} / (AMC Created (ID:-${req?.body?.id || ""}))`,
             clientAmount: Number(purchaseValue),
             percentage: Number(amcPercentage),
             createdBy: `${user?.name || "System"}`,
@@ -453,14 +453,30 @@ exports.getAmcByAdmin = catchAsyncErrors(async (req, res, next) => {
     }
 });
 
+
 exports.getAmcByCustomer = catchAsyncErrors(async (req, res, next) => {
     try {
-        const { customerEmail } = req.query
-        const amc = await AMC.find({ customerEmail: customerEmail })
+        const { customerEmail } = req.query;
 
-        if (!amc) return next(new ErrorHandler("AMC not found", 404));
-        res.status(200).json({ status: true, message: "AMC fetched successfully", data: amc });
+        if (!customerEmail) {
+            return res.status(400).json({
+                status: false,
+                message: "customerEmail query parameter is required"
+            });
+        }
+
+        console.log("Fetching AMC for Email:", customerEmail);
+
+        const amcList = await AMC.find({ customerEmail: { $regex: new RegExp(`^${customerEmail}$`, "i") } }).lean();
+
+        if (!amcList || amcList.length === 0) {
+            return res.status(404).json({ status: false, message: "No AMC records found for this customer" });
+        }
+
+        return res.status(200).json({ status: true, message: "AMC fetched successfully", data: amcList });
+
     } catch (error) {
+        console.error("Error in getAmcByCustomer:", error);
         return next(new ErrorHandler(error.message, 500));
     }
 });

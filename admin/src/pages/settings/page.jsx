@@ -22,7 +22,7 @@ export default function SettingsPage() {
 
   // Company Settings
   const [companySettings, setCompanySettings] = useState({
-    name: 'AMC Management System',
+    name: 'WEC Management System',
     email: 'contact@amcmanagement.com',
     phone: '+91 9876543200',
     address: '123 Business Park, Mumbai, Maharashtra 400001',
@@ -36,7 +36,7 @@ export default function SettingsPage() {
     smtpPort: '587',
     smtpUsername: 'noreply@amcmanagement.com',
     smtpPassword: '',
-    fromName: 'AMC Management System',
+    fromName: 'WEC Management System',
     fromEmail: 'noreply@amcmanagement.com'
   });
 
@@ -46,7 +46,7 @@ export default function SettingsPage() {
     minPercentage: 5,
     maxPercentage: 15,
     defaultDuration: 12,
-    termsAndConditions: `1. This AMC covers maintenance and repair services for the specified product.
+    termsAndConditions: `1. This WEC covers maintenance and repair services for the specified product.
 2. Service will be provided within 24-48 hours of request.
 3. Parts replacement is covered under this contract.
 4. Customer must provide proper access to the product for service.
@@ -96,7 +96,7 @@ export default function SettingsPage() {
         }
       } else if (section === 'Email') {
         showToast(`${section} settings saved successfully`, 'success');
-      } else if (section === 'AMC') {
+      } else if (section === 'WEC') {
         const respons = await postData(`api/company/create-or-update-amc-settings`, amcSettings, true);
         if (respons.status === true) {
           fetchCompanySettings()
@@ -175,7 +175,7 @@ export default function SettingsPage() {
           {[
             { key: 'company', label: 'Company Details', icon: 'ri-building-line' },
             // { key: 'email', label: 'Email Settings', icon: 'ri-mail-settings-line' },
-            { key: 'amc', label: 'AMC Configuration', icon: 'ri-file-shield-line' },
+            { key: 'amc', label: 'WEC Configuration', icon: 'ri-file-shield-line' },
             // { key: 'theme', label: 'Theme & Branding', icon: 'ri-palette-line' },
             { key: 'roles', label: 'Role Management', icon: 'ri-shield-user-line' }
           ].map((tab) => (
@@ -362,12 +362,12 @@ export default function SettingsPage() {
       {/* AMC Configuration Tab */}
       {activeTab === 'amc' && (
         <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-6">AMC Default Settings</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-6">WEC Default Settings</h3>
 
           <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <Input
-                label="Default AMC Percentage"
+                label="Default WEC Percentage"
                 type="text"
                 value={amcSettings.defaultPercentage}
                 min="0"
@@ -396,37 +396,30 @@ export default function SettingsPage() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Terms & Conditions</label>
+              
               <JoditEditor
                 ref={editor}
                 value={amcSettings.termsAndConditions}
                 config={{
-                  readonly: false,
                   height: 400,
-                  placeholder: 'Enter default terms and conditions for AMC contracts...',
-                  toolbarAdaptive: false,
-                  toolbarSticky: false,
-                  buttons: [
-                    'bold', 'italic', 'underline', 'strikethrough', '|', 'ul', 'ol', '|',
-                    'link', 'table', '|', 'left', 'center', 'right', 'justify',
-                    '|', 'undo', 'redo', '|', 'hr', 'eraser', 'source'
-                  ]
+                  placeholder: 'Enter default terms and conditions for WEC contracts...',
                 }}
-                onBlur={(newContent) =>
+                onChange={(newContent) =>
                   setAmcSettings((prev) => ({
                     ...prev,
-                    termsAndConditions: newContent
+                    termsAndConditions: newContent,
                   }))
                 }
               />
-              <p className="text-xs text-gray-500 mt-1">These terms will be included in all AMC certificates</p>
+              <p className="text-xs text-gray-500 mt-1">These terms will be included in all WEC certificates</p>
             </div>
 
             <div className="flex justify-end">
               <Button
-                onClick={() => handleSave('AMC')}
+                onClick={() => handleSave('WEC')}
                 loading={loading}
               >
-                Save AMC Settings
+                Save WEC Settings
               </Button>
             </div>
           </div>
