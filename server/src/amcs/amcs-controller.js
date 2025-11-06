@@ -39,7 +39,7 @@ exports.createAmcByAdmin = catchAsyncErrors(async (req, res, next) => {
             userEmail: user.email,
             type: "debit",
             amount: Number(amcAmount),
-            description: `Wallet Debit - ₹${Number(amcAmount).toLocaleString()} / (AMC Created (ID:-${req?.body?.id || ""}))`,
+            description: `Wallet Debit - ₹${Number(amcAmount).toLocaleString()} / (WEC Created (ID:-${req?.body?.id || ""}))`,
             clientAmount: Number(purchaseValue),
             percentage: Number(amcPercentage),
             createdBy: `${user?.name || "System"}`,

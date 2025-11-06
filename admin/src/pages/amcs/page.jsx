@@ -287,7 +287,7 @@ export default function AMCsPage() {
   //         <tr><td>Total</td><td><strong>₹${(record.amcAmount * 1.18).toFixed(2)}</strong></td></tr>
   const handleDownloadPdf = (record) => {
     // Clone your HTML template and inject dynamic values
-    console.log("GGGGGG:==>",record)
+    console.log("GGGGGG:==>", record)
     const template = `
   <div class="invoice-box">
     <div class="header">
@@ -344,23 +344,23 @@ export default function AMCsPage() {
       </table>
     </div>
 
-    <div class="terms">
-      <strong>Terms & Conditions:</strong>
-       <div
+   <div className="terms"  style="page-break-before: always; margin-top: 20px;">
+  // <strong>Terms & Conditions:</strong>
+
+  <div
     style={{
       border: "1px solid #ccc",
       padding: "15px",
       borderRadius: "8px",
-      marginTop: "10px",
+      marginTop: "5000px",
       background: "#fafafa",
     }}
     dangerouslySetInnerHTML={{ __html: ${teamAndConditions?.termsAndConditions} }}
   />
-    </div>
+</div>
 
     <div class="signature">
-      <div><div class="sig-line"></div><div>Customer Signature</div></div>
-      <div><div class="sig-line"></div><div>Authorized Signatory</div></div>
+      <div>Note:- Under the extended warranty, claims shall be limited to a maximum of 80% of the product’s value, excluding GST.</div>
     </div>
 
     <div class="footer">
@@ -398,7 +398,7 @@ export default function AMCsPage() {
       th, td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 14px; }
       th { background: #007bff; color: #fff; }
       .summary table td { border: 1px solid #ddd; }
-      .terms { margin-top: 20px; font-size: 13px; color: #555; }
+      .terms { margin-top: 20px; font-size: 13px; color: #555; margin-top: 500px; }
       .signature { display: flex; justify-content: space-between; margin-top: 40px; font-size: 14px; }
       .sig-line { margin-top: 50px; border-top: 1px solid #000; width: 200px; }
       .footer { text-align: center; font-size: 12px; color: #777; margin-top: 30px; border-top: 1px solid #eee; padding-top: 10px; }
@@ -674,7 +674,7 @@ export default function AMCsPage() {
                           variant="ghost"
                           onClick={() => {
                             try {
-                              
+
                               let downloadUrl = editingAMC?.productPicture;
 
                               if (downloadUrl.includes("/upload/")) {
