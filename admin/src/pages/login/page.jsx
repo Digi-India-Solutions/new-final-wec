@@ -75,15 +75,21 @@ export default function Login() {
         <ToastContainer />
         <div className="max-w-md w-full space-y-8">
           {/* Logo / Title */}
-          <div className="text-center">
-            <div className="mx-auto h-16 w-16 bg-blue-600 rounded-full flex items-center justify-center">
-              {
-                companySettings?.logo ? <img src={companySettings?.logo} alt="Logo" className="w-15 h-15 " style={{ borderRadius: 50 }} /> :
-                  <i className="ri-file-shield-line text-white text-2xl w-8 h-8 flex items-center justify-center"></i>
-              }
+          <div className="text-center flex flex-col items-center">
+            {companySettings?.logo ? (
+              <img
+                src={companySettings.logo}
+                alt="Logo"
+                className="h-96 w-96 object-contain" // ⬅ 3x bigger logo
+              />
+            ) : (
+              <i className="ri-file-shield-line text-gray-700 text-[200px]"></i> // bigger fallback icon
+            )}
 
-            </div>
-            <h2 className="mt-6 text-3xl font-bold text-gray-900">{companySettings?.name ? companySettings?.name : 'WEC Management System'}</h2>
+            <h2 className="mt-6 text-3xl font-bold text-gray-900">
+              {companySettings?.name ? companySettings?.name : 'WEC Management System'}
+            </h2>
+
             <p className="mt-2 text-sm text-gray-600">Sign in to your account</p>
           </div>
 

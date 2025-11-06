@@ -1,5 +1,11 @@
 const nodemailer = require("nodemailer");
 const SuperAdmin = require("../src/super-admin/super-admin-model");
+const { PDFDocument, StandardFonts, rgb } = require("pdf-lib");
+const fs = require("fs");
+const path = require("path");
+const { v4: uuidv4 } = require("uuid");
+const puppeteer = require("puppeteer");
+
 
 const getSuperAdminEmail = async () => {
     try {
@@ -22,7 +28,7 @@ const transporter = nodemailer.createTransport({
 const sendMail = ({ to, subject, html, from = process.env.MAIL_EMAIL_ID }) => {
     return new Promise((resolve, reject) => {
         const mailOptions = {
-            from: `AMC Management System <${process.env.MAIL_EMAIL_ID}>`,
+            from: `WEC Management System <${process.env.MAIL_EMAIL_ID}>`,
             to,
             subject,
             html,
@@ -38,17 +44,17 @@ const sendMail = ({ to, subject, html, from = process.env.MAIL_EMAIL_ID }) => {
 };
 
 exports.sendResetPasswordSuperAdmin = async (data) => {
-  const { email, token, user } = data;
-  const resetLink = `${process.env.BASE_URL}/${user}/reset-password/${token}`;
+    const { email, token, user } = data;
+    const resetLink = `${process.env.BASE_URL}/${user}/reset-password/${token}`;
 
-  const body = `
+    const body = `
   <!DOCTYPE html>
   <html lang="en">
   
   <head>
       <meta charset="UTF-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <title>Reset Your Password - AMC Management System</title>
+      <title>Reset Your Password - WEC Management System</title>
       <style>
           body {
               margin: 0;
@@ -113,7 +119,7 @@ exports.sendResetPasswordSuperAdmin = async (data) => {
   <body>
       <div class="container">
           <div class="logo">
-              <img src="https://api.amcmanagement.in/images/logo.png" alt="AMC Management Logo" style="width: 140px;" />
+              <img src="https://api.amcmanagement.in/images/logo.png" alt="WEC Management Logo" style="width: 140px;" />
           </div>
 
           <div class="title">Reset Your Password</div>
@@ -121,7 +127,7 @@ exports.sendResetPasswordSuperAdmin = async (data) => {
 
           <div class="message">
               <p>Hello,</p>
-              <p>We received a request to <strong>reset your password</strong> for your AMC Management System account.</p>
+              <p>We received a request to <strong>reset your password</strong> for your WEC Management System account.</p>
               <p>You can safely reset your password by clicking the button below:</p>
               <p style="text-align: center;">
                   <a href="${resetLink}" class="button">Reset Password</a>
@@ -130,7 +136,7 @@ exports.sendResetPasswordSuperAdmin = async (data) => {
           </div>
 
           <div class="footer">
-              <p>All rights reserved © ${new Date().getFullYear()} | AMC Management System</p>
+              <p>All rights reserved © ${new Date().getFullYear()} | WEC Management System</p>
               <p>123, Tech Park Avenue, Delhi, India</p>
           </div>
       </div>
@@ -139,8 +145,8 @@ exports.sendResetPasswordSuperAdmin = async (data) => {
   </html>
   `;
 
-  const subject = "Reset Your Password - AMC Management System";
-  return await sendMail({ to: email, subject, html: body });
+    const subject = "Reset Your Password - WEC Management System";
+    return await sendMail({ to: email, subject, html: body });
 };
 
 
@@ -530,8 +536,8 @@ exports.sendEmailActiveUserAccount = async ({ email, fullName, isActive }) => {
     console.log(`Sending ${isActive ? 'Activation' : 'Deactivation'} Email To:`, email);
 
     const subject = isActive
-        ? "🎉 Your Account is Now Active!"
-        : "⚠️ Your Account Has Been Deactivated";
+        ? " Your Account is Now Active!"
+        : " Your Account Has Been Deactivated";
 
     const html = `<!DOCTYPE html>
     <html>
@@ -600,66 +606,66 @@ exports.sendEmailActiveUserAccount = async ({ email, fullName, isActive }) => {
     return true;
 };
 
-exports.sendOrderNotification = async ({ email, name, phone }) => {
-    const subject = "🛒 We Miss You! Come Back and Shop with Us";
+// exports.sendOrderNotification = async ({ email, name, phone }) => {
+//     const subject = "🛒 We Miss You! Come Back and Shop with Us";
 
-    const html = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                background-color: #f5f5f5;
-                margin: 0;
-                padding: 20px;
-            }
-            .container {
-                max-width: 600px;
-                margin: auto;
-                background-color: #ffffff;
-                padding: 30px;
-                border-radius: 10px;
-                box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
-                text-align: center;
-            }
-            h2 {
-                color: #ff6600;
-                margin-bottom: 20px;
-            }
-            p {
-                font-size: 16px;
-                color: #444444;
-                margin-bottom: 20px;
-            }
-            .btn {
-                display: inline-block;
-                padding: 12px 25px;
-                background-color: #ff6600;
-                color: #ffffff;
-                text-decoration: none;
-                border-radius: 5px;
-                font-weight: bold;
-            }
-            .footer {
-                font-size: 12px;
-                color: #888888;
-                margin-top: 30px;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <h2>Hey ${name}, We Miss You! 🧡</h2>
-            <p>We noticed you haven’t placed an order in a while. It’s been some time since we’ve seen you, and we’d love to have you back!</p>
-            <p>Explore our new products and exclusive deals crafted just for you.</p>
-            <p class="footer">If you have any questions, feel free to contact us at ${process.env.SUPPORT_PHONE || "our support"}.<br>– YourWebsite Team</p>
-        </div>
-    </body>
-    </html>`;
+//     const html = `
+//     <!DOCTYPE html>
+//     <html>
+//     <head>
+//         <style>
+//             body {
+//                 font-family: Arial, sans-serif;
+//                 background-color: #f5f5f5;
+//                 margin: 0;
+//                 padding: 20px;
+//             }
+//             .container {
+//                 max-width: 600px;
+//                 margin: auto;
+//                 background-color: #ffffff;
+//                 padding: 30px;
+//                 border-radius: 10px;
+//                 box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+//                 text-align: center;
+//             }
+//             h2 {
+//                 color: #ff6600;
+//                 margin-bottom: 20px;
+//             }
+//             p {
+//                 font-size: 16px;
+//                 color: #444444;
+//                 margin-bottom: 20px;
+//             }
+//             .btn {
+//                 display: inline-block;
+//                 padding: 12px 25px;
+//                 background-color: #ff6600;
+//                 color: #ffffff;
+//                 text-decoration: none;
+//                 border-radius: 5px;
+//                 font-weight: bold;
+//             }
+//             .footer {
+//                 font-size: 12px;
+//                 color: #888888;
+//                 margin-top: 30px;
+//             }
+//         </style>
+//     </head>
+//     <body>
+//         <div class="container">
+//             <h2>Hey ${name}, We Miss You! 🧡</h2>
+//             <p>We noticed you haven’t placed an order in a while. It’s been some time since we’ve seen you, and we’d love to have you back!</p>
+//             <p>Explore our new products and exclusive deals crafted just for you.</p>
+//             <p class="footer">If you have any questions, feel free to contact us at ${process.env.SUPPORT_PHONE || "our support"}.<br>– YourWebsite Team</p>
+//         </div>
+//     </body>
+//     </html>`;
 
-    await sendMail({ to: email, subject, html });
-};
+//     await sendMail({ to: email, subject, html });
+// };
 
 exports.sendThankYouEmail = async ({ email, name, phone }) => {
     const subject = "🙏 Thank You for Your Order!";
@@ -781,4 +787,115 @@ exports.sendThankYouEmailAdmin = async ({ email, name, phone }) => {
     </body>
     </html>`;
     await sendMail({ to: process.env.MAIL_EMAIL_ID, subject, html });
+};
+
+
+exports.sendOrderNotification = async ({ email, name, customer, companySettings, record, termsAndConditions }) => {
+    // console.log("XXXXXX::=>", record)
+    const rows = record?.amcs?.map((item, index) => `
+    <tr>
+        <td>${index + 1}</td>
+        <td>${item.productCategory} - ${item.productBrand} ${item.productType}</td>
+        <td>${item.productModel}</td>
+        <td>${item.serialNumber || "N/A"}</td>
+        <td>${new Date(item.startDate).toLocaleDateString("en-IN")}</td>
+        <td>${new Date(item.endDate).toLocaleDateString("en-IN")}</td>
+        <td>₹${item.amcAmount}</td>
+    </tr>
+`).join("") || "";
+
+    // ✅ Build full styled HTML (use your same template)
+    const html = `
+<html>
+<head>
+    <style>
+        body { font-family: "Poppins", Arial, sans-serif; padding: 20px; background: #fff; }
+        .invoice-box { max-width: 850px; margin: auto; padding: 25px 30px; border: 1px solid #e0e0e0; border-radius: 8px; }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
+        .company-info h2 { margin: 0; color: #007bff; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+        th, td { border: 1px solid #ddd; padding: 8px; }
+        th { background: #007bff; color: white; }
+        .invoice-title { text-align: center; margin-top: 15px; font-size: 20px; font-weight: 600; }
+        .signature { display: flex; justify-content: center; margin-top: 40px; }
+        .sig-line { margin-top: 50px; border-top: 1px solid #000; width: 200px; }
+    </style>
+</head>
+<body>
+
+<div class="invoice-box">
+    <div class="header">
+        <div>
+            <img src="${companySettings?.logo || ''}" style="width:80px;height:80px;object-fit:contain;border-radius:8px;">
+            <h2>${companySettings?.name}</h2>
+            <p>${companySettings?.address}</p>
+            <p>${companySettings?.phone} | ${companySettings?.email}</p>
+        </div>
+        <div>
+            <table>
+                <tr><td><strong>WEC No:</strong></td><td>${record?.id}</td></tr>
+                <tr><td><strong>Date:</strong></td><td>${new Date().toLocaleDateString('en-IN')}</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="invoice-title">Warranty Extended Contract</div>
+
+    <table>
+        <tr><th>Customer Name</th><td>${customer.name}</td></tr>
+        <tr><th>Address</th><td>${customer.address}</td></tr>
+        <tr><th>Contact</th><td>${customer.mobile}</td></tr>
+        <tr><th>Email</th><td>${customer.email}</td></tr>
+    </table>
+
+    <table>
+        <thead>
+            <tr><th>#</th><th>Product</th><th>Model</th><th>Serial</th><th>Start</th><th>End</th><th>Amount</th></tr>
+        </thead>
+        <tbody>
+            ${rows}
+        </tbody>
+    </table>
+
+    <div style="margin-top:20px;">
+        <strong>Terms & Conditions:</strong>
+        <div style="border:1px solid #ccc;padding:10px;border-radius:4px;">
+            ${termsAndConditions || "No terms available."}
+        </div>
+    </div>
+
+    <div class="signature">
+        <div>Note:- Under the extended warranty, claims shall be limited to a maximum of 80% of the product’s value, excluding GST.</div>
+       
+    </div>
+</div>
+
+</body>
+</html>
+`;
+
+
+    // ✅ Convert HTML to PDF using Puppeteer
+    const browser = await puppeteer.launch({ headless: "new" });
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: "networkidle0" });
+
+    const pdfPath = path.join(__dirname, "../uploads", `WEC_${record?.id || uuidv4()}.pdf`);
+    await page.pdf({ path: pdfPath, format: "A4", printBackground: true });
+    await browser.close();
+
+    const downloadLink = `https://api.emipluscare.in/uploads/${path.basename(pdfPath)}`;
+
+    // ✅ Send Email
+    await sendMail({
+        to: email,
+        subject: "📄 Your WEC Contract PDF",
+        html: `
+            <p>Hi ${name}, your contract is ready.</p>
+            <a href="${downloadLink}" style="background:#007bff;color:white;padding:10px 18px;border-radius:6px;text-decoration:none;">Download PDF</a>
+        `,
+        attachments: [{ filename: path.basename(pdfPath), path: pdfPath }]
+    });
+
+    return { status: true, message: "✅ Styled PDF Sent Successfully" };
 };

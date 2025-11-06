@@ -5,7 +5,7 @@ import Button from '../../components/base/Button';
 import Modal from '../../components/base/Modal';
 import Input from '../../components/base/Input';
 import { useToast } from '../../components/base/Toast';
-import { getData, serverURL } from '../../services/FetchNodeServices';
+import { getData, postData, serverURL } from '../../services/FetchNodeServices';
 import html2pdf from "html2pdf.js";
 
 export const mockAMCs = [
@@ -307,7 +307,7 @@ export default function CustomersPage() {
   const [totalInActive, setTotalInActive] = useState(0);
   const [companySettings, setCompanySettings] = useState('');
   const [teamAndConditions, setTeamAndConditions] = useState('');
-
+  const [loading, setLoading] = useState(false);
   const [amcs, setAmcs] = useState(mockAMCs);
 
   // Filter customers based on user role
@@ -369,24 +369,32 @@ export default function CustomersPage() {
     setIsModalOpen(true);
   };
 
-  const renderActions = (record) => (
-    <div className="flex space-x-2">
-      <Button
-        size="sm"
-        variant="ghost"
-        onClick={() => handleViewDetails(record)}
-      >
-        <i className="ri-eye-line w-4 h-4 flex items-center justify-center"></i>
-      </Button>
-      <Button
-        size="sm"
-        variant="ghost"
-        onClick={() => showToast('Email sent successfully', 'success')}
-      >
-        <i className="ri-mail-line w-4 h-4 flex items-center justify-center"></i>
-      </Button>
-    </div>
-  );
+  const renderActions = (record) => {
+    // const customerAmcs = amcs?.filter(a =>
+    //   (a?.customerEmail || "").trim().toLowerCase() ===
+    //   (record?.email || "").trim().toLowerCase()
+    // );
+
+    return (
+      <div className="flex space-x-2">
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => handleViewDetails(record)}
+        >
+          <i className="ri-eye-line w-4 h-4 flex items-center justify-center"></i>
+        </Button>
+
+        {/* <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => handleSendEmail(record, customerAmcs)}
+        >
+          <i className="ri-mail-line w-4 h-4"></i>
+        </Button> */}
+      </div>
+    );
+  };
 
   // Get customer AMCs
   const getCustomerAMCs = async (customerEmail) => {
@@ -650,6 +658,23 @@ export default function CustomersPage() {
   }, [])
 
   /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  const handleSendEmail = async (selectedCustomer, amcs) => {
+    try {
+      setLoading(true)
+      const response = await postData(`api/customer/send-email`, { data: { ...selectedCustomer, amc: { amcs } } });
+      if (response?.status === true) {
+        setLoading(false)
+        showToast(response?.message || 'Email sent successfully', 'success')
+      } else {
+        setLoading(false)
+        showToast(response?.message || 'Email not sent', 'error')
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
   return (
     <div className="p-6 space-y-6">
       <ToastContainer />
@@ -875,16 +900,15 @@ export default function CustomersPage() {
               >
                 Close
               </Button>
-              <Button
-                onClick={() => showToast('Email sent to customer', 'success')}
-              >
+              <Button onClick={() => handleSendEmail(selectedCustomer, amcs)} disabled={!selectedCustomer?.email} variant="primary"  >
                 <i className="ri-mail-line mr-2 w-4 h-4 flex items-center justify-center"></i>
-                Send Email
+                {loading ? 'Sending Email...' : 'Send Email'}
               </Button>
             </div>
           </div>
-        )}
-      </Modal>
-    </div>
+        )
+        }
+      </Modal >
+    </div >
   );
 }

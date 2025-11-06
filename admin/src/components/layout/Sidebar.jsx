@@ -211,6 +211,7 @@ export default function Sidebar({ activeKey, onMenuClick }) {
 
   const [rolesData, setRolesData] = useState([]);
   const [userPermissions, setUserPermissions] = useState([]);
+  const [companySettings, setCompanySettings] = useState('');
 
   // ✅ All sidebar menu items
   const menuItems = [
@@ -219,7 +220,7 @@ export default function Sidebar({ activeKey, onMenuClick }) {
     { key: 'staff', label: 'Staff Management', icon: 'ri-team-line', path: '/staff', module: 'Staff Management', roles: ['admin'] },
     { key: 'claims', label: 'Claims Management', icon: 'ri-file-shield-line', path: '/claims', module: 'Claims Management', roles: ['admin'] },
     { key: 'products', label: 'Products', icon: 'ri-product-hunt-line', path: '/products', module: 'Products', roles: ['admin'] },
-    { key: 'amcs', label: 'WEC Management', icon: 'ri-file-shield-line', path: '/amcs', module: 'AMC Management', roles: ['admin', 'distributor', 'retailer'] },
+    { key: 'amcs', label: 'WEC Management', icon: 'ri-file-shield-line', path: '/amcs', module: 'WEC Management', roles: ['admin', 'distributor', 'retailer'] },
     { key: 'customers', label: 'Customers', icon: 'ri-user-heart-line', path: '/customers', module: 'Customers', roles: ['admin'] },
     { key: 'wallet', label: 'Wallet', icon: 'ri-wallet-line', path: '/wallet', module: 'Wallet Management', roles: ['admin', 'distributor', 'retailer'] },
     // { key: 'reports', label: 'Reports', icon: 'ri-bar-chart-line', path: '/reports', module: 'Reports', roles: ['admin', 'distributor'] },
@@ -275,11 +276,43 @@ export default function Sidebar({ activeKey, onMenuClick }) {
     setIsAuthenticated(false);
   };
 
+
+
+  const fetchTeamAndConditions = async () => {
+    try {
+      const response2 = await getData(`api/company/get-company-settings`);
+      const response = await getData('api/company/get-AMC-settings');
+      console.log("response==>get-team-and-conditions=>", response)
+      // if (response?.status === true) {
+      //   setTeamAndConditions(response?.data);
+      //   // setAmcPercentage(response?.data?.defaultPercentage);
+      // }
+      if (response2?.status === true) {
+        setCompanySettings(response2?.data);
+      }
+    } catch (error) {
+      console.error('Error fetching team and conditions:', error);
+    }
+  }
+
+  useEffect(() => {
+    fetchTeamAndConditions();
+  }, [])
+
   return (
     <div className="bg-gray-900 text-white w-64 min-h-screen flex flex-col">
       {/* Header */}
       <div className="p-6 border-b border-gray-700">
-        <h1 className="text-xl font-bold">WEC Management</h1>
+        {companySettings?.logo ? (
+          <img
+            src={companySettings?.logo}
+            alt="Logo"
+            className="h-36 w-36 object-contain" // ⬅ 3x bigger logo
+          />
+        ) : (
+          <i className="ri-file-shield-line text-gray-700 text-[200px]"></i> // bigger fallback icon
+        )}
+        {companySettings?.name && <h1 className="text-xl font-bold">{companySettings?.name}</h1>}
         <p className="text-sm text-gray-400 capitalize">{user?.role} Panel</p>
       </div>
 

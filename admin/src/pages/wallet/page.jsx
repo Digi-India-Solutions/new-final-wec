@@ -201,13 +201,13 @@ export default function WalletPage() {
         createdBy: user?.name || 'System',
         createdByEmail: { name: user?.name, email: user?.email, createdBy: user?.role },
         createdDate: new Date().toISOString(),
-        balanceAfter: selectedUser.walletBalance + transactionAmount
+        balanceAfter: selectedUser?.walletBalance + transactionAmount
       };
       const response = await postData(`api/transaction/create-transaction-by-admin`, newTransaction);
       console.log("newTransactionnewTransaction:==>", response);
       if (response?.status === true) {
         setTransactions(prev => [newTransaction, ...prev]);
-        showToast(`₹${finalAmount.toLocaleString()} ${transactionType === 'credit' ? 'credited to' : 'debited from'} ${selectedUser.name}`, 'success');
+        showToast(`₹${finalAmount.toLocaleString()} ${transactionType === 'credit' ? 'credited to' : 'debited from'} ${selectedUser?.name}`, 'success');
         setIsCreditModalOpen(false);
         setSelectedUser(null);
       } else {
@@ -237,7 +237,7 @@ export default function WalletPage() {
         size="sm"
         variant="secondary"
         onClick={() => handleDebit(record)}
-        disabled={record.status !== 'active' || record.walletBalance <= 0}
+        disabled={record?.status !== 'active' || record?.walletBalance <= 0}
       >
         <i className="ri-subtract-line mr-1 w-4 h-4 flex items-center justify-center"></i>
         Remove

@@ -17,9 +17,6 @@ import html2pdf from "html2pdf.js";
 
 export default function AMCsPage() {
   // const { user } = useAuthStore();
-  const [isAuthenticated, setIsAuthenticated] = useState(
-    sessionStorage.getItem('isAuthenticated') === 'true'
-  );
 
   const [user, setUser] = useState(() => {
     const storedUser = sessionStorage.getItem('user');
@@ -496,6 +493,7 @@ export default function AMCsPage() {
       console.log(error)
     }
   }
+
   const fetchAllTypesByBrand = async () => {
     try {
       const response = await getData(`api/type/get-type-by-brand/${selectedCategory}`);
@@ -654,15 +652,15 @@ export default function AMCsPage() {
                 <div className="space-y-3">
                   <div>
                     <label className="text-sm font-medium text-gray-600">Name</label>
-                    <p className="text-gray-900">{editingAMC.customerName}</p>
+                    <p className="text-gray-900">{editingAMC?.customerName}</p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-600">Email</label>
-                    <p className="text-gray-900">{editingAMC.customerEmail}</p>
+                    <p className="text-gray-900">{editingAMC?.customerEmail}</p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-600">Mobile</label>
-                    <p className="text-gray-900">{editingAMC.customerMobile}</p>
+                    <p className="text-gray-900">{editingAMC?.customerMobile}</p>
                   </div>
                   {editingAMC?.productPicture && (
                     <div>
@@ -676,8 +674,8 @@ export default function AMCsPage() {
                           variant="ghost"
                           onClick={() => {
                             try {
-                              // 🧠 Force Cloudinary to download by adding `fl_attachment` to the URL
-                              let downloadUrl = editingAMC.productPicture;
+                              
+                              let downloadUrl = editingAMC?.productPicture;
 
                               if (downloadUrl.includes("/upload/")) {
                                 downloadUrl = downloadUrl.replace("/upload/", "/upload/fl_attachment/");

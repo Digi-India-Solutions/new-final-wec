@@ -6,7 +6,8 @@ const {
     getCustomerByAdminWithPagination,
     updateCustomerByAdmin,
     deleteCustomerByAdmin,
-    exportCustomersByAdmin
+    exportCustomersByAdmin,
+    sendEmail
 } = require("./customer-controller");
 
 router.post("/create-customer-by-admin", createCustomerByAdmin);
@@ -18,5 +19,7 @@ router.post("/update-customer-by-admin/:id", updateCustomerByAdmin);
 router.get("/delete-customer-by-admin/:id", deleteCustomerByAdmin);
 
 router.get("/export-customers", exportCustomersByAdmin);
+
+router.post("/send-email", sendEmail);
 
 module.exports = router;

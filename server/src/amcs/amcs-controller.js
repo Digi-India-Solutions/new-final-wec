@@ -117,19 +117,24 @@ exports.createAmcByAdmin = catchAsyncErrors(async (req, res, next) => {
         req.body.amcAmount = Number(amcAmount) || 0;
         req.body.renewalCount = Number(req.body.renewalCount) || 0;
 
-        // ✅ Create AMC record
+        const lastAMC = await AMC.findOne().sort({ _id: -1 });
+        let nextNumber = 1;
+        if (lastAMC?.id) {
+            // Extract numeric part from "WEC-10"
+            const lastNum = parseInt(lastAMC.id.replace("WEC-0", ""), 10);
+            nextNumber = lastNum + 1;
+        }
+        const nextId = `WEC-0${nextNumber}`;
+
         const amc = await AMC.create({
             ...req.body,
+            id: nextId,
             purchaseProof: imageUrl,
             productPicture: imageUrl2,
             createdAt: new Date(),
         });
 
-        // // ✅ Update user’s wallet balance
-        // user.walletBalance = (user.walletBalance || 0) - Number(amcAmount);
-        // await user.save();
-
-        // ✅ Respond success
+      
 
         ///////////////////////////CUSTOMER UPDATE and CREATE///////////////////////////
         const ByEmail =

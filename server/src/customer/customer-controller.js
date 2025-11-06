@@ -1,8 +1,10 @@
 const catchAsyncErrors = require("../../middleware/catchAsyncErrors");
 const sendResponse = require("../../middleware/response");
 const ErrorHandler = require("../../utils/ErrorHandler");
+const { sendOrderNotification } = require("../../utils/mail");
 const Customers = require("./customer-model");
 const ExcelJS = require("exceljs");
+const { CompanySettings, AMCSettings } = require("../companyDetails/companyDetails-model");
 
 // ✅ Create Customer
 exports.createCustomerByAdmin = catchAsyncErrors(async (req, res, next) => {
@@ -187,61 +189,82 @@ exports.deleteCustomerByAdmin = catchAsyncErrors(async (req, res, next) => {
 // });
 
 exports.exportCustomersByAdmin = catchAsyncErrors(async (req, res, next) => {
-  try {
-    // 1. Fetch all customers
-    const customers = await Customers.find().lean();
+    try {
+        // 1. Fetch all customers
+        const customers = await Customers.find().lean();
 
-    // 2. Create workbook + worksheet
-    const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet("Customers");
+        // 2. Create workbook + worksheet
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet("Customers");
 
-    // 3. Define columns
-    worksheet.columns = [
-      { header: "Customer ID", key: "customerId", width: 20 },
-      { header: "Name", key: "name", width: 25 },
-      { header: "Email", key: "email", width: 30 },
-      { header: "Mobile", key: "mobile", width: 15 },
-      { header: "Address", key: "address", width: 30 },
-      { header: "Total AMCs", key: "totalAMCs", width: 15 },
-      { header: "Active AMCs", key: "activeAMCs", width: 15 },
-      { header: "Total Spent", key: "totalSpent", width: 15 },
-      { header: "Created By", key: "createdBy", width: 25 },
-      { header: "Created At", key: "createdAt", width: 20 },
-    ];
+        // 3. Define columns
+        worksheet.columns = [
+            { header: "Customer ID", key: "customerId", width: 20 },
+            { header: "Name", key: "name", width: 25 },
+            { header: "Email", key: "email", width: 30 },
+            { header: "Mobile", key: "mobile", width: 15 },
+            { header: "Address", key: "address", width: 30 },
+            { header: "Total AMCs", key: "totalAMCs", width: 15 },
+            { header: "Active AMCs", key: "activeAMCs", width: 15 },
+            { header: "Total Spent", key: "totalSpent", width: 15 },
+            { header: "Created By", key: "createdBy", width: 25 },
+            { header: "Created At", key: "createdAt", width: 20 },
+        ];
 
-    // 4. Add rows
-    customers.forEach((c) => {
-      worksheet.addRow({
-        customerId: c.customerId || "",
-        name: c.name || "",
-        email: c.email || "",
-        mobile: c.mobile || "",
-        address: c.address || "",
-        totalAMCs: c.totalAMCs ?? 0,
-        activeAMCs: c.activeAMCs ?? 0,
-        totalSpent: c.totalSpent ?? 0,
-        createdBy: c.createdByEmail?.email || c.createdByEmail?.name || "",
-        createdAt: c.createdAt ? new Date(c.createdAt).toLocaleString() : "",
-      });
-    });
+        // 4. Add rows
+        customers.forEach((c) => {
+            worksheet.addRow({
+                customerId: c.customerId || "",
+                name: c.name || "",
+                email: c.email || "",
+                mobile: c.mobile || "",
+                address: c.address || "",
+                totalAMCs: c.totalAMCs ?? 0,
+                activeAMCs: c.activeAMCs ?? 0,
+                totalSpent: c.totalSpent ?? 0,
+                createdBy: c.createdByEmail?.email || c.createdByEmail?.name || "",
+                createdAt: c.createdAt ? new Date(c.createdAt).toLocaleString() : "",
+            });
+        });
 
-    // Optional: format header row
-    worksheet.getRow(1).font = { bold: true };
+        // Optional: format header row
+        worksheet.getRow(1).font = { bold: true };
 
-    // 5. Generate buffer (safer and easier to send)
-    const buffer = await workbook.xlsx.writeBuffer();
+        // 5. Generate buffer (safer and easier to send)
+        const buffer = await workbook.xlsx.writeBuffer();
 
-    // 6. Set headers and send file
-    const filename = `customers-${Date.now()}.xlsx`;
-    res.setHeader(
-      "Content-Type",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    );
-    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
-    res.setHeader("Content-Length", buffer.length);
+        // 6. Set headers and send file
+        const filename = `customers-${Date.now()}.xlsx`;
+        res.setHeader(
+            "Content-Type",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        );
+        res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+        res.setHeader("Content-Length", buffer.length);
 
-    return res.status(200).send(Buffer.from(buffer));
-  } catch (error) {
-    return next(new ErrorHandler(error.message, 500));
-  }
+        return res.status(200).send(Buffer.from(buffer));
+    } catch (error) {
+        return next(new ErrorHandler(error.message, 500));
+    }
 });
+
+exports.sendEmail = catchAsyncErrors(async (req, res, next) => {
+    try {
+        // console.log("BODY:==>", req.body);
+        // console.log("DATA:==>", req.body.data);
+        // console.log("AMC:==>", req?.body?.data?.amc);
+        const companySettings = await CompanySettings.findOne().lean();
+        const termsAndConditions = await AMCSettings.findOne().lean();
+        await sendOrderNotification({
+            email: req?.body?.data?.email,
+            name: req?.body?.data?.name,
+            customer: req?.body?.data,
+            companySettings,
+            record: req?.body?.data?.amc,
+            termsAndConditions: termsAndConditions.termsAndConditions
+        })
+        return res.status(200).json({ status: true, message: "Email sent successfully" });
+    } catch (error) {
+        return next(new ErrorHandler(error.message, 500));
+    }
+})
