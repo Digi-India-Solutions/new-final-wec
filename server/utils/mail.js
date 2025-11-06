@@ -119,7 +119,7 @@ exports.sendResetPasswordSuperAdmin = async (data) => {
   <body>
       <div class="container">
           <div class="logo">
-              <img src="https://api.amcmanagement.in/images/logo.png" alt="WEC Management Logo" style="width: 140px;" />
+              <img src="${process.env.BASE_URL}/image/logo.png" alt="WEC Management Logo" style="width: 140px;" />
           </div>
 
           <div class="title">Reset Your Password</div>
@@ -259,7 +259,7 @@ exports.sendResetPassword = async (data) => {
     // ADMIN_BASE_URL
     console.log("token_data:==", email, token);
     const baseUrl = user === "admin" ? process.env.ADMIN_BASE_URL : process.env.BASE_URL;
-    const resetLink = `https://app.anibhavi.creation/pages/reset-password/${token}`;
+    const resetLink = `${baseUrl}/pages/reset-password/${token}`;
 
     const body = `
     <!DOCTYPE html>
@@ -339,7 +339,7 @@ exports.sendResetPassword = async (data) => {
       <div style="margin: 0 auto">
           <div class="container">
               <div class="logo">
-                  <img src="http://localhost:8000/uploads/logos/logo.png" style="width: 180px;">
+                  <img src="${prosess.env.BASE_URL}/image/logo.png" style="width: 180px;">
               </div>
               <div class="title">Reset Password</div>
               <hr style="opacity: 30%; margin-top: 3%; margin-bottom: 3%;" />
@@ -857,17 +857,16 @@ exports.sendOrderNotification = async ({ email, name, customer, companySettings,
         </tbody>
     </table>
 
-    <div style="margin-top:820px; ">
-        <strong>Terms & Conditions:</strong>
+     <div class="signature">
+        <div>Note:- Under the extended warranty, claims shall be limited to a maximum of 80% of the product’s value, excluding GST.</div>
+    </div>
+
+    <div style="margin-top:820px;">
         <div style="border:1px solid #ccc;padding:10px;border-radius:4px;">
             ${termsAndConditions || "No terms available."}
         </div>
     </div>
 
-    <div class="signature">
-        <div>Note:- Under the extended warranty, claims shall be limited to a maximum of 80% of the product’s value, excluding GST.</div>
-       
-    </div>
 </div>
 
 </body>
@@ -875,16 +874,21 @@ exports.sendOrderNotification = async ({ email, name, customer, companySettings,
 `;
 
 
-    // ✅ Convert HTML to PDF using Puppeteer
-    const browser = await puppeteer.launch({ headless: "new" });
+    const browser = await puppeteer.launch({
+        headless: "new",
+        args: ["--no-sandbox", "--disable-setuid-sandbox"]
+    });
+
     const page = await browser.newPage();
+    page.setDefaultNavigationTimeout(0);
+
     await page.setContent(html, { waitUntil: "networkidle0" });
 
-    const pdfPath = path.join(__dirname, "../uploads", `WEC_${record?.id || uuidv4()}.pdf`);
+    const pdfPath = path.join(__dirname, "../uploads", `WEC_${record?.amcs[0]?.id || uuidv4()}.pdf`);
     await page.pdf({ path: pdfPath, format: "A4", printBackground: true });
     await browser.close();
 
-    const downloadLink = `http://localhost:8000/uploads/${path.basename(pdfPath)}`;
+    const downloadLink = `${process.env.serverURL}/uploads/${path.basename(pdfPath)}`;
 
     // ✅ Send Email
     await sendMail({

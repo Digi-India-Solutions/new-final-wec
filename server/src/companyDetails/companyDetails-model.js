@@ -26,7 +26,6 @@ const amcSettingsSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
 // ✅ Define both models
 const CompanySettings = mongoose.model("CompanySettings", companySettingsSchema);
 const AMCSettings = mongoose.model("amcSettings", amcSettingsSchema);
