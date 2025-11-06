@@ -9,6 +9,8 @@ const SuperAdmin = require("../super-admin/super-admin-model");
 const { createTransactionByAdmin } = require("../transaction/transaction-controller");
 const transactionModel = require("../transaction/transaction-model");
 const Customers = require("../customer/customer-model");
+const { CompanySettings, AMCSettings } = require("../companyDetails/companyDetails-model");
+const { sendOrderNotification } = require("../../utils/mail");
 
 exports.createAmcByAdmin = catchAsyncErrors(async (req, res, next) => {
     try {
@@ -20,7 +22,7 @@ exports.createAmcByAdmin = catchAsyncErrors(async (req, res, next) => {
         if (!userId || !purchaseValue || !amcPercentage || !amcAmount) {
             return next(new ErrorHandler("Missing required fields", 400));
         }
-
+        
         // ✅ Fetch user (distributor/retailer)
         const user = await SuperAdmin.findById(userId);
         if (!user) {
@@ -134,7 +136,7 @@ exports.createAmcByAdmin = catchAsyncErrors(async (req, res, next) => {
             createdAt: new Date(),
         });
 
-      
+
 
         ///////////////////////////CUSTOMER UPDATE and CREATE///////////////////////////
         const ByEmail =
@@ -176,6 +178,35 @@ exports.createAmcByAdmin = catchAsyncErrors(async (req, res, next) => {
                 createdByEmail: ByEmail || null,
             });
         }
+
+        const companySettings = await CompanySettings.findOne().lean();
+        const termsAndConditions = await AMCSettings.findOne().lean();
+        await sendOrderNotification({
+            email: req.body.customerEmail,
+            name: req.body.customerName,
+            customer: customer || {
+                email: req.body.customerEmail,
+                name: req.body.customerName,
+                mobile: req.body.customerMobile,
+                address: req.body.customerAddress,
+                totalAMCs: 1,
+                totalSpent: amcAmount,
+                activeAMCs: req.body.status === "active" ? 1 : 0,
+                createdByEmail: ByEmail || null
+            },
+            companySettings,
+            record: {
+                amcs: [{
+                    ...req.body,
+                    id: nextId,
+                    purchaseProof: imageUrl,
+                    productPicture: imageUrl2,
+                    createdAt: new Date(),
+                }]
+            },
+            termsAndConditions: termsAndConditions.termsAndConditions
+        })
+
         /////////////////////////////////////////////////////////////////////////////////////////
         res.status(200).json({ status: true, message: "AMC created successfully", data: amc, walletBalanceAfter: user.walletBalance, });
 

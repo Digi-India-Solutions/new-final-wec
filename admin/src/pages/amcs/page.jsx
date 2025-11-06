@@ -134,7 +134,7 @@ export default function AMCsPage() {
     setSelectedBrand('');
     setSelectedType('');
     setPurchaseValue('');
-    setAmcPercentage('0');
+    // setAmcPercentage('');
     setIsModalOpen(true);
   };
 
@@ -465,7 +465,7 @@ export default function AMCsPage() {
       console.log("response==>get-team-and-conditions=>", response)
       if (response?.status === true) {
         setSetTeamAndConditions(response?.data);
-        setAmcPercentage(response?.data?.defaultPercentage);
+        setAmcPercentage(response?.data?.defaultPercentage || 8);
       }
       if (response2?.status === true) {
         setCompanySettings(response2?.data);

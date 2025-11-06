@@ -19,9 +19,9 @@ const companySettingsSchema = new Schema(
 const amcSettingsSchema = new mongoose.Schema(
   {
     defaultPercentage: { type: Number, required: true },
-    minPercentage: { type: Number, required: true },
-    maxPercentage: { type: Number, required: true },
-    defaultDuration: { type: Number, required: true },
+    minPercentage: { type: Number, required: false },
+    maxPercentage: { type: Number, required: false },
+    defaultDuration: { type: Number, required: false },
     termsAndConditions: { type: String, required: true },
   },
   { timestamps: true }

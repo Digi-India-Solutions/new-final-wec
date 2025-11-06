@@ -833,7 +833,7 @@ exports.sendOrderNotification = async ({ email, name, customer, companySettings,
         </div>
         <div>
             <table>
-                <tr><td><strong>WEC No:</strong></td><td>${record?.id}</td></tr>
+                <tr><td><strong>WEC No:</strong></td><td>${record?.amcs[0]?.id}</td></tr>
                 <tr><td><strong>Date:</strong></td><td>${new Date().toLocaleDateString('en-IN')}</td></tr>
             </table>
         </div>
@@ -857,7 +857,7 @@ exports.sendOrderNotification = async ({ email, name, customer, companySettings,
         </tbody>
     </table>
 
-    <div style="margin-top:20px;">
+    <div style="margin-top:820px; ">
         <strong>Terms & Conditions:</strong>
         <div style="border:1px solid #ccc;padding:10px;border-radius:4px;">
             ${termsAndConditions || "No terms available."}
@@ -884,7 +884,7 @@ exports.sendOrderNotification = async ({ email, name, customer, companySettings,
     await page.pdf({ path: pdfPath, format: "A4", printBackground: true });
     await browser.close();
 
-    const downloadLink = `https://api.emipluscare.in/uploads/${path.basename(pdfPath)}`;
+    const downloadLink = `http://localhost:8000/uploads/${path.basename(pdfPath)}`;
 
     // ✅ Send Email
     await sendMail({
