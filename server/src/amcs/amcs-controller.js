@@ -22,7 +22,16 @@ exports.createAmcByAdmin = catchAsyncErrors(async (req, res, next) => {
         if (!userId || !purchaseValue || !amcPercentage || !amcAmount) {
             return next(new ErrorHandler("Missing required fields", 400));
         }
-        
+
+        const lastAMC = await AMC.findOne().sort({ _id: -1 });
+        let nextNumber = 1;
+        if (lastAMC?.id) {
+            // Extract numeric part from "WEC-10"
+            const lastNum = parseInt(lastAMC.id.replace("WEC-0", ""), 10);
+            nextNumber = lastNum + 1;
+        }
+        const nextId = `WEC-0${nextNumber}`;
+
         // ✅ Fetch user (distributor/retailer)
         const user = await SuperAdmin.findById(userId);
         if (!user) {
@@ -41,7 +50,7 @@ exports.createAmcByAdmin = catchAsyncErrors(async (req, res, next) => {
             userEmail: user.email,
             type: "debit",
             amount: Number(amcAmount),
-            description: `Wallet Debit - ₹${Number(amcAmount).toLocaleString()} / (WEC Created (ID:-${req?.body?.id || ""}))`,
+            description: `Wallet Debit - ₹${Number(amcAmount).toLocaleString()} / (WEC Created (ID:-${nextId || ""}))`,
             clientAmount: Number(purchaseValue),
             percentage: Number(amcPercentage),
             createdBy: `${user?.name || "System"}`,
@@ -119,14 +128,7 @@ exports.createAmcByAdmin = catchAsyncErrors(async (req, res, next) => {
         req.body.amcAmount = Number(amcAmount) || 0;
         req.body.renewalCount = Number(req.body.renewalCount) || 0;
 
-        const lastAMC = await AMC.findOne().sort({ _id: -1 });
-        let nextNumber = 1;
-        if (lastAMC?.id) {
-            // Extract numeric part from "WEC-10"
-            const lastNum = parseInt(lastAMC.id.replace("WEC-0", ""), 10);
-            nextNumber = lastNum + 1;
-        }
-        const nextId = `WEC-0${nextNumber}`;
+
 
         const amc = await AMC.create({
             ...req.body,
