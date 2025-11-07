@@ -198,15 +198,17 @@ export default function StaffPage() {
           createdByEmail: { email: user?.email, name: user?.name },
         };
         console.log("newStaff==>", newStaff)
-        
+
         const q = 'api/admin/create-admin-by-admin'
         const respons = await postData(q, newStaff);
-        console.log('PPPPPP:==>',respons)
+        console.log('PPPPPP:==>', respons)
         if (respons.status === true) {
           fetchAllStaff()
           fetchRoles()
           setStaff(prev => [...prev, newStaff]);
           showToast('Staff member added successfully', 'success');
+        } else {
+          showToast(respons?.message, 'Staff member added successfully', 'error');
         }
       }
 
@@ -273,7 +275,7 @@ export default function StaffPage() {
   const fetchRoles = async () => {
     try {
       const response = await getData('api/role/get-all-roles');
-      
+
       if (response?.status === true) {
         setAllRoles(response?.data);
       }
@@ -292,7 +294,7 @@ export default function StaffPage() {
 
       // Fetch data
       const response = await getData(`api/admin/get-all-staff-by-admin?${query}`);
-      console.log("DDDDDDDDDD:=>", response ,allRoles)
+      console.log("DDDDDDDDDD:=>", response, allRoles)
       if (response?.status === true) {
         setStaff(response?.data);
       }

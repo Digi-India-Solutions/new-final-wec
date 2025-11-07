@@ -858,8 +858,10 @@ exports.sendOrderNotification = async ({ email, name, customer, companySettings,
     </table>
 
      <div class="signature">
-        <div>Note:- Under the extended warranty, claims shall be limited to a maximum of 80% of the product’s value, excluding GST.</div>
-    </div>
+        <div>Note:- Under the extended warranty, claims are limited to a maximum of 80% of the product's value (excluding GST).Also please check the attachment what will cover under our Terms & Conditions.</div>
+        <div >Thank you for choosing EMI PLUS CARE. For support, call us at ‪+91 8929391113‬ or email us at support@emipluscare.in </div>
+     </div>
+    
 
     <div style="margin-top:820px;">
         <div style="border:1px solid #ccc;padding:10px;border-radius:4px;">
@@ -893,10 +895,9 @@ exports.sendOrderNotification = async ({ email, name, customer, companySettings,
     // ✅ Send Email
     await sendMail({
         to: email,
-        subject: "📄 Your WEC Contract PDF",
-      
+        subject: "Warranty Extension Contract – Confirmation & Welcome",
+
         html: `
-<p>Subject: <strong>Warranty Extension Contract – Confirmation & Welcome</strong></p>
 
 <p>Dear <strong>${name}</strong>,</p>
 

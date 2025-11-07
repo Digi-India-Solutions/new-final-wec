@@ -92,7 +92,7 @@ const Transaction = require("./transaction-model");
 exports.createTransactionByAdmin = catchAsyncErrors(async (req, res, next) => {
     try {
         const { userId, amount, type, createdByEmail, role } = req.body;
-
+        console.log("DD::=>", req.body)
         if (!userId || !type || !amount) {
             return res.status(400).json({ status: false, message: "Required fields missing" });
         }
@@ -146,37 +146,38 @@ exports.createTransactionByAdmin = catchAsyncErrors(async (req, res, next) => {
         user.walletBalance = targetNewBalance;
         creator.walletBalance = creatorNewBalance;
         await user.save();
-        await creator.save();
+        // await creator.save();
 
         // ✅ Create Transaction for Retailer/User
         const userTransaction = await Transaction.create({
             ...req.body,
+            userType: role,
             amount: amt,
             balanceAfter: targetNewBalance,
             createdByEmail,
         });
 
         // ✅ Create Reverse Transaction for Creator (Mirror Entry)
-        const creatorTransaction = await Transaction.create({
-            id: Date.now().toString(),
-            createdBy: creator.name,
-            userId: creator?._id,
-            userName: creator.name,
-            userEmail: creator.email,
-            userType: creator.role,
-            type: type === "credit" ? "debit" : "credit", // Mirrored
-            amount: amt,
-            description: `${type === "credit" ? "Sent to" : "Received from"} ${user.name}`,
-            balanceAfter: creatorNewBalance,
-            createdByEmail,
-        });
+        // const creatorTransaction = await Transaction.create({
+        //     id: Date.now().toString(),
+        //     createdBy: creator.name,
+        //     userId: creator?._id,
+        //     userName: creator.name,
+        //     userEmail: creator.email,
+        //     userType: creator.role,
+        //     type: type === "credit" ? "debit" : "credit", // Mirrored
+        //     amount: amt,
+        //     description: `${type === "credit" ? "Sent to" : "Received from"} ${user.name}`,
+        //     balanceAfter: creatorNewBalance,
+        //     createdByEmail,
+        // });
 
         return res.status(200).json({
             status: true,
             message: "Transaction completed for both parties",
             data: {
                 userTransaction,
-                creatorTransaction,
+                // creatorTransaction,
                 userWallet: targetNewBalance,
                 creatorWallet: creatorNewBalance,
             },
@@ -195,7 +196,7 @@ exports.getTransactionByAdminWithPagination = catchAsyncErrors(async (req, res, 
         let { page = 1, limit = 10, search = "", role = "", status = "", userType = "", userId = [], createdByEmail = "" } = req.query;
         page = Math.max(1, parseInt(page, 10));
         limit = Math.max(1, parseInt(limit, 10));
-        console.log('req.query::===>>', userId ,role)
+        console.log('req.query::===>>', userId, role)
 
         if (typeof userId === "string") {
             try {
