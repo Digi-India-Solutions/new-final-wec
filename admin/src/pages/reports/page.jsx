@@ -159,7 +159,7 @@ export default function ReportsPage() {
               </div>
             </div>
           </div>
-          <div>
+          {/* <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Product Category</label>
             <div className="relative">
               <select
@@ -179,7 +179,7 @@ export default function ReportsPage() {
                 <i className="ri-arrow-down-s-line text-gray-400 w-4 h-4 flex items-center justify-center"></i>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
 
