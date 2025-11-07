@@ -183,6 +183,7 @@ exports.createAmcByAdmin = catchAsyncErrors(async (req, res, next) => {
 
         const companySettings = await CompanySettings.findOne().lean();
         const termsAndConditions = await AMCSettings.findOne().lean();
+        
         await sendOrderNotification({
             email: req.body.customerEmail,
             name: req.body.customerName,

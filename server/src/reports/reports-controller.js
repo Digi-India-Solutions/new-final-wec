@@ -60,7 +60,7 @@ exports.getAllReportsTotal = catchAsyncErrors(async (req, res, next) => {
         }
 
         if (createdBy?.email && role === "distributor" || role === "retailer") {
-            filter["createdByEmail.email"] = createdBy.email;
+            filter.createdByEmail = createdBy;
         }
 
         console.log("XXXXXXXXXXX::=>", filter);
@@ -180,7 +180,7 @@ exports.getAllReportsTotal = catchAsyncErrors(async (req, res, next) => {
         const totalRetailers = role === "distributor" ? await SuperAdmin.countDocuments({ 'createdByEmail.email': createdBy?.email, role: "retailer" }) :
             await SuperAdmin.countDocuments({ ...filter, role: "retailer" });
 
-        const usersTransactions = await Transactions.find({ "createdByEmail.email": createdBy?.email, type: 'debit' })
+        const usersTransactions = await Transactions.find({ ...filter, "createdByEmail.email": createdBy?.email, type: 'debit' })
 
         const totalRevenue = usersTransactions.reduce((sum, transaction) => sum + transaction.amount, 0);
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

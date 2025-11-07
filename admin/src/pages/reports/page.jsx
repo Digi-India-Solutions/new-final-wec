@@ -100,6 +100,8 @@ export default function ReportsPage() {
     if (amount >= 1000) return `${(amount / 1000).toFixed(2)}k`;
     return amount.toString();
   };
+
+  console.log("monthlySalesDatas ===>", totalRevenue);
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   return (
     <div className="p-6 space-y-6">
@@ -191,21 +193,21 @@ export default function ReportsPage() {
           value={amcs?.toLocaleString()}
           icon="ri-file-shield-line"
           color="bg-blue-500"
-          change="+12% from last period"
+          // change="+12% from last period"
         />
         <StatCard
           title="Active WECs"
           value={totaleActiveAcount?.toLocaleString()}
           icon="ri-checkbox-circle-line"
           color="bg-green-500"
-          change="+8% from last period"
+          // change="+8% from last period"
         />
         <StatCard
           title="Total Revenue"
           value={formatAmount(totalRevenue)}
           icon="ri-money-dollar-circle-line"
           color="bg-purple-500"
-          change="+15% from last period"
+        // change="+15% from last period"
         />
 
       </div>

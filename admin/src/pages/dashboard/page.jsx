@@ -109,14 +109,14 @@ export default function Dashboard() {
           value={amcs.toLocaleString()}
           icon="ri-file-shield-line"
           color="bg-blue-500"
-          change="+12% from last month"
+          // change="+12% from last month"
         />
         <StatCard
           title="Active Contracts"
           value={totaleActiveAcount.toLocaleString()}
           icon="ri-checkbox-circle-line"
           color="bg-green-500"
-          change="+8% from last month"
+          // change="+8% from last month"
         />
         <StatCard
           title="Expiring This Month"
@@ -129,7 +129,7 @@ export default function Dashboard() {
           value={`₹${formatAmount(totalRevenue)}`}
           icon="ri-money-dollar-circle-line"
           color="bg-purple-500"
-          change="+15% from last month"
+          // change="+15% from last month"
         />
       </div>
 
