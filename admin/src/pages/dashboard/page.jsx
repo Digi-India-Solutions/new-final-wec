@@ -3,31 +3,6 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { getData } from '../../services/FetchNodeServices';
 import { useState } from 'react';
 
-const mockStats = {
-  admin: {
-    totalAMCs: 1247,
-    activeContracts: 1089,
-    expiringThisMonth: 45,
-    totalRevenue: 2847500,
-    totalDistributors: 25,
-    totalRetailers: 156
-  },
-  distributor: {
-    totalAMCs: 89,
-    activeContracts: 76,
-    expiringThisMonth: 8,
-    totalRevenue: 234500,
-    totalRetailers: 12
-  },
-  retailer: {
-    totalAMCs: 23,
-    activeContracts: 19,
-    expiringThisMonth: 2,
-    totalRevenue: 45600
-  }
-};
-
-
 export default function Dashboard() {
   // const { user } = useAuthStore();
   const [isAuthenticated, setIsAuthenticated] = useState(
@@ -50,8 +25,7 @@ export default function Dashboard() {
   const [totalDistributorWalletAmount, setTotalDistributorWalletAmount] = useState(0);
   const [totalRetailerWalletAmount, setTotalRetailerWalletAmount] = useState(0);
 
-  const stats = mockStats[user?.role || 'admin'];
-
+  
   const StatCard = ({ title, value, icon, color, change }) => (
     <div className="bg-white rounded-lg shadow p-6">
       <div className="flex items-center justify-between">

@@ -8,15 +8,11 @@ import SchemaForm from './ClaimsSchemaForm';
 import ConfirmDialog from '../../components/base/ConfirmDialog';
 import Input from '../../components/base/Input';
 import { useToast } from '../../components/base/Toast';
-import { mockClaims } from '../../mocks/claims';
 import { getData, postData } from '../../services/FetchNodeServices';
 
 
 
 export default function ClaimsPage() {
-  const [isAuthenticated, setIsAuthenticated] = useState(
-    sessionStorage.getItem('isAuthenticated') === 'true'
-  );
 
   const [user, setUser] = useState(() => {
     const storedUser = sessionStorage.getItem('user');
@@ -30,7 +26,7 @@ export default function ClaimsPage() {
   const [editingClaim, setEditingClaim] = useState(null);
   const [deletingClaim, setDeletingClaim] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [claims, setClaims] = useState(mockClaims);
+  const [claims, setClaims] = useState([]);
   const [filter, setFilter] = useState({});
   const [rolePermissions, setRolePermissions] = useState([]);
 

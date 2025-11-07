@@ -585,8 +585,7 @@ exports.deleteAdminUserByAdmin = catchAsyncErrors(async (req, res, next) => {
 exports.getAllStaffByAdmin = catchAsyncErrors(async (req, res, next) => {
     try {
         let { staffRole } = req.query;
-
-        // Parse JSON if needed
+      
         if (typeof staffRole === 'string') {
             try {
                 staffRole = JSON.parse(staffRole);
@@ -600,10 +599,10 @@ exports.getAllStaffByAdmin = catchAsyncErrors(async (req, res, next) => {
             staffRole = [];
         }
 
-        console.log("Parsed staffRole:", staffRole);
+        console.log("Parsed staffRole:=", staffRole);
 
         const users = await SuperAdmin.find({ role: { $in: staffRole } }).populate('staffRole');
-
+// console.log("Parsed staffRole:=", users);
         return res.status(200).json({
             status: true,
             message: 'Staff fetched successfully',

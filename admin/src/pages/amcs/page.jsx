@@ -7,8 +7,6 @@ import Modal from '../../components/base/Modal';
 import SchemaForm from './AmcsForm';
 import Input from '../../components/base/Input';
 import { useToast } from '../../components/base/Toast';
-import { mockAMCs } from '../../mocks/amcs';
-import { mockCategories, mockBrands, mockTypes, mockModels } from '../../mocks/products';
 import { getData, postData } from '../../services/FetchNodeServices';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';

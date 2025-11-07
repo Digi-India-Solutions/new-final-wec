@@ -1,6 +1,5 @@
 
 import { use, useEffect, useState } from 'react';
-import { useAuthStore } from '../../store/authStore';
 import DataTable from '../../components/base/DataTable';
 import Button from '../../components/base/Button';
 import Modal from '../../components/base/Modal';
@@ -8,15 +7,10 @@ import SchemaForm from './UserSchemaForm';
 import ConfirmDialog from '../../components/base/ConfirmDialog';
 import Input from '../../components/base/Input';
 import { useToast } from '../../components/base/Toast';
-import { mockDistributors, mockRetailers } from '../../mocks/users';
 import { getData } from '../../services/FetchNodeServices';
 
 
 export default function UsersPage() {
-  // const { user } = useAuthStore();
-  const [isAuthenticated, setIsAuthenticated] = useState(
-    sessionStorage.getItem('isAuthenticated') === 'true'
-  );
 
   const [user, setUser] = useState(() => {
     const storedUser = sessionStorage.getItem('user');

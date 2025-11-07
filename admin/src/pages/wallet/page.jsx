@@ -6,14 +6,11 @@ import Modal from '../../components/base/Modal';
 import Input from '../../components/base/Input';
 import WalletCalculator from './WalletCalculator';
 import { useToast } from '../../components/base/Toast';
-import { mockDistributors, mockRetailers } from '../../mocks/users';
-import { mockWalletTransactions } from '../../mocks/wallet';
 import { getData, postData } from '../../services/FetchNodeServices';
 import Button from '../../components/base/Button';
 
 
 export default function WalletPage() {
-  // const { user } = useAuthStore();
 
   const [user, setUser] = useState(() => {
     const storedUser = sessionStorage.getItem('user');
@@ -38,8 +35,8 @@ export default function WalletPage() {
   const [transactionTotalData, setTransactionTotalData] = useState(1);
 
   // Mock data
-  const [distributors, setDistributors] = useState(mockDistributors);
-  const [retailers, setRetailers] = useState(mockRetailers);
+  const [distributors, setDistributors] = useState([]);
+  const [retailers, setRetailers] = useState([]);
   const [transactions, setTransactions] = useState([]);
 
   const [totalBalance, setTotalBalance] = useState(0);

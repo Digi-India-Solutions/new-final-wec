@@ -8,15 +8,10 @@ import SchemaForm from './ProductSchemaForm';
 import ConfirmDialog from '../../components/base/ConfirmDialog';
 import Input from '../../components/base/Input';
 import { useToast } from '../../components/base/Toast';
-import { mockCategories, mockBrands, mockTypes, mockModels } from '../../mocks/products';
 import { getData } from '../../services/FetchNodeServices';
 
 
-
 export default function ProductsPage() {
-  const [isAuthenticated, setIsAuthenticated] = useState(
-    sessionStorage.getItem('isAuthenticated') === 'true'
-  );
 
   const [user, setUser] = useState(() => {
     const storedUser = sessionStorage.getItem('user');
@@ -39,12 +34,12 @@ export default function ProductsPage() {
   const [totalData, setTotalData] = useState({ categoryTotal: 0, brandTotal: 0, typeTotal: 0, modelTotal: 0 });
 
   // Mock data
-  const [categories, setCategories] = useState(mockCategories);
+  const [categories, setCategories] = useState([]);
   const [allCategories, setAllCategories] = useState([]);
   const [allCategoriesByBrand, setAllCategoriesByBrand] = useState([]);
-  const [brands, setBrands] = useState(mockBrands);
+  const [brands, setBrands] = useState([]);
   const [allBrands, setAllBrands] = useState([]);
-  const [types, setTypes] = useState(mockTypes);
+  const [types, setTypes] = useState([]);
   const [allTypes, setAllTypes] = useState([]);
   const [filter, setFilter] = useState({});
 
