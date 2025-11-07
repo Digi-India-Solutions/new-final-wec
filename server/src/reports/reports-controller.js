@@ -10,7 +10,7 @@ dayjs.extend(relativeTime);
 
 exports.getAllReportsTotal = catchAsyncErrors(async (req, res, next) => {
     try {
-        const { userId, role, createdByEmail } = req.query;
+        const { userId, role, createdByEmail, startDate, endDate, productCategory, period } = req.query;
         const today = new Date();
         const currentYear = today.getFullYear();
         const currentMonth = today.getMonth() + 1;
@@ -32,18 +32,37 @@ exports.getAllReportsTotal = catchAsyncErrors(async (req, res, next) => {
         // 🧩 Build filter
         const filter = {};
         if (userId && role === "distributor" || role === "retailer") {
-            console.log("userIda:===>", userId, "role:", role);
+            // console.log("userIda:===>", userId, "role:", role);
             if (role === "distributor") {
                 filter.distributorId = userId;
             } else if (role === "retailer") {
                 filter.retailerId = userId;
             }
         }
+        if (startDate && endDate) {
+            filter.createdAt = {
+                $gte: new Date(startDate),
+                $lte: new Date(new Date(endDate).setHours(23, 59, 59))
+            };
+        }
+
+        if (period) {
+            const now = new Date();
+            const dateRanges = {
+                'daily': new Date(now.setDate(now.getDate() - 1)),
+                'weekly': new Date(now.setDate(now.getDate() - 7)),
+                'monthly': new Date(now.setDate(now.getDate() - 30)),
+                'quarterly': new Date(now.setMonth(now.getMonth() - 3)),
+                'yearly': new Date(now.setFullYear(now.getFullYear() - 1))
+            };
+            if (dateRanges[period]) filter.createdAt = { $gte: dateRanges[period] };
+        }
 
         if (createdBy?.email && role === "distributor" || role === "retailer") {
             filter["createdByEmail.email"] = createdBy.email;
         }
 
+        console.log("XXXXXXXXXXX::=>", filter);
         // 📊 Total AMC count
         const amcCount = await amcsModel.countDocuments(filter);
 
@@ -61,7 +80,102 @@ exports.getAllReportsTotal = catchAsyncErrors(async (req, res, next) => {
             },
         });
 
-        const totalDistributors = await SuperAdmin.countDocuments({ ...filter, role: "distributor" });
+        const distributorPerformances = await amcsModel.aggregate([
+            {
+                $match: {
+                    ...filter,
+                    status: "active",
+                    distributorName: { $ne: null }   // ✅ ignore null
+                }
+            },
+            {
+                $group: {
+                    _id: "$distributorId",
+                    name: { $first: "$distributorName" },
+                    amcs: { $sum: 1 },
+                    revenue: { $sum: "$amcAmount" },
+                    retailers: { $addToSet: "$retailerName" }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    name: 1,
+                    amcs: 1,
+                    revenue: 1,
+                    retailers: {
+                        $size: {
+                            $filter: {
+                                input: "$retailers",
+                                as: "r",
+                                cond: { $ne: ["$$r", ""] }
+                            }
+                        }
+                    }
+                }
+            }
+        ]);
+
+        const retailerPerformances = await amcsModel.aggregate([
+            {
+                $match: {
+                    ...filter,
+                    status: "active",
+                    retailerName: { $ne: null }   // ✅ ignore null
+                }
+            },
+            {
+                $group: {
+                    _id: "$retailerId",
+                    name: { $first: "$retailerName" },
+                    amcs: { $sum: 1 },
+                    revenue: { $sum: "$amcAmount" },
+
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    name: 1,
+                    amcs: 1,
+                    revenue: 1,
+
+                }
+            }
+        ]);
+
+        const monthlySalesData = await amcsModel.aggregate([
+            {
+                $match: {
+                    ...filter,
+                    status: "active",
+                }
+            },
+            {
+                $group: {
+                    _id: {
+                        month: { $month: "$createdAt" },
+                        year: { $year: "$createdAt" }
+                    },
+                    count: { $sum: 1 },                 // Number of AMCs
+                    revenue: { $sum: "$amcAmount" }     // Total AMC Value
+                }
+            },
+            {
+                $sort: { "_id.year": 1, "_id.month": 1 }
+            }
+        ]);
+        console.log("totalAmcData==>formattedData", monthlySalesData);
+
+        const formattedData = monthlySalesData.map(item => ({
+            month: monthNames[item._id.month - 1],
+            sales: item.revenue,   // or item.revenue * any logic you want
+            revenue: item.revenue,
+            count: item.count
+        }));
+
+        // console.log("XXXXXXXXXXXretailerPerformances::=>", formattedData)
+
         const totalRetailers = role === "distributor" ? await SuperAdmin.countDocuments({ 'createdByEmail.email': createdBy?.email, role: "retailer" }) :
             await SuperAdmin.countDocuments({ ...filter, role: "retailer" });
 
@@ -113,7 +227,7 @@ exports.getAllReportsTotal = catchAsyncErrors(async (req, res, next) => {
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        console.log("totalAmcData==>", totalRetailers);
+        console.log("totalAmcData==>formattedData", formattedData);
 
         // ✅ Respond
         res.status(200).json({
@@ -123,12 +237,13 @@ exports.getAllReportsTotal = catchAsyncErrors(async (req, res, next) => {
                 totalAmc: amcCount,
                 totalActiveAccount: activeAccount,
                 totalExpiringThisMonth: expiringThisMonth,
-                totalDistributors,
-                totalRetailers,
+                distributorPerformances,
+                retailerPerformances,
                 totalRevenue,
                 amcSalesData: salesData,
                 amcProductData: productData,
-                amcRecentActivities: recentActivities
+                amcRecentActivities: recentActivities,
+                formattedData,
             },
             filterUsed: filter,
         });
