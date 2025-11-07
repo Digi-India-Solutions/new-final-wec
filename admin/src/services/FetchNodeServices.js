@@ -2,7 +2,6 @@ import axios from "axios";
 // const serverURL = "http://localhost:8000";
 const serverURL ="https://api.emipluscare.in";
 
-
 const postData = async (url, body) => {
   try {
     console.log(JSON.stringify(body));
@@ -13,7 +12,6 @@ const postData = async (url, body) => {
     return null;
   }
 };
-
 
 const getData = async (url) => {
   try {

@@ -195,7 +195,7 @@ exports.getTransactionByAdminWithPagination = catchAsyncErrors(async (req, res, 
         let { page = 1, limit = 10, search = "", role = "", status = "", userType = "", userId = [], createdByEmail = "" } = req.query;
         page = Math.max(1, parseInt(page, 10));
         limit = Math.max(1, parseInt(limit, 10));
-        console.log('req.query::===>>', userId)
+        console.log('req.query::===>>', userId ,role)
 
         if (typeof userId === "string") {
             try {

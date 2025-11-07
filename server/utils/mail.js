@@ -894,10 +894,50 @@ exports.sendOrderNotification = async ({ email, name, customer, companySettings,
     await sendMail({
         to: email,
         subject: "📄 Your WEC Contract PDF",
+      
         html: `
-            <p>Hi ${name}, your contract is ready.</p>
-            <a href="${downloadLink}" style="background:#007bff;color:white;padding:10px 18px;border-radius:6px;text-decoration:none;">Download PDF</a>
-        `,
+<p>Subject: <strong>Warranty Extension Contract – Confirmation & Welcome</strong></p>
+
+<p>Dear <strong>${name}</strong>,</p>
+
+<p>
+We are pleased to inform you that your Warranty Extension Contract has been successfully completed and activated. 
+Thank you for extending your service support with us. We greatly appreciate your continued trust in our products and services.
+</p>
+
+<p>
+Please find the Warranty Extension Certificate (WEC) attached for your reference and records. 
+Kindly review the document and confirm that the information mentioned is accurate. 
+Should any correction be required, please feel free to contact us.
+</p>
+
+<p>
+We are committed to providing you with reliable technical support and service throughout the warranty period.
+</p>
+
+<p><strong>For any inquiry, assistance or technical support, please contact:</strong></p>
+
+<p>
+Support Phone: 8929391113, 8929391114, 8929391115, 8929391116 <br>
+Support Email: support@emipluscare.in
+</p>
+
+<p>
+You can also download your contract here:<br>
+<a href="${downloadLink}" style="background:#007bff;color:white;padding:5px 11px;border-radius:6px;text-decoration:none;">Download Warranty Contract (PDF)</a>
+</p>
+
+<p>
+Thank you once again for choosing us. We look forward to serving you.
+</p>
+
+<p>
+Warm Regards,<br>
+<strong>EMI PLUS CARE</strong> <br>
+Mail ID: support@emipluscare.in
+</p>
+`,
+
         attachments: [{ filename: path.basename(pdfPath), path: pdfPath }]
     });
 

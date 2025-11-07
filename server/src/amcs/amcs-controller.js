@@ -360,33 +360,109 @@ exports.getAmcByRetailerWithPagination = catchAsyncErrors(async (req, res, next)
 
 exports.getAmcByDistributorWithPagination = catchAsyncErrors(async (req, res, next) => {
     try {
+        // const distributorId = req.params.id;
+        // let { page = 1, limit = 10, search = "", status = "", category = "", createdByEmail } = req.query;
+
+        // let userExite = null;
+
+        // if (createdByEmail) {
+        //     userExite = await SuperAdmin.find({
+        //         "createdByEmail.email": typeof createdByEmail === "string"
+        //             ? createdByEmail
+        //             : createdByEmail?.email
+        //     });
+        // }
+        // if (!userExite) {
+        //     return next(new ErrorHandler("Invalid distributor ID", 400));
+        // }
+        // const createdByEmails = userExite.map((item) => item.email)
+
+        // // ✅ Validate and sanitize pagination inputs
+        // page = Math.max(1, parseInt(page, 10));
+        // limit = Math.max(1, parseInt(limit, 10));
+
+        // // ✅ Base filter (for specific retailer)
+        // const filter = {};
+        // if (distributorId && mongoose.Types.ObjectId.isValid(distributorId)) {
+        //     filter.distributorId = distributorId;
+        // } else {
+        //     return next(new ErrorHandler("Invalid retailer ID", 400));
+        // }
+        // console.log("createdByEmails==", createdByEmails)
+        // if (createdByEmails) {
+        //     filter["createdByEmail.email"] = { $in: createdByEmails };
+        // }
+
+        // // ✅ Add status filter
+        // if (status && status.toLowerCase() !== "all") {
+        //     filter.status = status.toLowerCase();
+        // }
+
+        // if (category && category.toLowerCase() !== "all") {
+        //     const searchRegex = new RegExp(category.trim(), "i");
+        //     filter.productCategory = searchRegex;
+        // }
+
+        // // ✅ Add search filter
+        // if (search && search.trim() !== "") {
+        //     const searchRegex = new RegExp(search.trim(), "i");
+        //     filter.$or = [
+        //         { customerName: searchRegex },
+        //         { id: searchRegex },
+        //         { customerEmail: searchRegex },
+        //         { customerMobile: searchRegex },
+        //         { productCategory: searchRegex },
+        //         { productBrand: searchRegex },
+        //         { productType: searchRegex },
+        //         { retailerName: searchRegex },
+
+        //     ];
+        // }
+
         const distributorId = req.params.id;
-        let { page = 1, limit = 10, search = "", status = "", category = "" } = req.query;
+        let { page = 1, limit = 10, search = "", status = "", category = "", createdByEmail } = req.query;
 
-        // ✅ Validate and sanitize pagination inputs
-        page = Math.max(1, parseInt(page, 10));
-        limit = Math.max(1, parseInt(limit, 10));
-
-        // ✅ Base filter (for specific retailer)
-        const filter = {};
-        if (distributorId && mongoose.Types.ObjectId.isValid(distributorId)) {
-            filter.distributorId = distributorId;
-        } else {
-            return next(new ErrorHandler("Invalid retailer ID", 400));
+        // ✅ Fetch all child users under this admin
+        let userList = [];
+        if (createdByEmail) {
+            userList = await SuperAdmin.find({
+                "createdByEmail.email": typeof createdByEmail === "string" ? createdByEmail : createdByEmail?.email
+            }).lean();
+        }
+        if (!userList.length) {
+            return next(new ErrorHandler("No users found under this creator", 400));
         }
 
-        // ✅ Add status filter
+        const createdByEmails = userList.map(u => u.email);
+
+        // ✅ Pagination sanitize
+        page = Math.max(1, parseInt(page));
+        limit = Math.max(1, parseInt(limit));
+
+        // ✅ Base filter
+        if (!mongoose.Types.ObjectId.isValid(distributorId)) {
+            return next(new ErrorHandler("Invalid distributor ID", 400));
+        }
+
+        const filter = {};
+
+        filter.$or = [
+            { distributorId },
+            { "createdByEmail.email": { $in: createdByEmails } }
+        ];
+
+        // ✅ Status Filter
         if (status && status.toLowerCase() !== "all") {
             filter.status = status.toLowerCase();
         }
 
+        // ✅ Category Filter
         if (category && category.toLowerCase() !== "all") {
-            const searchRegex = new RegExp(category.trim(), "i");
-            filter.productCategory = searchRegex;
+            filter.productCategory = new RegExp(category.trim(), "i");
         }
 
-        // ✅ Add search filter
-        if (search && search.trim() !== "") {
+        // ✅ Search Filter
+        if (search.trim()) {
             const searchRegex = new RegExp(search.trim(), "i");
             filter.$or = [
                 { customerName: searchRegex },
@@ -395,7 +471,6 @@ exports.getAmcByDistributorWithPagination = catchAsyncErrors(async (req, res, ne
                 { customerMobile: searchRegex },
                 { productCategory: searchRegex },
                 { productBrand: searchRegex },
-                { productType: searchRegex },
                 { retailerName: searchRegex },
             ];
         }
@@ -403,16 +478,12 @@ exports.getAmcByDistributorWithPagination = catchAsyncErrors(async (req, res, ne
         // ✅ Get paginated AMC data
         const [amcs, total, totalAMCs, totalExpiredAMCs, totalActiveAMCs, totalExpiringSoonAMCs] =
             await Promise.all([
-                AMC.find(filter)
-                    .sort({ createdAt: -1 })
-                    .skip((page - 1) * limit)
-                    .limit(limit)
-                    .lean(),
-                AMC.countDocuments(filter),
-                AMC.countDocuments({ distributorId }),
-                AMC.countDocuments({ distributorId, status: "expired" }),
-                AMC.countDocuments({ distributorId, status: "active" }),
-                AMC.countDocuments({ distributorId, status: "expiring_soon" }),
+                AMC.find(filter).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).lean(),
+                AMC.countDocuments({ ...filter }),
+                AMC.countDocuments({ ...filter, }),
+                AMC.countDocuments({ ...filter, status: "expired" }),
+                AMC.countDocuments({ ...filter, status: "active" }),
+                AMC.countDocuments({ ...filter, status: "expiring_soon" }),
             ]);
 
         const totalPages = Math.ceil(total / limit);
@@ -439,6 +510,116 @@ exports.getAmcByDistributorWithPagination = catchAsyncErrors(async (req, res, ne
         return next(new ErrorHandler(error.message, 500));
     }
 });
+
+// exports.getAmcByDistributorWithPagination = catchAsyncErrors(async (req, res, next) => {
+//     try {
+//         const distributorId = req.params.id;
+//         let { page = 1, limit = 10, search = "", status = "", category = "", createdByEmail } = req.query;
+
+//         // ✅ Fetch all child users under this admin
+//         let userList = [];
+//         if (createdByEmail) {
+//             userList = await SuperAdmin.find({
+//                 "createdByEmail.email": typeof createdByEmail === "string"
+//                     ? createdByEmail
+//                     : createdByEmail?.email
+//             }).lean();
+//         }
+//         if (!userList.length) {
+//             return next(new ErrorHandler("No users found under this creator", 400));
+//         }
+
+//         const createdByEmails = userList.map(u => u.email);
+
+//         // ✅ Pagination sanitize
+//         page = Math.max(1, parseInt(page));
+//         limit = Math.max(1, parseInt(limit));
+
+//         // ✅ Base filter
+//         if (!mongoose.Types.ObjectId.isValid(distributorId)) {
+//             return next(new ErrorHandler("Invalid distributor ID", 400));
+//         }
+
+//         const filter = {};
+
+//         filter.$or = [
+//             { distributorId },
+//             { "createdByEmail.email": { $in: createdByEmails } }
+//         ];
+
+//         // ✅ Status Filter
+//         if (status && status.toLowerCase() !== "all") {
+//             filter.status = status.toLowerCase();
+//         }
+
+//         // ✅ Category Filter
+//         if (category && category.toLowerCase() !== "all") {
+//             filter.productCategory = new RegExp(category.trim(), "i");
+//         }
+
+//         // ✅ Search Filter
+//         if (search.trim()) {
+//             const searchRegex = new RegExp(search.trim(), "i");
+//             filter.$or = [
+//                 { customerName: searchRegex },
+//                 { id: searchRegex },
+//                 { customerEmail: searchRegex },
+//                 { customerMobile: searchRegex },
+//                 { productCategory: searchRegex },
+//                 { productBrand: searchRegex },
+//                 { retailerName: searchRegex },
+//             ];
+//         }
+
+//         // ✅ Fetch Data + Stats in Parallel
+//         // const [amcs, total, totalAMCs, totalExpiredAMCs, totalActiveAMCs, totalExpiringSoonAMCs] = await Promise.all([
+//         //     AMC.find(filter)
+//         //         .sort({ createdAt: -1 })
+//         //         .skip((page - 1) * limit)
+//         //         .limit(limit)
+//         //         .lean(),
+
+//         //     AMC.countDocuments(filter),
+//         //     AMC.countDocuments({ distributorId, "createdByEmail.email": { $in: createdByEmails } }),
+//         //     AMC.countDocuments({ distributorId, status: "expired", "createdByEmail.email": { $in: createdByEmails } }),
+//         //     AMC.countDocuments({ distributorId, status: "active", "createdByEmail.email": { $in: createdByEmails } }),
+//         //     AMC.countDocuments({ distributorId, status: "expiring_soon", "createdByEmail.email": { $in: createdByEmails } }),
+//         // ]);
+
+//         const [amcs, total, totalAMCs, totalExpiredAMCs, totalActiveAMCs, totalExpiringSoonAMCs] =
+//             await Promise.all([
+//                 AMC.find(filter).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).lean(),
+//                 AMC.countDocuments(filter),
+//                 AMC.countDocuments({ ...filter }),
+//                 AMC.countDocuments({ ...filter, status: "expired" }),
+//                 AMC.countDocuments({ ...filter, status: "active" }),
+//                 AMC.countDocuments({ ...filter, status: "expiring_soon" }),
+//             ]);
+
+//         const totalPages = Math.ceil(total / limit);
+
+//         res.status(200).json({
+//             status: true,
+//             message: "AMCs fetched successfully",
+//             data: amcs,
+//             pagination: {
+//                 total,
+//                 totalAMCs,
+//                 totalExpiredAMCs,
+//                 totalActiveAMCs,
+//                 totalExpiringSoonAMCs,
+//                 totalPages: Math.ceil(total / limit),
+//                 currentPage: page,
+//                 pageSize: limit,
+//             },
+//         });
+
+//     } catch (error) {
+//         console.error("❌ Error fetching AMCs:", error);
+//         return next(new ErrorHandler(error.message, 500));
+//     }
+// });
+
 
 // ✅ Update AMC
 exports.updateAmcByAdmin = catchAsyncErrors(async (req, res, next) => {

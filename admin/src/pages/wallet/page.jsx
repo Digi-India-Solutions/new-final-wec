@@ -14,9 +14,6 @@ import Button from '../../components/base/Button';
 
 export default function WalletPage() {
   // const { user } = useAuthStore();
-  const [isAuthenticated, setIsAuthenticated] = useState(
-    sessionStorage.getItem('isAuthenticated') === 'true'
-  );
 
   const [user, setUser] = useState(() => {
     const storedUser = sessionStorage.getItem('user');
@@ -43,7 +40,7 @@ export default function WalletPage() {
   // Mock data
   const [distributors, setDistributors] = useState(mockDistributors);
   const [retailers, setRetailers] = useState(mockRetailers);
-  const [transactions, setTransactions] = useState(mockWalletTransactions);
+  const [transactions, setTransactions] = useState([]);
 
   const [totalBalance, setTotalBalance] = useState(0);
   const [totalCredit, setTotalCredit] = useState(0);
@@ -298,11 +295,14 @@ export default function WalletPage() {
 
       // Conditionally add userId if retailers exist
       if (retailers?.length > 0) {
-        queryParamsObj.userId = JSON.stringify(transactionUserId);
+        queryParamsObj.userId = JSON.stringify(transactionUserId || user?.id);
+      } else {
+        queryParamsObj.userId = JSON.stringify([user?.id]);
       }
 
-      const queryParams = new URLSearchParams(queryParamsObj).toString();
 
+      const queryParams = new URLSearchParams(queryParamsObj).toString();
+      console.log("transaction queryParams===>", queryParams, "transaction queryParams===>", user?.id);
       const response = await getData(`api/transaction/get-transaction-by-admin-with-pagination?${queryParams}`);
       console.log("transaction response===>", response);
       if (response?.status) {

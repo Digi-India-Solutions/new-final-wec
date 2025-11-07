@@ -49,7 +49,7 @@ export default function AMCsPage() {
   const [teamAndConditions, setSetTeamAndConditions] = useState('');
   const [companySettings, setCompanySettings] = useState('');
   // Mock data
-  const [amcs, setAmcs] = useState(mockAMCs);
+  const [amcs, setAmcs] = useState([]);
 
 
   // Filter AMCs based on user role
@@ -57,7 +57,7 @@ export default function AMCsPage() {
     if (user?.role === 'admin') {
       return amcs;
     } else if (user?.role === 'distributor') {
-      return amcs.filter(amc => amc.distributorId === user.id);
+      return amcs;
     } else if (user?.role === 'retailer') {
       return amcs.filter(amc => amc.retailerId === user.id);
     } else {
@@ -425,13 +425,13 @@ export default function AMCsPage() {
       if (user?.role === 'retailer') {
         response = await getData(`api/amcs/get-amc-by-retailer-with-pagination/${user?.id}?page=${currentPage}&limit=${pageSize}&search=${searchTerm}&status=${statusFilter}&category=${categoryFilter}&brand=${'brandFilter'}&type=${'typeFilter'}`)
       } else if (user?.role === 'distributor') {
-        response = await getData(`api/amcs/get-amc-by-distributor-with-pagination/${user?.id}?page=${currentPage}&limit=${pageSize}&search=${searchTerm}&status=${statusFilter}&category=${categoryFilter}&brand=${'brandFilter'}&type=${'typeFilter'}`);
+        response = await getData(`api/amcs/get-amc-by-distributor-with-pagination/${user?.id}?createdByEmail=${user?.email}&page=${currentPage}&limit=${pageSize}&search=${searchTerm}&status=${statusFilter}&category=${categoryFilter}&brand=${'brandFilter'}&type=${'typeFilter'}`);
       } else {
         response = response = await getData(`api/amcs/get-amc-by-admin-with-pagination?page=${currentPage}&limit=${pageSize}&search=${searchTerm}&status=${statusFilter}&category=${categoryFilter}&brand=${'brandFilter'}&type=${'typeFilter'}`);
       }
 
 
-      console.log("response==>response==> response==>", response)
+      console.log("responseGGG=>", response.pagination)
       if (response?.status === true) {
         setAmcs(response?.data);
         setCurrentPage(response?.pagination?.currentPage || 1);
@@ -446,6 +446,8 @@ export default function AMCsPage() {
       console.error('Error fetching AMC data:', error);
     }
   }
+
+  console.log("responseGGG=>", amcs)
   const fetchAllCategories = async () => {
     try {
       const response = await getData(`api/category/get-All-category`);
