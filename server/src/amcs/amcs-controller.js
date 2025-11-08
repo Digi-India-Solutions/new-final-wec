@@ -183,7 +183,7 @@ exports.createAmcByAdmin = catchAsyncErrors(async (req, res, next) => {
 
         const companySettings = await CompanySettings.findOne().lean();
         const termsAndConditions = await AMCSettings.findOne().lean();
-        
+
         await sendOrderNotification({
             email: req.body.customerEmail,
             name: req.body.customerName,
@@ -653,10 +653,19 @@ exports.updateAmcByAdmin = catchAsyncErrors(async (req, res, next) => {
 exports.deleteAmcByAdmin = catchAsyncErrors(async (req, res, next) => {
     try {
         const { id } = req.params;
+        const amc = await AMC.findById(id);
+        const user = await SuperAdmin.findOne({ email: amc?.createdByEmail?.email });
+        // console.log("AAAAAA:==>", amc)
+        // console.log("User:==>", user)
+        if (user) {
+            user.totalAMCs -= 1;
+        }
+
+        user.save();
+
         const deletedAmc = await AMC.findByIdAndDelete(id);
         if (!deletedAmc) return next(new ErrorHandler("AMC not found", 404));
-
-        return sendResponse(res, true, 200, "AMC deleted successfully", deletedAmc);
+        res.status(200).json({ status: true, message: "AMC deleted successfully" })
     } catch (error) {
         return next(new ErrorHandler(error.message, 500));
     }

@@ -8,6 +8,8 @@ import ConfirmDialog from '../../components/base/ConfirmDialog';
 import Input from '../../components/base/Input';
 import { useToast } from '../../components/base/Toast';
 import { getData, postData } from '../../services/FetchNodeServices';
+import { ToastContainer, toast } from "react-toastify"
+
 
 export default function StaffPage() {
   const [user, setUser] = useState(() => {
@@ -15,7 +17,7 @@ export default function StaffPage() {
     return storedUser ? JSON.parse(storedUser) : null;
   });
 
-  const { showToast, ToastContainer } = useToast();
+  // const { showToast, ToastContainer } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -188,7 +190,7 @@ export default function StaffPage() {
           fetchAllStaff()
           fetchRoles()
           setStaff(prev => prev.map(s => s?._id === editingStaff?._id ? { ...s, ...formData } : s));
-          showToast('Staff member updated successfully', 'success');
+          toast.success('Staff member updated successfully');
         }
       } else {
         const newStaff = {
@@ -202,19 +204,19 @@ export default function StaffPage() {
         const q = 'api/admin/create-admin-by-admin'
         const respons = await postData(q, newStaff);
         console.log('PPPPPP:==>', respons)
-        if (respons.status === true) {
+        if (respons?.status === true) {
           fetchAllStaff()
           fetchRoles()
           setStaff(prev => [...prev, newStaff]);
-          showToast('Staff member added successfully', 'success');
+          toast.success(respons?.message || 'Staff member added successfully', 'success');
         } else {
-          showToast(respons?.message, 'Staff member added successfully', 'error');
+          toast.error(respons?.message || 'Operation failed', 'error');
         }
       }
 
       setIsModalOpen(false);
     } catch (error) {
-      showToast('Operation failed', 'error');
+      toast.error('Operation failed', 'error');
     } finally {
       setLoading(false);
     }
@@ -231,13 +233,13 @@ export default function StaffPage() {
         fetchAllStaff()
         fetchRoles()
         setStaff(prev => prev.filter(s => s._id !== deletingStaff._id));
-        showToast('Staff member deleted successfully', 'success');
+        toast.success('Staff member deleted successfully', 'success');
         setIsDeleteDialogOpen(false);
         setDeletingStaff(null);
       }
 
     } catch (error) {
-      showToast('Delete failed', 'error');
+      toast.error('Delete failed', 'error');
     } finally {
       setLoading(false);
     }
@@ -300,7 +302,7 @@ export default function StaffPage() {
       }
     } catch (error) {
       console.error('Error fetching staff:', error);
-      showToast(error?.response?.data?.message || 'Failed to fetch staff', 'error');
+      toast.error(error?.response?.data?.message || 'Failed to fetch staff', 'error');
     }
   };
 

@@ -250,6 +250,20 @@ export default function AMCsPage() {
     }
   };
 
+  const handleDelete = async (record) => {
+    try {
+      const response = await getData(`api/amcs/delete-amc-by-admin/${record?._id}`);
+      if (response?.status === true) {
+        fetchAMCs();
+        showToast('WEC deleted successfully', 'success');
+      } else {
+        showToast(response?.message || 'WEC deletion failed', 'error');
+      }
+    } catch (error) {
+      showToast('WEC deletion failed', 'error');
+    }
+  }
+
   const renderActions = (record) => (
     <div className="flex space-x-2">
       <Button
@@ -275,6 +289,17 @@ export default function AMCsPage() {
       >
         <i className="ri-download-line w-4 h-4 flex items-center justify-center"></i>
       </Button>
+
+      {user?.role === "admin" && (
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => handleDelete(record)}
+        >
+          <i className="ri-delete-bin-line w-4 h-4 flex items-center justify-center text-red-600"></i>
+        </Button>
+      )}
+
     </div>
   );
 

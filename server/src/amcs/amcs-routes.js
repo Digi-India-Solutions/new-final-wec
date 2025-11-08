@@ -24,6 +24,6 @@ router.get("/get-amc-by-customer", getAmcByCustomer);
 
 // router.post("/update-amc-by-admin/:id", upload.single("purchaseProof"), updateAmcByAdmin);
 
-// router.get("/delete-amc-by-admin/:id", deleteAmcByAdmin);
+router.get("/delete-amc-by-admin/:id", deleteAmcByAdmin);
 
 module.exports = router;

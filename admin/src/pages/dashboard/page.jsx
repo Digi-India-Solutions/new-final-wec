@@ -2,12 +2,9 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
 import { getData } from '../../services/FetchNodeServices';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export default function Dashboard() {
-  // const { user } = useAuthStore();
-  const [isAuthenticated, setIsAuthenticated] = useState(
-    sessionStorage.getItem('isAuthenticated') === 'true'
-  );
 
   const [user, setUser] = useState(() => {
     const storedUser = sessionStorage.getItem('user');
@@ -24,11 +21,11 @@ export default function Dashboard() {
   const [totalRetailers, setTotalRetailers] = useState(0);
   const [totalDistributorWalletAmount, setTotalDistributorWalletAmount] = useState(0);
   const [totalRetailerWalletAmount, setTotalRetailerWalletAmount] = useState(0);
+  const navigate = useNavigate();
 
-  
-  const StatCard = ({ title, value, icon, color, change }) => (
-    <div className="bg-white rounded-lg shadow p-6">
-      <div className="flex items-center justify-between">
+  const StatCard = ({ title, value, icon, color, change, path }) => (
+    <div className="bg-white rounded-lg shadow p-6" >
+      <div className="flex items-center justify-between cursor-pointer" onClick={() => navigate(path)}>
         <div>
           <p className="text-sm font-medium text-gray-600">{title}</p>
           <p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>
@@ -95,10 +92,10 @@ export default function Dashboard() {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
         <div className="flex items-center space-x-3">
-          <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer whitespace-nowrap">
+          {/* <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer whitespace-nowrap">
             <i className="ri-download-line mr-2 w-4 h-4 inline-flex items-center justify-center"></i>
             Export Report
-          </button>
+          </button> */}
         </div>
       </div>
 
@@ -109,14 +106,16 @@ export default function Dashboard() {
           value={amcs.toLocaleString()}
           icon="ri-file-shield-line"
           color="bg-blue-500"
-          // change="+12% from last month"
+          path="/amcs"
+        // change="+12% from last month"
         />
         <StatCard
           title="Active Contracts"
           value={totaleActiveAcount.toLocaleString()}
           icon="ri-checkbox-circle-line"
           color="bg-green-500"
-          // change="+8% from last month"
+          path="/amcs"
+        // change="+8% from last month"
         />
         <StatCard
           title="Expiring This Month"
@@ -129,7 +128,7 @@ export default function Dashboard() {
           value={`₹${formatAmount(totalRevenue)}`}
           icon="ri-money-dollar-circle-line"
           color="bg-purple-500"
-          // change="+15% from last month"
+        // change="+15% from last month"
         />
       </div>
 
@@ -140,6 +139,7 @@ export default function Dashboard() {
             value={totalDistributors || 0}
             icon="ri-building-line"
             color="bg-indigo-500"
+            path="/users"
           />
 
           <StatCard
@@ -147,6 +147,7 @@ export default function Dashboard() {
             value={`₹${formatAmount(totalDistributorWalletAmount || 0).toLocaleString()}`}
             icon="ri-wallet-fill"
             color="bg-indigo-500"
+             path="/users"
           // change="+12%"
           />
 
@@ -155,6 +156,7 @@ export default function Dashboard() {
             value={totalRetailers || 0}
             icon="ri-store-line"
             color="bg-pink-500"
+             path="/users"
           />
 
           <StatCard
@@ -162,6 +164,7 @@ export default function Dashboard() {
             value={`₹${formatAmount(totalRetailerWalletAmount || 0).toLocaleString()}`}
             icon="ri-wallet-fill"
             color="bg-pink-500"
+             path="/wallet"
           />
         </div>
       )}
@@ -173,6 +176,7 @@ export default function Dashboard() {
             value={totalRetailers || 0}
             icon="ri-store-line"
             color="bg-indigo-500"
+             path="/users"
           />
 
           <StatCard
@@ -180,6 +184,7 @@ export default function Dashboard() {
             value={`₹${formatAmount(totalRetailerWalletAmount || 0).toLocaleString()}`}
             icon="ri-wallet-fill"
             color="bg-pink-500"
+             path="/wallet"
           />
           {/* <StatCard
             title="Commission Earned"

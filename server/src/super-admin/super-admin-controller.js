@@ -102,7 +102,7 @@ exports.createAdminByAdmin = catchAsyncErrors(async (req, res, next) => {
         const currentSuperAdmin = await SuperAdmin.findOne({ email: email });
 
         if (currentSuperAdmin) {
-            return res.status(200).json({ status: false, message: "Super Admin email already exist." });
+            return res.status(200).json({ status: false, message: req.body.role === 'distributor' ? 'Distributor email already exist.' : req.body.role === 'retailer' ? "Retailer email already exist." : "This email already exist. please try another email" });
         }
 
         const newSuperAdmin = await SuperAdmin.create({ ...req.body, password: hash });
@@ -318,7 +318,7 @@ exports.sendResetPasswordEmail = catchAsyncErrors(async (req, res, next) => {
         const superAdmin = await SuperAdmin.findOne({ email });
 
         if (!superAdmin) {
-            return res.status(200).json({ status: false, message: "Admin not found" });
+            return res.status(200).json({ status: false, message: "Account not found. please Register first " });
         }
 
         const token = superAdmin.getJwtToken();
@@ -585,7 +585,7 @@ exports.deleteAdminUserByAdmin = catchAsyncErrors(async (req, res, next) => {
 exports.getAllStaffByAdmin = catchAsyncErrors(async (req, res, next) => {
     try {
         let { staffRole } = req.query;
-      
+
         if (typeof staffRole === 'string') {
             try {
                 staffRole = JSON.parse(staffRole);
@@ -602,7 +602,7 @@ exports.getAllStaffByAdmin = catchAsyncErrors(async (req, res, next) => {
         console.log("Parsed staffRole:=", staffRole);
 
         const users = await SuperAdmin.find({ role: { $in: staffRole } }).populate('staffRole');
-// console.log("Parsed staffRole:=", users);
+        // console.log("Parsed staffRole:=", users);
         return res.status(200).json({
             status: true,
             message: 'Staff fetched successfully',

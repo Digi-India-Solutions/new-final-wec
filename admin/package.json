@@ -17,6 +17,7 @@
     "react-dom": "^19.0.0",
     "react-i18next": "^16.2.0",
     "react-router-dom": "^6.28.0",
+    "react-toastify": "^11.0.5",
     "recharts": "^2.13.3",
     "unplugin-auto-import": "^19.3.0",
     "zustand": "^5.0.2"
