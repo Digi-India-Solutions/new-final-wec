@@ -266,14 +266,14 @@ export default function WalletPage() {
       const response = await getData(`api/admin/getRetailersByDistributorwithPagination?${queryParams}`);
       console.log("response===>CCC", response)
       if (response?.status) {
-        setRetailers(response?.data);
+        setRetailers(response?.data.filter((item) => item?.name != user?.name));
         setTransactionUserId((prev) => {
           const merged = [...prev, ...response?.data?.map((item) => item._id)];
           return [...new Set(merged)];
         });
         setTotalPages(response?.pagination.totalPages);
         setCurrentPage(response?.pagination.currentPage);
-        setTotalData(response?.pagination.total);
+        setTotalData(response?.pagination.total - 1);
       }
     } catch (e) {
       console.log(e)
@@ -460,9 +460,7 @@ export default function WalletPage() {
       {activeTab === 'balance' && (
         <DataTable
           data={availableUsers.filter(
-            user =>
-              user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              user.email.toLowerCase().includes(searchTerm.toLowerCase())
+            user => user.name.toLowerCase().includes(searchTerm.toLowerCase()) || user.email.toLowerCase().includes(searchTerm.toLowerCase())
           )}
           columns={balanceColumns}
           actions={user?.role !== 'retailer'
