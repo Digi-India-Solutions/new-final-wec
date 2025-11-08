@@ -239,7 +239,7 @@ exports.getAdminUsersByAdminwithPagination = catchAsyncErrors(async (req, res, n
     try {
         // Extract and sanitize query parameters
         let { page = 1, limit = 10, search = '', role = '', status = '' } = req.query;
-        // console.log('req.query::===>>', req.query)
+        // console.log('req.query::===>>AA', req.query)
         // Convert page/limit safely to numbers
         page = Math.max(1, parseInt(page, 10));
         limit = Math.max(1, parseInt(limit, 10));
@@ -260,6 +260,7 @@ exports.getAdminUsersByAdminwithPagination = catchAsyncErrors(async (req, res, n
             filter.$or = [
                 { name: searchRegex },
                 { email: searchRegex },
+                { DistributorId: searchRegex },
                 { phone: searchRegex }
             ];
         }
@@ -449,7 +450,7 @@ exports.resetPassword = catchAsyncErrors(async (req, res, next) => {
 exports.getRetailersByAdminwithPagination = catchAsyncErrors(async (req, res, next) => {
     try {
         let { page = 1, limit = 10, search = '', role = '', status = '', createdByEmail = '' } = req.query;
-
+        console.log("XXXXXX::=>SS", req.query)
         page = Math.max(1, parseInt(page, 10));
         limit = Math.max(1, parseInt(limit, 10));
 
