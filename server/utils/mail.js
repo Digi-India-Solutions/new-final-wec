@@ -819,7 +819,17 @@ exports.sendOrderNotification = async ({ email, name, customer, companySettings,
         .invoice-title { text-align: center; margin-top: 15px; font-size: 20px; font-weight: 600; }
         .signature { display: flex; justify-content: center; margin-top: 40px; }
         .sig-line { margin-top: 50px; border-top: 1px solid #000; width: 200px; }
-    </style>
+        .terms-box {
+    page-break-before: always;
+    border: 1px solid #ccc;
+    padding: 12px;
+    border-radius: 4px;
+    margin-top: 20px;
+    font-size: 14px;
+    line-height: 1;
+    white-space: pre-wrap;
+}
+     </style>
 </head>
 <body>
 
@@ -866,11 +876,9 @@ exports.sendOrderNotification = async ({ email, name, customer, companySettings,
      </div>
     
 
-    <div style="margin-top:820px;">
-        <div style="border:1px solid #ccc;padding:10px;border-radius:4px;">
-            ${termsAndConditions || "No terms available."}
-        </div>
-    </div>
+   <div class="terms-box">
+    ${termsAndConditions || "No terms available."}
+</div>
 
 </div>
 
