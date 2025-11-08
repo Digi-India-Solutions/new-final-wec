@@ -18,7 +18,7 @@ export default function WalletPage() {
   });
 
   const { showToast, ToastContainer } = useToast();
-  const [activeTab, setActiveTab] = useState('balance');
+  const [activeTab, setActiveTab] = useState(user?.role === 'retailer' ? 'transactions' : 'balance');
   const [searchTerm, setSearchTerm] = useState('');
   const [isCreditModalOpen, setIsCreditModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -425,7 +425,7 @@ export default function WalletPage() {
       {/* Tabs */}
       <div className="border-b border-gray-200">
         <nav className="-mb-px flex space-x-8">
-          <button
+          {user.role === 'retailer' ? '' : <button
             onClick={() => setActiveTab('balance')}
             className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap cursor-pointer ${activeTab === 'balance'
               ? 'border-blue-500 text-blue-600'
@@ -433,7 +433,7 @@ export default function WalletPage() {
               }`}
           >
             Wallet Balances ({totalData})
-          </button>
+          </button>}
           <button
             onClick={() => setActiveTab('transactions')}
             className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap cursor-pointer ${activeTab === 'transactions'
