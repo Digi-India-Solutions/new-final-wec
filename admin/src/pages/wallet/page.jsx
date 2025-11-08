@@ -200,6 +200,7 @@ export default function WalletPage() {
       const response = await postData(`api/transaction/create-transaction-by-admin`, newTransaction);
       console.log("newTransactionnewTransaction:==>", response);
       if (response?.status === true) {
+        fetchTransactions()
         setTransactions(prev => [newTransaction, ...prev]);
         showToast(`₹${finalAmount.toLocaleString()} ${transactionType === 'credit' ? 'credited to' : 'debited from'} ${selectedUser?.name}`, 'success');
         setIsCreditModalOpen(false);

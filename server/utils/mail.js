@@ -859,6 +859,9 @@ exports.sendOrderNotification = async ({ email, name, customer, companySettings,
 
      <div class="signature">
         <div>Note:- Under the extended warranty, claims are limited to a maximum of 80% of the product's value (excluding GST).Also please check the attachment what will cover under our Terms & Conditions.</div>
+     </div>
+
+      <div class="signature">
         <div >Thank you for choosing EMI PLUS CARE. For support, call us at ‪+91 8929391113‬ or email us at support@emipluscare.in </div>
      </div>
     
