@@ -259,7 +259,7 @@ export default function Dashboard() {
                   ></div>
                   <span className="font-medium text-gray-900">{item.name}</span>
                 </div>
-                <span className="text-gray-600">{item.value}%</span>
+                <span className="text-gray-600">{item.value}</span>
               </div>
             ))}
           </div>

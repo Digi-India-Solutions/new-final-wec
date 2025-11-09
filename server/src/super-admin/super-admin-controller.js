@@ -194,6 +194,7 @@ exports.getRetailersByDistributor = catchAsyncErrors(async (req, res, next) => {
 
         // ✅ Count total retailers
         const total = await SuperAdmin.countDocuments(filter);
+        
         const totalPages = Math.ceil(total / limit);
         const skip = (page - 1) * limit;
 

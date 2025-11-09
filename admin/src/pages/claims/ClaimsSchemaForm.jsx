@@ -71,9 +71,9 @@ export default function SchemaForm({
     console.log("SSSSSSSS:==>", respons)
 
     if (respons.status === true) {
+      fetchClaimsData()
       setLoading(false);
       showToast(respons.message, 'success');
-      fetchClaimsData()
       setIsModalOpen(false);
     } else {
       showToast(respons.message, 'error');

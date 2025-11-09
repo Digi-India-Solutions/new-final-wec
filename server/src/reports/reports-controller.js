@@ -180,9 +180,11 @@ exports.getAllReportsTotal = catchAsyncErrors(async (req, res, next) => {
         const totalRetailers = role === "distributor" ? await SuperAdmin.countDocuments({ 'createdByEmail.email': createdBy?.email, role: "retailer" }) :
             await SuperAdmin.countDocuments({ ...filter, role: "retailer" });
 
-        const usersTransactions = await Transactions.find({ ...filter, "createdByEmail.email": createdBy?.email, type: 'debit' })
+        const filterSS = role === 'admin' ? { type: 'debit' } : { "createdByEmail.email": createdBy?.email, type: 'debit' };
+        const usersTransactions = await Transactions.find({ ...filter, ...filterSS })
 
         const totalRevenue = usersTransactions.reduce((sum, transaction) => sum + transaction.amount, 0);
+
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         const totalAmcData = await amcsModel.find(filter);
         const monthlyData = {};

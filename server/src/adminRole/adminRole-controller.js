@@ -1,6 +1,7 @@
 const catchAsyncErrors = require("../../middleware/catchAsyncErrors");
 const ErrorHandler = require("../../utils/ErrorHandler");
 const AdminRole = require("./adminRole-model");
+const SuperAdmin = require("../super-admin/super-admin-model");
 
 
 exports.createRolesByAdmin = catchAsyncErrors(async (req, res, next) => {
@@ -18,9 +19,19 @@ exports.getAllRoles = catchAsyncErrors(async (req, res) => {
 });
 
 exports.updateRolesByAdmin = catchAsyncErrors(async (req, res, next) => {
+    const userExist = await SuperAdmin.find({ role: req.body.ExistRole });
+
+    if (userExist.length > 0) {
+        userExist.forEach(async (user) => {
+            user.role = req.body.name;
+            await user.save();
+        })
+    }
+
     const role = await AdminRole.findByIdAndUpdate(req.params.id, req.body, {
         new: true, runValidators: true
     });
+
     if (!role) return next(new ErrorHandler('Role not found', 404));
     res.status(200).json({ status: true, message: "Role updated successfully", data: role });
 });

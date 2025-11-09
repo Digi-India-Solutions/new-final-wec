@@ -70,7 +70,7 @@ export default function SettingsPage() {
     setLoading(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 1000));
-      console.log('companySettings===>', companySettings.logo)
+      // console.log('companySettings===>', companySettings?.logo)
       if (section === 'Company') {
         const formData = new FormData();
         formData.append('name', companySettings?.name || '');

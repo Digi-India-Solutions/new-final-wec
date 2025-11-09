@@ -146,7 +146,7 @@ exports.createTransactionByAdmin = catchAsyncErrors(async (req, res, next) => {
         user.walletBalance = targetNewBalance;
         creator.walletBalance = creatorNewBalance;
         await user.save();
-        // await creator.save();
+        await creator.save();
 
         // ✅ Create Transaction for Retailer/User
         const userTransaction = await Transaction.create({

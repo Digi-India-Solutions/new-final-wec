@@ -66,9 +66,11 @@ exports.getAllAmcTotal = catchAsyncErrors(async (req, res, next) => {
             await SuperAdmin.countDocuments({ ...filter, role: "retailer" });
 
 
-        const usersTransactions = await Transactions.find({ "createdByEmail.email": createdBy?.email, type: 'debit' })
+        const usersTransactions = await Transactions.find({ ...filter, type: 'debit' })
 
         const totalRevenue = usersTransactions.reduce((sum, transaction) => sum + transaction.amount, 0);
+        console.log("XXXXXXXX::=>", usersTransactions, createdBy?.email ,expiringThisMonth)
+
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         const totalAmcData = await amcsModel.find(filter);
         const monthlyData = {};
@@ -144,7 +146,7 @@ exports.getAllAmcTotal = catchAsyncErrors(async (req, res, next) => {
                 amcSalesData: salesData,
                 amcProductData: productData,
                 amcRecentActivities: recentActivities,
-                totalDistributorWalletAmounts, 
+                totalDistributorWalletAmounts,
                 totalRetailerWalletAmounts
 
 

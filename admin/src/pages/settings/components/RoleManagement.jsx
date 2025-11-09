@@ -31,85 +31,16 @@ export const availableModules = [
   'Settings'
 ];
 
-export const mockRoles = [
-  {
-    id: '1',
-    name: 'Super Admin',
-    description: 'Full system access with all permissions',
-    permissions: availableModules.map(module => ({
-      module,
-      permissions: ['read', 'write', 'edit', 'delete']
-    })),
-    status: 'active',
-    createdDate: '2023-01-01',
-    createdBy: 'System'
-  },
-  {
-    id: '2',
-    name: 'Support Manager',
-    description: 'Manage claims and customer support operations',
-    permissions: [
-      { module: 'Dashboard', permissions: ['read'] },
-      { module: 'Claims Management', permissions: ['read', 'write', 'edit'] },
-      { module: 'WEC Management', permissions: ['read', 'edit'] },
-      { module: 'Reports', permissions: ['read'] }
-    ],
-    status: 'active',
-    createdDate: '2023-01-15',
-    createdBy: 'Super Admin'
-  },
-  {
-    id: '3',
-    name: 'Accounts Manager',
-    description: 'Handle financial operations and wallet management',
-    permissions: [
-      { module: 'Dashboard', permissions: ['read'] },
-      { module: 'Wallet Management', permissions: ['read', 'write', 'edit'] },
-      { module: 'Reports', permissions: ['read', 'write'] },
-      { module: 'Claims Management', permissions: ['read', 'edit'] }
-    ],
-    status: 'active',
-    createdDate: '2023-01-20',
-    createdBy: 'Super Admin'
-  },
-  {
-    id: '4',
-    name: 'Sales Supervisor',
-    description: 'Oversee distributor and retailer operations',
-    permissions: [
-      { module: 'Dashboard', permissions: ['read'] },
-      { module: 'Distributors', permissions: ['read', 'write', 'edit'] },
-      { module: 'Retailers', permissions: ['read', 'write', 'edit'] },
-      { module: 'WEC Management', permissions: ['read', 'write'] },
-      { module: 'Reports', permissions: ['read'] }
-    ],
-    status: 'active',
-    createdDate: '2023-02-01',
-    createdBy: 'Super Admin'
-  },
-  {
-    id: '5',
-    name: 'Read Only User',
-    description: 'View-only access to system data',
-    permissions: availableModules.map(module => ({
-      module,
-      permissions: ['read']
-    })),
-    status: 'inactive',
-    createdDate: '2023-02-15',
-    createdBy: 'Super Admin'
-  }
-]
 
 export default function RoleManagement() {
   const { showToast } = useToast();
-  const [roles, setRoles] = useState(mockRoles);
+  const [roles, setRoles] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRole, setEditingRole] = useState(null);
   const [loading, setLoading] = useState(false);
 
   // Form state
-  const [formData, setFormData] = useState({ name: '', description: '', permissions: [], status: 'active', });
+  const [formData, setFormData] = useState({ name: '', description: '', permissions: [], status: 'active', ExistRole: '' });
 
   const handleAdd = () => {
     setEditingRole(null);
@@ -129,6 +60,7 @@ export default function RoleManagement() {
     setEditingRole(role);
     setFormData({
       name: role.name,
+      ExistRole: role.name,
       description: role.description,
       permissions: availableModules.map((module) => {
         const existingPermission = role.permissions.find(
@@ -189,6 +121,7 @@ export default function RoleManagement() {
       const roleData = {
         id: editingRole?._id || Date.now().toString(),
         name: formData.name,
+        ExistRole: formData.ExistRole,
         description: formData.description,
         permissions: formData.permissions.filter(
           (p) => p.permissions.length > 0,

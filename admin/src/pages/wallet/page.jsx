@@ -201,6 +201,7 @@ export default function WalletPage() {
       console.log("newTransactionnewTransaction:==>", response);
       if (response?.status === true) {
         fetchTransactions()
+        fetchWalletManagement()
         setTransactions(prev => [newTransaction, ...prev]);
         showToast(`₹${finalAmount.toLocaleString()} ${transactionType === 'credit' ? 'credited to' : 'debited from'} ${selectedUser?.name}`, 'success');
         setIsCreditModalOpen(false);
@@ -273,14 +274,26 @@ export default function WalletPage() {
           return [...new Set(merged)];
         });
         setTotalPages(response?.pagination.totalPages);
-        setCurrentPage(response?.pagination.currentPage);
-        setTotalData(response?.pagination.total - 1);
+        setCurrentPage(response?.pagination.currentPage)
+        // if (user?.role === 'distributor') {
+        //   count = response?.pagination.total;
+        //   setTotalData(count);
+        // }
+        // if (user?.role === 'retailer') {
+        //   count = response?.pagination.total;
+        //   setTotalData(count);
+        // }
+        if (user?.role === 'admin') {
+          setTotalData(response?.pagination?.total >= 1 ? response?.pagination?.total - 1 : response?.pagination?.total);
+        }
+
+
       }
     } catch (e) {
       console.log(e)
     }
   }
-  console.log('user:==>user:==>', transactionUserId)
+  console.log('user:==>user:==>', totalData)
 
   const fetchTransactions = async () => {
     try {
@@ -300,9 +313,9 @@ export default function WalletPage() {
 
 
       const queryParams = new URLSearchParams(queryParamsObj).toString();
-      console.log("transaction queryParams===>", queryParams, "transaction queryParams===>", user?.id);
+      // console.log("transaction queryParams===>", queryParams, "transaction queryParams===>", user?.id);
       const response = await getData(`api/transaction/get-transaction-by-admin-with-pagination?${queryParams}`);
-      console.log("transaction response===>", response);
+      // console.log("transaction response===>", response);
       if (response?.status) {
         setTransactions(response?.data);
         setTransactionTotalPages(response?.pagination.totalPages);
