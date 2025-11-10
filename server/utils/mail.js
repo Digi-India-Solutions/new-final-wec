@@ -790,8 +790,177 @@ exports.sendThankYouEmailAdmin = async ({ email, name, phone }) => {
 };
 
 
+// exports.sendOrderNotification = async ({ email, name, customer, companySettings, record, termsAndConditions }) => {
+//     // console.log("XXXXXX::=>", record)
+//     const rows = record?.amcs?.map((item, index) => `
+//     <tr>
+//         <td>${index + 1}</td>
+//         <td>${item.productCategory} - ${item.productBrand} ${item.productType}</td>
+//         <td>${item.productModel}</td>
+//         <td>${item.serialNumber || "N/A"}</td>
+//         <td>${new Date(item.startDate).toLocaleDateString("en-IN")}</td>
+//         <td>${new Date(item.endDate).toLocaleDateString("en-IN")}</td>
+//         <td>₹${item.amcAmount}</td>
+//     </tr>
+// `).join("") || "";
+
+//     // ✅ Build full styled HTML (use your same template)
+//     const html = `
+// <html>
+// <head>
+//     <style>
+//         body { font-family: "Poppins", Arial, sans-serif; padding: 20px; background: #fff; }
+//         .invoice-box { max-width: 850px; margin: auto; padding: 25px 30px; border: 1px solid #e0e0e0; border-radius: 8px; }
+//         .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
+//         .company-info h2 { margin: 0; color: #007bff; }
+//         table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+//         th, td { border: 1px solid #ddd; padding: 8px; }
+//         th { background: #007bff; color: white; }
+//         .invoice-title { text-align: center; margin-top: 15px; font-size: 20px; font-weight: 600; }
+//         .signature { display: flex; justify-content: center; margin-top: 40px; }
+//         .sig-line { margin-top: 50px; border-top: 1px solid #000; width: 200px; }
+//         .terms-box {
+//   page-break-before: always;
+//   border: 1px solid #ccc;
+//   padding: 9px;
+//   border-radius: 6px;
+//   margin-top: 30px;
+//   font-size: 14px;
+//   line-height: 1;
+//   overflow: visible; 
+//   max-height: none;
+//   text-align: justify;
+// }
+//      </style>
+// </head>
+// <body>
+
+// <div class="invoice-box">
+//     <div class="header">
+//         <div>
+//             <img src="${companySettings?.logo || ''}" style="width:80px;height:80px;object-fit:contain;border-radius:8px;">
+//             <h2>${companySettings?.name}</h2>
+//             <p>${companySettings?.address}</p>
+//             <p>${companySettings?.phone} | ${companySettings?.email}</p>
+//         </div>
+//         <div>
+//             <table>
+//                 <tr><td><strong>WEC No:</strong></td><td>${record?.amcs[0]?.id}</td></tr>
+//                 <tr><td><strong>Date:</strong></td><td>${new Date().toLocaleDateString('en-IN')}</td></tr>
+//             </table>
+//         </div>
+//     </div>
+
+//     <div class="invoice-title">Warranty Extended Contract</div>
+
+//     <table>
+//         <tr><th>Customer Name</th><td>${customer.name}</td></tr>
+//         <tr><th>Address</th><td>${customer.address}</td></tr>
+//         <tr><th>Contact</th><td>${customer.mobile}</td></tr>
+//         <tr><th>Email</th><td>${customer.email}</td></tr>
+//     </table>
+
+//     <table>
+//         <thead>
+//             <tr><th>#</th><th>Product</th><th>Model</th><th>Serial</th><th>Start</th><th>End</th><th>Amount</th></tr>
+//         </thead>
+//         <tbody>
+//             ${rows}
+//         </tbody>
+//     </table>
+
+//      <div class="signature">
+//         <div>Note:- Under the extended warranty, claims are limited to a maximum of 80% of the product's value (excluding GST).Also please check the attachment what will cover under our Terms & Conditions.</div>
+//      </div>
+
+//       <div class="signature">
+//         <div >Thank you for choosing EMI PLUS CARE. For support, call us at ‪+91 8929391113‬ or email us at support@emipluscare.in </div>
+//      </div>
+    
+
+//    <div class="terms-box">
+//     ${termsAndConditions || "No terms available."}
+// </div>
+
+// </div>
+
+// </body>
+// </html>
+// `;
+
+
+//     const browser = await puppeteer.launch({
+//         headless: "new",
+//         args: ["--no-sandbox", "--disable-setuid-sandbox"]
+//     });
+
+//     const page = await browser.newPage();
+//     page.setDefaultNavigationTimeout(0);
+
+//     await page.setContent(html, { waitUntil: "networkidle0" });
+
+//     const pdfPath = path.join(__dirname, "../uploads", `WEC_${record?.amcs[0]?.id || uuidv4()}.pdf`);
+//     await page.pdf({ path: pdfPath, format: "A4", printBackground: true });
+//     await browser.close();
+
+//     const downloadLink = `${process.env.serverURL}/uploads/${path.basename(pdfPath)}`;
+
+//     // ✅ Send Email
+//     await sendMail({
+//         to: email,
+//         subject: "Warranty Extension Contract – Confirmation & Welcome",
+
+//         html: `
+
+// <p>Dear <strong>${name}</strong>,</p>
+
+// <p>
+// We are pleased to inform you that your Warranty Extension Contract has been successfully completed and activated. 
+// Thank you for extending your service support with us. We greatly appreciate your continued trust in our products and services.
+// </p>
+
+// <p>
+// Please find the Warranty Extension Certificate (WEC) attached for your reference and records. 
+// Kindly review the document and confirm that the information mentioned is accurate. 
+// Should any correction be required, please feel free to contact us.
+// </p>
+
+// <p>
+// We are committed to providing you with reliable technical support and service throughout the warranty period.
+// </p>
+
+// <p><strong>For any inquiry, assistance or technical support, please contact:</strong></p>
+
+// <p>
+// Support Phone: 8929391113, 8929391114, 8929391115, 8929391116 <br>
+// Support Email: support@emipluscare.in
+// </p>
+
+// <p>
+// You can also download your contract here:<br>
+// <a href="${downloadLink}" style="background:#007bff;color:white;padding:5px 11px;border-radius:6px;text-decoration:none;">Download Warranty Contract (PDF)</a>
+// </p>
+
+// <p>
+// Thank you once again for choosing us. We look forward to serving you.
+// </p>
+
+// <p>
+// Warm Regards,<br>
+// <strong>EMI PLUS CARE</strong> <br>
+// Mail ID: support@emipluscare.in
+// </p>
+// `,
+
+//         attachments: [{ filename: path.basename(pdfPath), path: pdfPath }]
+//     });
+
+//     return { status: true, message: "✅ Styled PDF Sent Successfully" };
+// };
+
+
+
 exports.sendOrderNotification = async ({ email, name, customer, companySettings, record, termsAndConditions }) => {
-    // console.log("XXXXXX::=>", record)
     const rows = record?.amcs?.map((item, index) => `
     <tr>
         <td>${index + 1}</td>
@@ -804,90 +973,191 @@ exports.sendOrderNotification = async ({ email, name, customer, companySettings,
     </tr>
 `).join("") || "";
 
-    // ✅ Build full styled HTML (use your same template)
+    // ✅ Fixed HTML with proper page breaks and margins
     const html = `
 <html>
 <head>
     <style>
-        body { font-family: "Poppins", Arial, sans-serif; padding: 20px; background: #fff; }
-        .invoice-box { max-width: 850px; margin: auto; padding: 25px 30px; border: 1px solid #e0e0e0; border-radius: 8px; }
-        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
-        .company-info h2 { margin: 0; color: #007bff; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
-        th, td { border: 1px solid #ddd; padding: 8px; }
-        th { background: #007bff; color: white; }
-        .invoice-title { text-align: center; margin-top: 15px; font-size: 20px; font-weight: 600; }
-        .signature { display: flex; justify-content: center; margin-top: 40px; }
-        .sig-line { margin-top: 50px; border-top: 1px solid #000; width: 200px; }
+        @page {
+            margin: 20px;
+            size: A4;
+        }
+        
+        body { 
+            font-family: "Poppins", Arial, sans-serif; 
+            margin: 0;
+            padding: 0;
+            background: #fff; 
+            font-size: 12px;
+            line-height: 1.4;
+        }
+        
+        .invoice-box { 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        
+        .header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-start; 
+            border-bottom: 2px solid #007bff; 
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            page-break-after: avoid;
+        }
+        
+        .company-info h2 { 
+            margin: 0 0 5px 0; 
+            color: #007bff; 
+            font-size: 18px;
+        }
+        
+        .company-info p {
+            margin: 2px 0;
+            font-size: 11px;
+        }
+        
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin: 15px 0; 
+            font-size: 11px;
+            page-break-inside: avoid;
+        }
+        
+        th, td { 
+            border: 1px solid #ddd; 
+            padding: 6px 8px; 
+            text-align: left;
+            word-wrap: break-word;
+        }
+        
+        th { 
+            background: #007bff; 
+            color: white; 
+            font-weight: 600;
+            font-size: 11px;
+        }
+        
+        .invoice-title { 
+            text-align: center; 
+            margin: 20px 0; 
+            font-size: 18px; 
+            font-weight: 600;
+            page-break-after: avoid;
+        }
+        
+        .signature { 
+            margin: 20px 0;
+            padding: 10px;
+            page-break-before: avoid;
+        }
+        
+        .signature div {
+            font-size: 11px;
+            line-height: 1.3;
+            margin: 8px 0;
+        }
+        
+        .sig-line { 
+            margin-top: 50px; 
+            border-top: 1px solid #000; 
+            width: 200px; 
+        }
+        
         .terms-box {
-  page-break-before: always;
-  border: 1px solid #ccc;
-  padding: 9px;
-  border-radius: 6px;
-  margin-top: 30px;
-  font-size: 14px;
-  line-height: 1;
-  overflow: visible; 
-  max-height: none;
-  text-align: justify;
-}
-     </style>
+            page-break-before: always;
+            border: 1px solid #ccc;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 30px;
+            font-size: 10px;
+            line-height: 1.2;
+            text-align: justify;
+        }
+        
+        .terms-box h3 {
+            margin-top: 0;
+            font-size: 12px;
+        }
+        
+        /* Ensure proper page breaks */
+        .page-break {
+            page-break-before: always;
+        }
+        
+        /* Prevent text cutting */
+        .no-break {
+            page-break-inside: avoid;
+        }
+    </style>
 </head>
 <body>
 
 <div class="invoice-box">
-    <div class="header">
+    <div class="header no-break">
         <div>
-            <img src="${companySettings?.logo || ''}" style="width:80px;height:80px;object-fit:contain;border-radius:8px;">
-            <h2>${companySettings?.name}</h2>
-            <p>${companySettings?.address}</p>
-            <p>${companySettings?.phone} | ${companySettings?.email}</p>
+            <img src="${companySettings?.logo || ''}" style="width:70px;height:70px;object-fit:contain;border-radius:8px;margin-bottom:10px;">
+            <h2>${companySettings?.name || 'EMI PLUS CARE'}</h2>
+            <p>${companySettings?.address || 'C9/7 c-block diishad colony Delhi-95'}</p>
+            <p>${companySettings?.phone || '+91 8929391113'} | ${companySettings?.email || 'Support@emipluscare.in'}</p>
         </div>
         <div>
-            <table>
-                <tr><td><strong>WEC No:</strong></td><td>${record?.amcs[0]?.id}</td></tr>
+            <table style="width: auto; min-width: 150px;">
+                <tr><td><strong>WEC No:</strong></td><td>${record?.amcs[0]?.id || 'N/A'}</td></tr>
                 <tr><td><strong>Date:</strong></td><td>${new Date().toLocaleDateString('en-IN')}</td></tr>
             </table>
         </div>
     </div>
 
-    <div class="invoice-title">Warranty Extended Contract</div>
+    <div class="invoice-title no-break">Warranty Extended Contract</div>
 
-    <table>
-        <tr><th>Customer Name</th><td>${customer.name}</td></tr>
+    <table class="no-break">
+        <tr><th style="width: 30%;">Customer Name</th><td>${customer.name}</td></tr>
         <tr><th>Address</th><td>${customer.address}</td></tr>
         <tr><th>Contact</th><td>${customer.mobile}</td></tr>
         <tr><th>Email</th><td>${customer.email}</td></tr>
     </table>
 
-    <table>
-        <thead>
-            <tr><th>#</th><th>Product</th><th>Model</th><th>Serial</th><th>Start</th><th>End</th><th>Amount</th></tr>
-        </thead>
-        <tbody>
-            ${rows}
-        </tbody>
-    </table>
+    <div class="no-break" style="margin: 15px 0;">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 5%;">#</th>
+                    <th style="width: 25%;">Product</th>
+                    <th style="width: 15%;">Model</th>
+                    <th style="width: 15%;">Serial</th>
+                    <th style="width: 10%;">Start</th>
+                    <th style="width: 10%;">End</th>
+                    <th style="width: 10%;">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${rows}
+            </tbody>
+        </table>
+    </div>
 
-     <div class="signature">
-        <div>Note:- Under the extended warranty, claims are limited to a maximum of 80% of the product's value (excluding GST).Also please check the attachment what will cover under our Terms & Conditions.</div>
-     </div>
+    <div class="signature no-break">
+        <div><strong>Note:</strong> Under the extended warranty, claims are limited to a maximum of 80% of the product's value (excluding GST). Please check the attachment for what is covered under our Terms & Conditions.</div>
+    </div>
 
-      <div class="signature">
-        <div >Thank you for choosing EMI PLUS CARE. For support, call us at ‪+91 8929391113‬ or email us at support@emipluscare.in </div>
-     </div>
-    
+    <div class="signature no-break">
+        <div>Thank you for choosing EMI PLUS CARE. For support, call us at +91 8929391113 or email us at support@emipluscare.in</div>
+    </div>
 
-   <div class="terms-box">
-    ${termsAndConditions || "No terms available."}
-</div>
-
+    <div class="terms-box">
+        <h3>Terms & Conditions</h3>
+        ${termsAndConditions || "No terms available."}
+    </div>
 </div>
 
 </body>
 </html>
 `;
-
 
     const browser = await puppeteer.launch({
         headless: "new",
@@ -900,7 +1170,21 @@ exports.sendOrderNotification = async ({ email, name, customer, companySettings,
     await page.setContent(html, { waitUntil: "networkidle0" });
 
     const pdfPath = path.join(__dirname, "../uploads", `WEC_${record?.amcs[0]?.id || uuidv4()}.pdf`);
-    await page.pdf({ path: pdfPath, format: "A4", printBackground: true });
+    
+    // ✅ Fixed PDF generation with proper margins
+    await page.pdf({ 
+        path: pdfPath, 
+        format: "A4", 
+        printBackground: true,
+        margin: {
+            top: '20px',
+            right: '20px',
+            bottom: '20px',
+            left: '20px'
+        },
+        displayHeaderFooter: false
+    });
+    
     await browser.close();
 
     const downloadLink = `${process.env.serverURL}/uploads/${path.basename(pdfPath)}`;
@@ -909,9 +1193,7 @@ exports.sendOrderNotification = async ({ email, name, customer, companySettings,
     await sendMail({
         to: email,
         subject: "Warranty Extension Contract – Confirmation & Welcome",
-
         html: `
-
 <p>Dear <strong>${name}</strong>,</p>
 
 <p>
@@ -938,7 +1220,7 @@ Support Email: support@emipluscare.in
 
 <p>
 You can also download your contract here:<br>
-<a href="${downloadLink}" style="background:#007bff;color:white;padding:5px 11px;border-radius:6px;text-decoration:none;">Download Warranty Contract (PDF)</a>
+<a href="${downloadLink}" style="background:#007bff;color:white;padding:8px 15px;border-radius:6px;text-decoration:none;display:inline-block;margin:10px 0;">Download Warranty Contract (PDF)</a>
 </p>
 
 <p>
@@ -951,7 +1233,6 @@ Warm Regards,<br>
 Mail ID: support@emipluscare.in
 </p>
 `,
-
         attachments: [{ filename: path.basename(pdfPath), path: pdfPath }]
     });
 

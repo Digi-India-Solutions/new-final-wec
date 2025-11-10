@@ -14,6 +14,7 @@ export default function SchemaForm({
 }) {
   const [formData, setFormData] = useState(initialData);
   const [errors, setErrors] = useState({});
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleChange = (name, value) => {
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -38,7 +39,7 @@ export default function SchemaForm({
     e.preventDefault();
 
     // Validate required fields
-    const missingFields = fields.filter(field => 
+    const missingFields = fields.filter(field =>
       field.required && (!formData[field.name] || formData[field.name] === '')
     );
 
@@ -67,11 +68,10 @@ export default function SchemaForm({
             <textarea
               value={value}
               onChange={(e) => handleChange(field.name, e.target.value)}
-              className={`block w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1 ${
-                error 
-                  ? 'border-red-300 focus:border-red-500 focus:ring-red-500' 
-                  : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
-              }`}
+              className={`block w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1 ${error
+                ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
+                : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                }`}
               rows={3}
               placeholder={`Enter ${field.label.toLowerCase()}`}
             />
@@ -89,11 +89,10 @@ export default function SchemaForm({
               <select
                 value={value}
                 onChange={(e) => handleChange(field.name, e.target.value)}
-                className={`block w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1 pr-8 ${
-                  error 
-                    ? 'border-red-300 focus:border-red-500 focus:ring-red-500' 
-                    : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
-                }`}
+                className={`block w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1 pr-8 ${error
+                  ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
+                  : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                  }`}
               >
                 <option value="">Select {field.label}</option>
                 {field.options?.map(option => (
@@ -120,11 +119,10 @@ export default function SchemaForm({
               type="date"
               value={value}
               onChange={(e) => handleChange(field.name, e.target.value)}
-              className={`block w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1 ${
-                error 
-                  ? 'border-red-300 focus:border-red-500 focus:ring-red-500' 
-                  : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
-              }`}
+              className={`block w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1 ${error
+                ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
+                : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                }`}
             />
             {error && <p className="text-sm text-red-600">{error}</p>}
           </div>
@@ -141,9 +139,8 @@ export default function SchemaForm({
                 type="file"
                 accept={field.accept}
                 onChange={(e) => handleFileChange(field.name, e.target.files?.[0] || null)}
-                className={`block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 ${
-                  error ? 'border-red-300' : 'border-gray-300'
-                }`}
+                className={`block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 ${error ? 'border-red-300' : 'border-gray-300'
+                  }`}
               />
               {value && (
                 <div className="flex items-center space-x-2 text-sm text-green-600">
@@ -168,16 +165,28 @@ export default function SchemaForm({
               {field.label} {field.required && <span className="text-red-500">*</span>}
             </label>
             <input
-              type={field.type}
+              type={field.type === 'password' ? (showPassword ? 'text' : 'password') : field.type}
+              // type={field.type}
               value={value}
               onChange={(e) => handleChange(field.name, e.target.value)}
-              className={`block w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1 ${
-                error 
-                  ? 'border-red-300 focus:border-red-500 focus:ring-red-500' 
-                  : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
-              }`}
+              className={`block w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1 ${error
+                ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
+                : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                }`}
               placeholder={`Enter ${field.label.toLowerCase()}`}
             />
+
+            {field.type === 'password' && (
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 focus:outline-none"
+              >
+                <i
+                  className={`ri-${showPassword ? 'eye-off-line' : 'eye-line'} text-lg`}
+                ></i>
+              </button>
+            )}
             {error && <p className="text-sm text-red-600">{error}</p>}
           </div>
         );
@@ -189,7 +198,7 @@ export default function SchemaForm({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {fields.map(renderField)}
       </div>
-      
+
       <div className="flex justify-end space-x-3 pt-4">
         {onCancel && (
           <Button
