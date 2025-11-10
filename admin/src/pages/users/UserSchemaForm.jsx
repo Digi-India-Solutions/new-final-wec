@@ -88,6 +88,7 @@ export default function SchemaForm({
     } else {
       showToast(respons.message, 'error');
     }
+    fetchAdminData()
     // Validate required fields
     // const missingFields = fields.filter(field => 
     //   field.required && (!formData[field.name] || formData[field.name] === '')

@@ -208,7 +208,7 @@ export default function StaffPage() {
           fetchAllStaff()
           fetchRoles()
           setStaff(prev => [...prev, newStaff]);
-          toast.success(respons?.message || 'Staff member added successfully', 'success');
+          toast.success('Staff member added successfully', 'success');
         } else {
           toast.error(respons?.message || 'Operation failed', 'error');
         }

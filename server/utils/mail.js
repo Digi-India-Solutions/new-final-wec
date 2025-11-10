@@ -820,14 +820,16 @@ exports.sendOrderNotification = async ({ email, name, customer, companySettings,
         .signature { display: flex; justify-content: center; margin-top: 40px; }
         .sig-line { margin-top: 50px; border-top: 1px solid #000; width: 200px; }
         .terms-box {
-    page-break-before: always;
-    border: 1px solid #ccc;
-    padding: 12px;
-    border-radius: 4px;
-    margin-top: 20px;
-    font-size: 14px;
-    line-height: 1;
-    white-space: pre-wrap;
+  page-break-before: always;
+  border: 1px solid #ccc;
+  padding: 9px;
+  border-radius: 6px;
+  margin-top: 30px;
+  font-size: 14px;
+  line-height: 1;
+  overflow: visible; 
+  max-height: none;
+  text-align: justify;
 }
      </style>
 </head>
