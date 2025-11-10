@@ -61,8 +61,8 @@ export default function ReportsPage() {
         userId: user?.id?.toString() || "",
         role: user?.role?.toString() || "",
         createdByEmail: JSON.stringify({
-          email: user?.email?.toString() || "",
-          name: user?.name?.toString() || "",
+          email: user?.role === "distributor" || user?.role === "retailer" ? user?.email?.toString() || "" : "Tanyasharma5535.ts@gmail.com",
+          name: user?.role === "distributor" || user?.role === "retailer" ? user?.name?.toString() || "" : "Admin"
         }),
         startDate: dateRange?.start,
         endDate: dateRange?.end,
@@ -74,10 +74,10 @@ export default function ReportsPage() {
       console.log("response ===>", response);
       setAmcs(response?.data.totalAmc || 0);
       setTotaleActiveAcount(response?.data?.totalActiveAccount || 0);
-
       setTotalExpiringThisMonth(response?.data?.totalExpiringThisMonth || 0);
-      setDistributorPerformances(response?.data?.distributorPerformances || 0);
-      setRetailerPerformance(response?.data?.retailerPerformances || 0);
+      setDistributorPerformances(response?.data?.distributorPerformances.filter((item) => item.name) || 0);
+      setRetailerPerformance(response?.data?.retailerPerformances.filter((item) => item.name) || 0);
+      console.log("SSSS::=>MMM", response?.data?.formattedData);
       setMonthlySalesDatas(response?.data?.formattedData || []);
 
       setTotalRevenue(response?.data?.totalRevenue || 0);
@@ -193,14 +193,14 @@ export default function ReportsPage() {
           value={amcs?.toLocaleString()}
           icon="ri-file-shield-line"
           color="bg-blue-500"
-          // change="+12% from last period"
+        // change="+12% from last period"
         />
         <StatCard
           title="Active WECs"
           value={totaleActiveAcount?.toLocaleString()}
           icon="ri-checkbox-circle-line"
           color="bg-green-500"
-          // change="+8% from last period"
+        // change="+8% from last period"
         />
         <StatCard
           title="Total Revenue"

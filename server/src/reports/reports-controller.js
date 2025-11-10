@@ -18,7 +18,7 @@ exports.getAllReportsTotal = catchAsyncErrors(async (req, res, next) => {
         const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
         const colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#6366F1', '#14B8A6'];
 
-        console.log("Incoming Query:==>", req.query, currentMonth, currentYear);
+        console.log("Incoming Query:==>SS", req.query, currentMonth, currentYear);
 
         // 🧠 Parse createdByEmail JSON safely
         let createdBy = {};
@@ -60,12 +60,12 @@ exports.getAllReportsTotal = catchAsyncErrors(async (req, res, next) => {
         }
 
         if (createdBy?.email && role === "distributor" || role === "retailer") {
-            filter.createdByEmail = createdBy;
+            filter['createdByEmail.email'] = createdBy.email;
         }
 
         console.log("XXXXXXXXXXX::=>", filter);
         // 📊 Total AMC count
-        const amcCount = await amcsModel.countDocuments(filter);
+        const amcCount = await amcsModel.countDocuments({ ...filter });
 
         // 🟢 Active AMCs
         const activeAccount = await amcsModel.countDocuments({ ...filter, status: "active", });
@@ -166,7 +166,7 @@ exports.getAllReportsTotal = catchAsyncErrors(async (req, res, next) => {
                 $sort: { "_id.year": 1, "_id.month": 1 }
             }
         ]);
-        console.log("totalAmcData==>formattedData", monthlySalesData);
+        console.log("totalAmcData==>B", monthlySalesData);
 
         const formattedData = monthlySalesData.map(item => ({
             month: monthNames[item._id.month - 1],
@@ -180,13 +180,14 @@ exports.getAllReportsTotal = catchAsyncErrors(async (req, res, next) => {
         const totalRetailers = role === "distributor" ? await SuperAdmin.countDocuments({ 'createdByEmail.email': createdBy?.email, role: "retailer" }) :
             await SuperAdmin.countDocuments({ ...filter, role: "retailer" });
 
-        const filterSS = role === 'admin' ? { type: 'debit' } : { "createdByEmail.email": createdBy?.email, type: 'debit' };
-        const usersTransactions = await Transactions.find({ ...filter, ...filterSS })
+        const filterSS = { "createdByEmail.email": createdBy?.email, type: 'debit' };
+
+        const usersTransactions = await Transactions.find({ ...filterSS })
 
         const totalRevenue = usersTransactions.reduce((sum, transaction) => sum + transaction.amount, 0);
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        const totalAmcData = await amcsModel.find(filter);
+        const totalAmcData = await amcsModel.find({ ...filter });
         const monthlyData = {};
 
         totalAmcData.forEach(item => {

@@ -51,9 +51,14 @@ export default function Dashboard() {
         userId: user?.id?.toString() || "",
         role: user?.role?.toString() || "",
         createdByEmail: JSON.stringify({
-          email: user?.email?.toString() || "",
-          name: user?.name?.toString() || "",
-        }),
+          email: user?.role === "distributor" || user?.role === "retailer"
+            ? user?.email?.toString() || ""
+            : "Tanyasharma5535.ts@gmail.com",
+          name: user?.role === "distributor" || user?.role === "retailer"
+            ? user?.name?.toString() || ""
+            : "Admin"
+        })
+
       });
 
       const response = await getData(`api/dashboard/get-all-amc-total?${queryJson}`);
@@ -132,7 +137,7 @@ export default function Dashboard() {
         />
       </div>
 
-      {user?.role === 'admin' && (
+      {user?.role !== 'retailer' && user?.role !== 'distributor' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <StatCard
             title="Total Distributors"
@@ -147,7 +152,7 @@ export default function Dashboard() {
             value={`₹${formatAmount(totalDistributorWalletAmount || 0).toLocaleString()}`}
             icon="ri-wallet-fill"
             color="bg-indigo-500"
-             path="/users"
+            path="/users"
           // change="+12%"
           />
 
@@ -156,7 +161,7 @@ export default function Dashboard() {
             value={totalRetailers || 0}
             icon="ri-store-line"
             color="bg-pink-500"
-             path="/users"
+            path="/users"
           />
 
           <StatCard
@@ -164,7 +169,7 @@ export default function Dashboard() {
             value={`₹${formatAmount(totalRetailerWalletAmount || 0).toLocaleString()}`}
             icon="ri-wallet-fill"
             color="bg-pink-500"
-             path="/wallet"
+            path="/wallet"
           />
         </div>
       )}
@@ -176,7 +181,7 @@ export default function Dashboard() {
             value={totalRetailers || 0}
             icon="ri-store-line"
             color="bg-indigo-500"
-             path="/users"
+            path="/users"
           />
 
           <StatCard
@@ -184,7 +189,7 @@ export default function Dashboard() {
             value={`₹${formatAmount(totalRetailerWalletAmount || 0).toLocaleString()}`}
             icon="ri-wallet-fill"
             color="bg-pink-500"
-             path="/wallet"
+            path="/wallet"
           />
           {/* <StatCard
             title="Commission Earned"
@@ -196,7 +201,7 @@ export default function Dashboard() {
       )}
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-12"> */}
         {/* Sales Trend */}
         <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">WEC Sales Trend</h3>
@@ -212,7 +217,7 @@ export default function Dashboard() {
         </div>
 
         {/* Revenue Chart */}
-        <div className="bg-white rounded-lg shadow p-6">
+        {/* <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Monthly Revenue</h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={salesData}>
@@ -223,8 +228,8 @@ export default function Dashboard() {
               <Bar dataKey="revenue" fill="#10B981" />
             </BarChart>
           </ResponsiveContainer>
-        </div>
-      </div>
+        </div> */}
+      {/* </div> */}
 
       {/* Product Distribution */}
       <div className="bg-white rounded-lg shadow p-6">

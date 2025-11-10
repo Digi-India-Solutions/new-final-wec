@@ -194,7 +194,7 @@ exports.getRetailersByDistributor = catchAsyncErrors(async (req, res, next) => {
 
         // ✅ Count total retailers
         const total = await SuperAdmin.countDocuments(filter);
-        
+
         const totalPages = Math.ceil(total / limit);
         const skip = (page - 1) * limit;
 
@@ -537,15 +537,35 @@ exports.getRetailersByAdminwithPagination = catchAsyncErrors(async (req, res, ne
     }
 });
 
-
-
 // Update Admin User
 exports.updateAdminByAdmin = catchAsyncErrors(async (req, res, next) => {
     const id = req.params.id;
     let updateData = { ...req?.body };
     // hash password if provided
+    if (updateData?.createdByEmail.email !== updateData?.oldCreatedByEmail.email) {
+
+        if (updateData.oldCreatedByEmail) {
+            const oldUser = await SuperAdmin.findOne({ email: updateData?.oldCreatedByEmail?.email });
+            if (oldUser && Number(oldUser?.totalRetailers) > 0) {
+                console.log('oldUser::===>', oldUser)
+                oldUser.totalRetailers = Number(oldUser?.totalRetailers - 1);
+            }
+            console.log('oldUser::===>------>', oldUser.totalRetailers)
+            oldUser.save();
+        }
+
+        if (updateData?.createdByEmail) {
+            const oldUser = await SuperAdmin.findOne({ email: updateData?.createdByEmail?.email });
+            if (oldUser && Number(oldUser?.totalRetailers) >= 0) {
+                console.log('oldUser::===>', oldUser)
+                oldUser.totalRetailers = Number(oldUser.totalRetailers + 1) || oldUser?.totalRetailers;
+            }
+            console.log('oldUser::===>++++++', oldUser.totalRetailers)
+            oldUser.save();
+        }
+    }
     const existData = await SuperAdmin.findById(id)
-    console.log('updateData::===>kkk', updateData, existData.password)
+    // console.log('updateData::===>kkk', updateData, existData.password)
     if (updateData.password) {
         updateData.password = await bcrypt.hash(updateData.password, 10);
     } else {
@@ -571,6 +591,9 @@ exports.updateAdminByAdmin = catchAsyncErrors(async (req, res, next) => {
     });
 
     if (!user) return next(new ErrorHandler('Admin user not found', 404));
+
+
+
 
     sendResponse(res, 200, 'Admin user updated successfully', user);
 });

@@ -166,9 +166,9 @@ export default function AMCsPage() {
   };
 
   const handleSubmit = async (formData) => {
-    if (!selectedCategory || !selectedBrand || !purchaseValue) {
+    if (!selectedCategory || !selectedBrand || !purchaseValue  || !formData.customerName || !formData.customerAddress || !formData.productPicture || !formData.purchaseProof || !formData.serialNumber) {
       alert('Please fill all product details');
-      showToast('Please fill all product details', 'error');
+      // showToast('Please fill all product details', 'error');
       return;
     }
     console.log("formData==>", formData)
@@ -206,6 +206,7 @@ export default function AMCsPage() {
         renewalCount: 0,
         lastServiceDate: null,
       };
+      
       console.log("newAMC==>newAMC==>", newAMC)
       const formDataToSend = new FormData();
 
@@ -1009,9 +1010,9 @@ export default function AMCsPage() {
                       ₹{calculateAMCAmount().toLocaleString('en-IN', { maximumFractionDigits: 2 })}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
+                  {/* <p className="text-xs text-gray-500 mt-1">
                     ₹{parseFloat(purchaseValue).toLocaleString('en-IN')} × {amcPercentage}% = ₹{calculateAMCAmount().toLocaleString('en-IN', { maximumFractionDigits: 2 })}
-                  </p>
+                  </p> */}
                 </div>
               )}
             </div>

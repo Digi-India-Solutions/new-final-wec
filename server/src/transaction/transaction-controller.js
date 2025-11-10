@@ -158,19 +158,19 @@ exports.createTransactionByAdmin = catchAsyncErrors(async (req, res, next) => {
         });
 
         // ✅ Create Reverse Transaction for Creator (Mirror Entry)
-        // const creatorTransaction = await Transaction.create({
-        //     id: Date.now().toString(),
-        //     createdBy: creator.name,
-        //     userId: creator?._id,
-        //     userName: creator.name,
-        //     userEmail: creator.email,
-        //     userType: creator.role,
-        //     type: type === "credit" ? "debit" : "credit", // Mirrored
-        //     amount: amt,
-        //     description: `${type === "credit" ? "Sent to" : "Received from"} ${user.name}`,
-        //     balanceAfter: creatorNewBalance,
-        //     createdByEmail,
-        // });
+        const creatorTransaction = await Transaction.create({
+            id: Date.now().toString(),
+            createdBy: creator.name,
+            userId: creator?._id,
+            userName: creator.name,
+            userEmail: creator.email,
+            userType: creator.role,
+            type: type === "credit" ? "debit" : "credit", // Mirrored
+            amount: amt,
+            description: `${type === "credit" ? "Wallet Recharge to" : "Received from"} ${user.name}`,
+            balanceAfter: creatorNewBalance,
+            createdByEmail,
+        });
 
         return res.status(200).json({
             status: true,
@@ -191,12 +191,113 @@ exports.createTransactionByAdmin = catchAsyncErrors(async (req, res, next) => {
 
 
 // ✅ Get Transactions (with pagination, search, status)
+// exports.getTransactionByAdminWithPagination = catchAsyncErrors(async (req, res, next) => {
+//     try {
+//         let { page = 1, limit = 10, search = "", role = "", status = "", userType = "", userId = [], createdByEmail = "" } = req.query;
+//         page = Math.max(1, parseInt(page, 10));
+//         limit = Math.max(1, parseInt(limit, 10));
+//         console.log('req.query::===>>', userId, role)
+
+//         if (typeof userId === "string") {
+//             try {
+//                 userId = JSON.parse(userId);
+//             } catch {
+//                 userId = userId.split(",").filter(Boolean);
+//             }
+//         }
+
+//         const filter = {};
+//         const filterData = {};
+//         if (role !== 'admin') {
+
+//             if (Array.isArray(userId) && userId.length > 0) {
+//                 filter.userId = { $in: userId };
+//                 filterData.userId = { $in: userId };
+//             }
+//             //     filter.createdByEmail.createdBy = role;
+
+//             //     // ✅ CreatedByEmail filter (distributor identifier)
+
+//             //     if (createdByEmail && createdByEmail.trim() !== '') {
+//             //         const createdByRegex = new RegExp(createdByEmail.trim(), 'i');
+//             //         filter.$or = [
+//             //             { 'createdByEmail.email': createdByRegex },
+//             //             { 'createdByEmail.name': createdByRegex }
+//             //         ];
+//             //     }
+//         }
+
+//         if (status && status !== "all") {
+//             filter.status = new RegExp(`^${status}$`, "i");
+//         }
+//         if (userType && userType !== "all") {
+//             filter.userType = new RegExp(`^${userType}$`, "i");
+//         }
+//         if (search && search.trim() !== "") {
+//             const searchRegex = new RegExp(search.trim(), "i");
+//             filter.$or = [
+//                 { userName: searchRegex },
+//                 { userEmail: searchRegex },
+//                 { type: searchRegex },
+//                 { description: searchRegex },
+//             ];
+//         }
+
+//         const total = await Transaction.countDocuments(filter);
+//         const totalTransactions = await Transaction.countDocuments(filterData);
+//         const [creditAgg] = await Transaction.aggregate([
+//             { $match: { type: "credit" } },
+//             { $group: { _id: null, total: { $sum: "$amount" } } }
+//         ]);
+
+//         const [debitAgg] = await Transaction.aggregate([
+//             { $match: { type: "debit" } },
+//             { $group: { _id: null, total: { $sum: "$amount" } } }
+//         ]);
+
+//         const totalCredit = creditAgg?.total || 0;
+//         const totalDebit = debitAgg?.total || 0;
+
+//         // ✅ Optionally calculate balance
+//         const balance = totalCredit - totalDebit;
+
+//         const transactions = await Transaction.find(filter)
+//             .sort({ createdAt: -1 })
+//             .skip((page - 1) * limit)
+//             .limit(limit)
+//             .lean();
+
+//         const totalPages = Math.ceil(total / limit);
+
+//         res.status(200).json({
+//             status: true,
+//             message: "Transactions fetched successfully",
+//             data: transactions,
+//             pagination: {
+//                 total,
+//                 totalTransactions,
+//                 totalCredit,
+//                 totalDebit,
+//                 totalPages,
+//                 balance,
+//                 currentPage: page,
+//                 pageSize: limit,
+//                 hasNextPage: page < totalPages,
+//                 hasPrevPage: page > 1,
+//             },
+//         });
+//     } catch (error) {
+//         return next(new ErrorHandler(error.message, 500));
+//     }
+// });
+
+
 exports.getTransactionByAdminWithPagination = catchAsyncErrors(async (req, res, next) => {
     try {
         let { page = 1, limit = 10, search = "", role = "", status = "", userType = "", userId = [], createdByEmail = "" } = req.query;
         page = Math.max(1, parseInt(page, 10));
         limit = Math.max(1, parseInt(limit, 10));
-        console.log('req.query::===>>', userId, role)
+        // console.log('req.query::===>> hh', createdByEmail)
 
         if (typeof userId === "string") {
             try {
@@ -208,23 +309,15 @@ exports.getTransactionByAdminWithPagination = catchAsyncErrors(async (req, res, 
 
         const filter = {};
         const filterData = {};
-        if (role !== 'admin') {
 
-            if (Array.isArray(userId) && userId.length > 0) {
-                filter.userId = { $in: userId };
-                filterData.userId = { $in: userId };
-            }
-            //     filter.createdByEmail.createdBy = role;
-
-            //     // ✅ CreatedByEmail filter (distributor identifier)
-
-            //     if (createdByEmail && createdByEmail.trim() !== '') {
-            //         const createdByRegex = new RegExp(createdByEmail.trim(), 'i');
-            //         filter.$or = [
-            //             { 'createdByEmail.email': createdByRegex },
-            //             { 'createdByEmail.name': createdByRegex }
-            //         ];
-            //     }
+        if (createdByEmail) {
+            const createdByRegex = new RegExp(createdByEmail.trim(), 'i');
+            filter.$or = [
+                { 'userEmail': createdByRegex }
+            ];
+            filterData.$or = [
+                { 'userEmail': createdByRegex }
+            ]
         }
 
         if (status && status !== "all") {

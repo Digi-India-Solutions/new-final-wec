@@ -38,11 +38,13 @@ export default function WalletPage() {
   const [distributors, setDistributors] = useState([]);
   const [retailers, setRetailers] = useState([]);
   const [transactions, setTransactions] = useState([]);
+  const [userTransactions, setUserTransactions] = useState([]);
 
   const [totalBalance, setTotalBalance] = useState(0);
   const [totalCredit, setTotalCredit] = useState(0);
   const [totalDebit, setTotalDebit] = useState(0);
   const [rolePermissions, setRolePermissions] = useState([]);
+  const [isTranjectionModalOpen, setIsTranjectionModalOpen] = useState(false)
 
   const [canRead, canWrite, canEdit, canDelete] = (() => {
     // Default admin/distributor/retailer logic
@@ -79,6 +81,7 @@ export default function WalletPage() {
     return matchesSearch;
   });
 
+
   const balanceColumns = [
     { key: 'name', title: 'Name', sortable: true },
     {
@@ -110,15 +113,23 @@ export default function WalletPage() {
       key: 'createdDate', title: 'Date', render: (value) =>
         new Date(value).toLocaleDateString('en-IN')
     },
-    { key: 'userName', title: 'User', sortable: true },
+
     {
-      key: 'userType', title: 'Type', render: (value) => (
-        <span className={`px-2 py-1 rounded-full text-xs font-medium ${value === 'distributor' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
-          }`}>
-          {value.charAt(0).toUpperCase() + value.slice(1)}
-        </span>
-      )
+      key: 'createdAt',
+      title: 'Time',
+      render: (value) => new Date(value).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
     },
+
+    // { key: 'userName', title: 'User', sortable: true },
+
+    // {
+    //   key: 'userType', title: 'Type', render: (value) => (
+    //     <span className={`px-2 py-1 rounded-full text-xs font-medium ${value === 'distributor' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
+    //       }`}>
+    //       {value.charAt(0).toUpperCase() + value.slice(1)}
+    //     </span>
+    //   )
+    // },
     {
       key: 'type', title: 'Transaction', render: (value) => (
         <span className={`px-2 py-1 rounded-full text-xs font-medium ${value === 'credit' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
@@ -150,6 +161,10 @@ export default function WalletPage() {
     setIsCreditModalOpen(true);
   };
 
+  const transaction = (user) => {
+    setSelectedUser(user);
+    setIsTranjectionModalOpen(true);
+  }
   const handleWalletTransaction = async (clientAmount, percentage, finalAmount) => {
     setLoading(true);
     try {
@@ -165,19 +180,19 @@ export default function WalletPage() {
       const transactionAmount = transactionType === 'credit' ? finalAmount : -finalAmount;
 
       // Update user balance
-      if (selectedUser.role === 'distributor') {
-        setDistributors(prev => prev.map(d =>
-          d._id === selectedUser._id
-            ? { ...d, walletBalance: d.walletBalance + transactionAmount }
-            : d
-        ));
-      } else {
-        setRetailers(prev => prev.map(r =>
-          r._id === selectedUser._id
-            ? { ...r, walletBalance: r.walletBalance + transactionAmount }
-            : r
-        ));
-      }
+      // if (selectedUser.role === 'distributor') {
+      //   setDistributors(prev => prev.map(d =>
+      //     d._id === selectedUser._id
+      //       ? { ...d, walletBalance: d.walletBalance + transactionAmount }
+      //       : d
+      //   ));
+      // } else {
+      //   setRetailers(prev => prev.map(r =>
+      //     r._id === selectedUser._id
+      //       ? { ...r, walletBalance: r.walletBalance + transactionAmount }
+      //       : r
+      //   ));
+      // }
       console.log("newTransactionnewTransaction:==>", selectedUser);
       // Add transaction record
       const newTransaction = {
@@ -202,11 +217,17 @@ export default function WalletPage() {
       if (response?.status === true) {
         fetchTransactions()
         fetchWalletManagement()
+        fetchDistributors()
+        fetchRetailers()
         setTransactions(prev => [newTransaction, ...prev]);
         showToast(`₹${finalAmount.toLocaleString()} ${transactionType === 'credit' ? 'credited to' : 'debited from'} ${selectedUser?.name}`, 'success');
         setIsCreditModalOpen(false);
         setSelectedUser(null);
       } else {
+        fetchTransactions()
+        fetchWalletManagement()
+        fetchDistributors()
+        fetchRetailers()
         showToast(`${response?.massage || 'Failed'}`, 'error');
         setIsCreditModalOpen(false);
         setSelectedUser(null);
@@ -218,6 +239,8 @@ export default function WalletPage() {
       setLoading(false);
     }
   };
+
+
 
   const renderBalanceActions = (record) => (
     <div className="flex space-x-2">
@@ -238,6 +261,16 @@ export default function WalletPage() {
         <i className="ri-subtract-line mr-1 w-4 h-4 flex items-center justify-center"></i>
         Remove
       </Button>}
+
+      <Button
+        size="sm"
+        variant="success"
+        onClick={() => transaction(record)}
+      // disabled={record?.status !== 'active' || record?.walletBalance <= 0}
+      >
+        Transaction
+      </Button>
+
     </div>
   );
 
@@ -255,38 +288,39 @@ export default function WalletPage() {
   }
   const fetchRetailers = async () => {
     try {
-      const queryParams = new URLSearchParams({
+      let queryParamsObj = {
         limit: pageSize.toString(),
         page: currentPage.toString(),
-        // search: searchTerm || '',
         role: user?.role,
-        // status: statusFilter || '',
         createdByEmail: user?.email || '',
-        userId: user?.id
-      }).toString();
+        userId: user?.id?.toString() || ''
+      };
+
+      // If user is NOT retailer AND NOT distributor -> treat as admin
+      if (user?.role !== 'retailer' && user?.role !== 'distributor') {
+        queryParamsObj.role = "admin";
+        queryParamsObj.createdByEmail = "Tanyasharma5535.ts@gmail.com";
+      }
+
+      // Now convert to URLSearchParams
+      const queryParams = new URLSearchParams(queryParamsObj).toString();
+
 
       const response = await getData(`api/admin/getRetailersByDistributorwithPagination?${queryParams}`);
-      console.log("response===>CCC", response)
+      console.log("response===>CCC==>", response?.data)
       if (response?.status) {
-        setRetailers(response?.data.filter((item) => item?.name != user?.name));
+        setRetailers(response?.data?.filter((item) => item?.name != user?.name));
         setTransactionUserId((prev) => {
           const merged = [...prev, ...response?.data?.map((item) => item._id)];
           return [...new Set(merged)];
         });
         setTotalPages(response?.pagination.totalPages);
         setCurrentPage(response?.pagination.currentPage)
-        // if (user?.role === 'distributor') {
-        //   count = response?.pagination.total;
-        //   setTotalData(count);
-        // }
-        // if (user?.role === 'retailer') {
-        //   count = response?.pagination.total;
-        //   setTotalData(count);
-        // }
-        if (user?.role === 'admin') {
+        if (user?.role === 'distributor') {
+          setTotalData(response?.pagination.total);
+        } else {
           setTotalData(response?.pagination?.total >= 1 ? response?.pagination?.total - 1 : response?.pagination?.total);
         }
-
 
       }
     } catch (e) {
@@ -301,27 +335,68 @@ export default function WalletPage() {
         limit: transactionPageSize.toString(),
         page: transactionCurrentPage.toString(),
         role: user?.role,
-        createdByEmail: user?.email || '',
+        createdByEmail: user?.email
+      };
+
+      // if user is NOT retailer AND NOT distributor -> treat as admin
+      if (user?.role !== 'retailer' && user?.role !== 'distributor') {
+        queryParamsObj.role = "admin";
+        queryParamsObj.createdByEmail = "Tanyasharma5535.ts@gmail.com";
+      }
+      console.log("SSS:==>", user, queryParamsObj)
+      // Conditionally add userId if retailers exist
+      // if (retailers?.length > 0) {
+      //   queryParamsObj.userId = JSON.stringify(transactionUserId || user?.id);
+      // } else {
+      //   queryParamsObj.userId = JSON.stringify([user?.id]);
+      // }
+      if (queryParamsObj?.role && queryParamsObj?.createdByEmail) {
+        const queryParams = new URLSearchParams(queryParamsObj).toString();
+        // console.log("transaction queryParams===>", queryParams, "transaction queryParams===>", user?.id);
+        const response = await getData(`api/transaction/get-transaction-by-admin-with-pagination?${queryParams}`);
+        // console.log("transaction response===>", response);
+        if (response?.status) {
+          setTransactions(response?.data);
+          setTransactionTotalPages(response?.pagination.totalPages);
+          setTransactionCurrentPage(response?.pagination.currentPage);
+          setTransactionTotalData(response?.pagination.totalTransactions);
+        }
+      }
+
+    } catch (e) {
+      console.log(e)
+    }
+  }
+
+  const fetchUserTransactions = async () => {
+    try {
+      const queryParamsObj = {
+        limit: transactionPageSize.toString(),
+        page: transactionCurrentPage.toString(),
+        role: selectedUser?.role,
+        createdByEmail: selectedUser?.email || '',
       };
 
       // Conditionally add userId if retailers exist
-      if (retailers?.length > 0) {
-        queryParamsObj.userId = JSON.stringify(transactionUserId || user?.id);
-      } else {
-        queryParamsObj.userId = JSON.stringify([user?.id]);
+      // if (retailers?.length > 0) {
+      //   queryParamsObj.userId = JSON.stringify(transactionUserId || selectedUser?._id);
+      // } else {
+      //   queryParamsObj.userId = JSON.stringify([selectedUser?._id]);
+      // }
+
+
+      if (selectedUser && queryParamsObj?.role && queryParamsObj?.createdByEmail) {
+        const queryParams = new URLSearchParams(queryParamsObj).toString();
+        const response = await getData(`api/transaction/get-transaction-by-admin-with-pagination?${queryParams}`);
+        if (response?.status) {
+          setUserTransactions(response?.data);
+          setTransactionTotalPages(response?.pagination.totalPages);
+          setTransactionCurrentPage(response?.pagination.currentPage);
+          setTransactionTotalData(response?.pagination?.totalTransactions);
+        }
       }
 
 
-      const queryParams = new URLSearchParams(queryParamsObj).toString();
-      // console.log("transaction queryParams===>", queryParams, "transaction queryParams===>", user?.id);
-      const response = await getData(`api/transaction/get-transaction-by-admin-with-pagination?${queryParams}`);
-      // console.log("transaction response===>", response);
-      if (response?.status) {
-        setTransactions(response?.data);
-        setTransactionTotalPages(response?.pagination.totalPages);
-        setTransactionCurrentPage(response?.pagination.currentPage);
-        setTransactionTotalData(response?.pagination.totalTransactions);
-      }
     } catch (e) {
       console.log(e)
     }
@@ -359,8 +434,8 @@ export default function WalletPage() {
 
   useEffect(() => {
     fetchTransactions();
-
-  }, [transactionUserId, transactionCurrentPage, currentPage,])
+    fetchUserTransactions()
+  }, [transactionUserId, transactionCurrentPage, currentPage, selectedUser])
 
   useEffect(() => {
     fetchDistributors();
@@ -621,6 +696,121 @@ export default function WalletPage() {
                 buttonText={transactionType === 'credit' ? 'Credit Wallet' : 'Debit Wallet'}
                 buttonColor={transactionType === 'credit' ? 'primary' : 'danger'}
               />
+            </div>
+          )}
+        </div>
+      </Modal>
+
+      <Modal
+        isOpen={isTranjectionModalOpen}
+        onClose={() => {
+          setIsTranjectionModalOpen(false);
+          setSelectedUser(null);
+        }}
+        title={` Wallet Transactions for ${selectedUser?.name}`}
+        size="2xl"
+      >
+        <div className="space-y-6">
+          {!selectedUser && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Select User to {transactionType === 'credit' ? 'Credit' : 'Debit'}
+              </label>
+
+              <div className="flex-1 mb-3">
+                <Input
+                  placeholder={
+                    activeTab === 'balance'
+                      ? 'Search users...'
+                      : 'Search transactions...'
+                  }
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)} // ✅ only update search term
+                  icon="ri-search-line"
+                />
+              </div>
+
+              <div className="space-y-2 max-h-60 overflow-y-auto">
+                {availableUsers
+                  .filter(
+                    (u) =>
+                      u.status === 'active' &&
+                      (transactionType === 'credit' || u.walletBalance > 0) &&
+                      (u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        u.email.toLowerCase().includes(searchTerm.toLowerCase()))
+                  )
+                  .map((user) => (
+                    <div
+                      key={user?.id}
+                      onClick={() => setSelectedUser(user)}
+                      className="p-3 border rounded-lg hover:bg-gray-50 cursor-pointer"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="font-medium text-gray-900">{user?.name}</p>
+                          <p className="text-sm text-gray-500">{user?.email}</p>
+                        </div>
+                        <div className="text-right">
+                          <span
+                            className={`px-2 py-1 rounded-full text-xs font-medium ${user?.role === 'distributor'
+                              ? 'bg-blue-100 text-blue-800'
+                              : 'bg-green-100 text-green-800'
+                              }`}
+                          >
+                            {user?.role?.charAt(0)?.toUpperCase() +
+                              user?.role?.slice(1)}
+                          </span>
+                          <p className="text-sm font-semibold text-green-600 mt-1">
+                            ₹{user.walletBalance.toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}
+
+          {selectedUser && (
+            <div className="space-y-4">
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h3 className="font-medium text-gray-900 mb-2">Selected User</h3>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">{selectedUser.name}</p>
+                    <p className="text-sm text-gray-500">{selectedUser.email}</p>
+                  </div>
+                  <div className="text-right">
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${selectedUser.role === 'distributor' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
+                      }`}>
+                      {selectedUser?.role?.charAt(0).toUpperCase() + selectedUser?.role?.slice(1)}
+                    </span>
+                    <p className="text-sm font-semibold text-green-600 mt-1">
+                      Current Balance: ₹{selectedUser?.walletBalance?.toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => setSelectedUser(null)}
+                  className="mt-2"
+                >
+                  Change User
+                </Button>
+              </div>
+
+              <DataTable
+                data={userTransactions}
+                columns={transactionColumns}
+                // actions={renderBalanceActions}
+                setCurrentPage={setTransactionCurrentPage}
+                currentPage={transactionCurrentPage}
+                totalPages={transactionTotalPages} // total records count from API
+                pageSize={transactionPageSize}
+                totalData={userTransactions.length}
+              />
+
             </div>
           )}
         </div>

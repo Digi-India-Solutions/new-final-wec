@@ -17,7 +17,7 @@ exports.getAllAmcTotal = catchAsyncErrors(async (req, res, next) => {
         const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
         const colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#6366F1', '#14B8A6'];
 
-        console.log("Incoming Query:", req.query, currentMonth, currentYear);
+        console.log("Incoming Query:==", req.query, currentMonth, currentYear);
 
         // 🧠 Parse createdByEmail JSON safely
         let createdBy = {};
@@ -31,6 +31,7 @@ exports.getAllAmcTotal = catchAsyncErrors(async (req, res, next) => {
 
         // 🧩 Build filter
         const filter = {};
+
         if (userId && role === "distributor" || role === "retailer") {
             console.log("userIda:===>", userId, "role:", role);
             if (role === "distributor") {
@@ -51,8 +52,21 @@ exports.getAllAmcTotal = catchAsyncErrors(async (req, res, next) => {
         const activeAccount = await amcsModel.countDocuments({ ...filter, status: "active", });
 
         // 🧭 Expiring this month (handle string dates safely)
-        const expiringThisMonth = await amcsModel.countDocuments({
-            ...filter,
+
+        const totalDistributors = await SuperAdmin.countDocuments({ ...filter, role: "distributor" });
+        const totalRetailers = role === "distributor" ? await SuperAdmin.countDocuments({ 'createdByEmail.email': createdBy?.email, role: "retailer" }) :
+            await SuperAdmin.countDocuments({ ...filter, role: "retailer" });
+
+        const TransactionsFilter = {}
+        if (role !== "distributor" || role !== "retailer") {
+            TransactionsFilter["createdByEmail.email"] = createdBy?.email;
+            TransactionsFilter.type = 'debit'
+        }
+
+        const usersTransactions = await Transactions.find({ ...TransactionsFilter, })
+
+        const expiringThisMonth = await Transactions.countDocuments({
+            ...TransactionsFilter,
             $expr: {
                 $and: [
                     { $eq: [{ $year: { $toDate: "$endDate" } }, currentYear] },
@@ -61,15 +75,9 @@ exports.getAllAmcTotal = catchAsyncErrors(async (req, res, next) => {
             },
         });
 
-        const totalDistributors = await SuperAdmin.countDocuments({ ...filter, role: "distributor" });
-        const totalRetailers = role === "distributor" ? await SuperAdmin.countDocuments({ 'createdByEmail.email': createdBy?.email, role: "retailer" }) :
-            await SuperAdmin.countDocuments({ ...filter, role: "retailer" });
-
-
-        const usersTransactions = await Transactions.find({ ...filter, type: 'debit' })
 
         const totalRevenue = usersTransactions.reduce((sum, transaction) => sum + transaction.amount, 0);
-        console.log("XXXXXXXX::=>", usersTransactions, createdBy?.email ,expiringThisMonth)
+        console.log("XXXXXXXX::=>", usersTransactions, createdBy?.email, expiringThisMonth)
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         const totalAmcData = await amcsModel.find(filter);

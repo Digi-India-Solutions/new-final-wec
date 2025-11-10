@@ -249,7 +249,8 @@ export default function UsersPage() {
   const handleEdit = (user) => {
     // Remove password from editing data for security
     const { password, ...userWithoutPassword } = user;
-    setEditingUser(userWithoutPassword);
+    // console.log("DDD:==>", userWithoutPassword.createdByEmail);
+    setEditingUser({ ...userWithoutPassword, oldCreatedByEmail: userWithoutPassword?.createdByEmail });
     setIsModalOpen(true);
   };
 
@@ -289,7 +290,7 @@ export default function UsersPage() {
         const distributor = distributors.find(d => d.id === distributorId);
 
         if (editingUser) {
-          setRetailers(prev => prev.map(r => r.id === editingUser.id ? {
+          setRetailers(prev => prev.map(r => r._id === editingUser._id ? {
             ...r,
             ...formData,
             distributorId,

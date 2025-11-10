@@ -58,8 +58,13 @@ export default function SchemaForm({
       // console.log('JSON.stringify( u.email)==>', u.email ,u.name)
       if (user.role === 'admin') {
         if (formData.DistributorId) {
-          data = { ...formData, role: activeTab, createdByEmail: { name: u?.name, email: u?.email }, admin: { name: user?.name, email: user?.email } }
+          if (editingUser) {
+            data = { ...formData, oldCreatedByEmail: editingUser?.oldCreatedByEmail, role: activeTab, createdByEmail: { name: u?.name, email: u?.email }, admin: { name: user?.name, email: user?.email } }
+          } else {
+            data = { ...formData, role: activeTab, createdByEmail: { name: u?.name, email: u?.email }, admin: { name: user?.name, email: user?.email } }
+          }
         } else {
+
           data = { ...formData, role: activeTab, DistributorId: user?.name, createdByEmail: { name: user?.name, email: user?.email }, admin: { name: user?.name, email: user?.email } }
         }
 
