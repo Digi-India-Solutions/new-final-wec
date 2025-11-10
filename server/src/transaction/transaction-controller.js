@@ -167,7 +167,7 @@ exports.createTransactionByAdmin = catchAsyncErrors(async (req, res, next) => {
             userType: creator.role,
             type: type === "credit" ? "debit" : "credit", // Mirrored
             amount: amt,
-            description: `${type === "credit" ? "Wallet Recharge to" : "Received from"} ${user.name}`,
+            description: `${type === "credit" ? "Wallet Recharge to" : "Return Received from"} ${user.name}`,
             balanceAfter: creatorNewBalance,
             createdByEmail,
         });
