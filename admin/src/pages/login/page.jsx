@@ -80,10 +80,10 @@ export default function Login() {
               <img
                 src={companySettings.logo}
                 alt="Logo"
-                className="h-96 w-96 object-contain" // ⬅ 3x bigger logo
+                className="h-[260px] w-[260px] object-contain"
               />
             ) : (
-              <i className="ri-file-shield-line text-gray-700 text-[200px]"></i> // bigger fallback icon
+              <i className="ri-file-shield-line text-gray-700 text-[160px]"></i>
             )}
 
             <h2 className="mt-6 text-3xl font-bold text-gray-900">

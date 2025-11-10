@@ -603,7 +603,7 @@ export default function AMCsPage() {
       } else if (user?.role === 'distributor') {
         response = await getData(`api/amcs/get-amc-by-distributor-with-pagination/${user?.id}?createdByEmail=${user?.email}&page=${currentPage}&limit=${pageSize}&search=${searchTerm}&status=${statusFilter}&category=${categoryFilter}&brand=${'brandFilter'}&type=${'typeFilter'}`);
       } else {
-        response = response = await getData(`api/amcs/get-amc-by-admin-with-pagination?page=${currentPage}&limit=${pageSize}&search=${searchTerm}&status=${statusFilter}&category=${categoryFilter}&brand=${'brandFilter'}&type=${'typeFilter'}`);
+        response = await getData(`api/amcs/get-amc-by-admin-with-pagination?page=${currentPage}&limit=${pageSize}&search=${searchTerm}&status=${statusFilter}&category=${categoryFilter}&brand=${'brandFilter'}&type=${'typeFilter'}`);
       }
 
 
