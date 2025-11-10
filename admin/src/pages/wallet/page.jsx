@@ -454,8 +454,7 @@ export default function WalletPage() {
         {(user?.role !== 'retailer' && canWrite) && (
           <div className="flex space-x-3">
             <Button
-            
-             onClick={() => {
+              onClick={() => {
                 setTransactionType('credit');
                 setIsCreditModalOpen(true);
               }}
@@ -475,120 +474,120 @@ export default function WalletPage() {
             </Button>
           </div>
         )}
-    </div>
-
-      {/* Summary Cards */ }
-  {
-    user?.role === 'distributor' || user?.role === 'retailer' ?
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-gray-600">Total Balance</p>
-            <p className="text-2xl font-bold text-green-600">₹{totalBalance.toLocaleString()}</p>
-          </div>
-          <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center">
-            <i className="ri-wallet-line text-white text-xl w-6 h-6 flex items-center justify-center"></i>
-          </div>
-        </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-gray-600">Total Credits</p>
-            <p className="text-2xl font-bold text-blue-600">₹{totalCredit.toLocaleString()}</p>
-          </div>
-          <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
-            <i className="ri-arrow-up-circle-line text-white text-xl w-6 h-6 flex items-center justify-center"></i>
-          </div>
-        </div>
+      {/* Summary Cards */}
+      {
+        user?.role === 'distributor' || user?.role === 'retailer' ?
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Total Balance</p>
+                  <p className="text-2xl font-bold text-green-600">₹{totalBalance.toLocaleString()}</p>
+                </div>
+                <div className="w-12 h-12 bg-green-500 rounded-lg flex items-center justify-center">
+                  <i className="ri-wallet-line text-white text-xl w-6 h-6 flex items-center justify-center"></i>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Total Credits</p>
+                  <p className="text-2xl font-bold text-blue-600">₹{totalCredit.toLocaleString()}</p>
+                </div>
+                <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
+                  <i className="ri-arrow-up-circle-line text-white text-xl w-6 h-6 flex items-center justify-center"></i>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-lg shadow p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Total Debits</p>
+                  <p className="text-2xl font-bold text-red-600">₹{totalDebit.toLocaleString()}</p>
+                </div>
+                <div className="w-12 h-12 bg-red-500 rounded-lg flex items-center justify-center">
+                  <i className="ri-arrow-down-circle-line text-white text-xl w-6 h-6 flex items-center justify-center"></i>
+                </div>
+              </div>
+            </div>
+          </div> : ''
+      }
+
+      {/* Tabs */}
+      <div className="border-b border-gray-200">
+        <nav className="-mb-px flex space-x-8">
+          {user.role === 'retailer' ? '' : <button
+            onClick={() => setActiveTab('balance')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap cursor-pointer ${activeTab === 'balance'
+              ? 'border-blue-500 text-blue-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+          >
+            Wallet Balances ({totalData})
+          </button>}
+          <button
+            onClick={() => setActiveTab('transactions')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap cursor-pointer ${activeTab === 'transactions'
+              ? 'border-blue-500 text-blue-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+          >
+            Transactions ({transactionTotalData})
+          </button>
+        </nav>
       </div>
 
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm font-medium text-gray-600">Total Debits</p>
-            <p className="text-2xl font-bold text-red-600">₹{totalDebit.toLocaleString()}</p>
-          </div>
-          <div className="w-12 h-12 bg-red-500 rounded-lg flex items-center justify-center">
-            <i className="ri-arrow-down-circle-line text-white text-xl w-6 h-6 flex items-center justify-center"></i>
-          </div>
-        </div>
+      {/* Search */}
+      <div className="flex-1">
+        <Input
+          placeholder={activeTab === 'balance' ? "Search users..." : "Search transactions..."}
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          icon="ri-search-line"
+        />
       </div>
-    </div> : ''
-  }
 
-  {/* Tabs */ }
-  <div className="border-b border-gray-200">
-    <nav className="-mb-px flex space-x-8">
-      {user.role === 'retailer' ? '' : <button
-        onClick={() => setActiveTab('balance')}
-        className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap cursor-pointer ${activeTab === 'balance'
-          ? 'border-blue-500 text-blue-600'
-          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-          }`}
-      >
-        Wallet Balances ({totalData})
-      </button>}
-      <button
-        onClick={() => setActiveTab('transactions')}
-        className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap cursor-pointer ${activeTab === 'transactions'
-          ? 'border-blue-500 text-blue-600'
-          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-          }`}
-      >
-        Transactions ({transactionTotalData})
-      </button>
-    </nav>
-  </div>
+      {/* Content */}
+      {
+        activeTab === 'balance' && (
+          <DataTable
+            data={availableUsers.filter(
+              user => user.name.toLowerCase().includes(searchTerm.toLowerCase()) || user.email.toLowerCase().includes(searchTerm.toLowerCase())
+            )}
+            columns={balanceColumns}
+            actions={user?.role !== 'retailer'
+              ? (canWrite || canEdit ? renderBalanceActions : undefined)
+              : undefined}
+            setCurrentPage={setCurrentPage}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalData={totalData}
+            pageSize={pageSize}
+          />
+        )
+      }
 
-  {/* Search */ }
-  <div className="flex-1">
-    <Input
-      placeholder={activeTab === 'balance' ? "Search users..." : "Search transactions..."}
-      value={searchTerm}
-      onChange={(e) => setSearchTerm(e.target.value)}
-      icon="ri-search-line"
-    />
-  </div>
+      {
+        activeTab === 'transactions' && (
+          <DataTable
+            data={filteredTransactions}
+            columns={transactionColumns}
+            // actions={renderBalanceActions}
+            setCurrentPage={setTransactionCurrentPage}
+            currentPage={transactionCurrentPage}
+            totalPages={transactionTotalPages} // total records count from API
+            pageSize={transactionPageSize}
+            totalData={filteredTransactions.length}
+          />
+        )
+      }
 
-  {/* Content */ }
-  {
-    activeTab === 'balance' && (
-      <DataTable
-        data={availableUsers.filter(
-          user => user.name.toLowerCase().includes(searchTerm.toLowerCase()) || user.email.toLowerCase().includes(searchTerm.toLowerCase())
-        )}
-        columns={balanceColumns}
-        actions={user?.role !== 'retailer'
-          ? (canWrite || canEdit ? renderBalanceActions : undefined)
-          : undefined}
-        setCurrentPage={setCurrentPage}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        totalData={totalData}
-        pageSize={pageSize}
-      />
-    )
-  }
-
-  {
-    activeTab === 'transactions' && (
-      <DataTable
-        data={filteredTransactions}
-        columns={transactionColumns}
-        // actions={renderBalanceActions}
-        setCurrentPage={setTransactionCurrentPage}
-        currentPage={transactionCurrentPage}
-        totalPages={transactionTotalPages} // total records count from API
-        pageSize={transactionPageSize}
-        totalData={filteredTransactions.length}
-      />
-    )
-  }
-
-  {/* Transaction Modal */ }
+      {/* Transaction Modal */}
       <Modal
         isOpen={isCreditModalOpen}
         onClose={() => {

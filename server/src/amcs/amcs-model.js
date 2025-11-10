@@ -18,7 +18,7 @@ const amcSchema = new Schema(
 
         productCategory: { type: String, required: true },
         productBrand: { type: String, required: true },
-        // productType: { type: String, required: true },
+        productType: { type: String },
         productModel: { type: String, required: true },
 
         categoryId: {
@@ -31,11 +31,11 @@ const amcSchema = new Schema(
             ref: "Brand",
             required: null,
         },
-        // typeId: {
-        //     type: mongoose.Schema.Types.ObjectId,
-        //     ref: "Type",
-        //     required: null,
-        // },
+        typeId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Type",
+            required: null,
+        },
         purchaseValue: { type: Number, required: true },
         amcPercentage: { type: Number, required: true },
         amcAmount: { type: Number, required: true },

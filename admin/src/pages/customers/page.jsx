@@ -374,9 +374,9 @@ export default function CustomersPage() {
             <img src="${companySettings?.logo || ''}" alt="Company Logo" style="width:70px;height:70px;object-fit:contain;border-radius:8px;">
           </div>
           <div class="company-info">
-            <h2>${user?.name}</h2>
-            <p>${user?.address || ''}</p>
-            <p>${user?.phone} | ${user?.email}</p>
+           <h2>${companySettings?.name || 'EMI PLUS CARE'}</h2>
+            <p>${companySettings?.address || 'C9/7 c-block diishad colony Delhi-95'}</p>
+            <p>${companySettings?.phone || '+91 8929391113'} | ${companySettings?.email || 'Support@emipluscare.in'}</p>
           </div>
         </div>
         <div class="header-right">
@@ -403,15 +403,15 @@ export default function CustomersPage() {
             <th style="width: 25%;">Product Name</th>
             <th style="width: 15%;">Model</th>
             <th style="width: 15%;">Serial No.</th>
-            <th style="width: 12%;">Original Warranty</th>
-            <th style="width: 12%;">Extended Till</th>
-            <th style="width: 12%;">Amount</th>
+            <th style="width: 12%;">valid from </th>
+            <th style="width: 12%;">valid till </th>
+            <th style="width: 12%;">Amount </th>
           </tr>
         </thead>
         <tbody>
           <tr>
             <td>1</td>
-            <td>${record.productCategory} - ${record?.productBrand} ${record?.productType}</td>
+            <td>${record.productCategory} - ${record?.productBrand} ${record?.productType && record?.productType}</td>
             <td>${record.productModel}</td>
             <td>${record.serialNumber || 'N/A'}</td>
             <td>${new Date(record.startDate).toLocaleDateString('en-IN')}</td>

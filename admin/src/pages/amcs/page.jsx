@@ -165,8 +165,10 @@ export default function AMCsPage() {
     }
   };
 
+
+
   const handleSubmit = async (formData) => {
-    if (!selectedCategory || !selectedBrand || !purchaseValue  || !formData.customerName || !formData.customerAddress || !formData.productPicture || !formData.purchaseProof || !formData.serialNumber) {
+    if (!selectedCategory || !selectedBrand || !purchaseValue || !formData.customerName || !formData.customerAddress || !formData.productPicture || !formData.purchaseProof || !formData.serialNumber) {
       alert('Please fill all product details');
       // showToast('Please fill all product details', 'error');
       return;
@@ -175,6 +177,21 @@ export default function AMCsPage() {
     setLoading(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+
+      const today = new Date();
+
+      // startDate = today + 1 year
+      const startDateObj = new Date(today);
+      startDateObj.setFullYear(startDateObj.getFullYear() + 1);
+
+      // endDate = startDate + 1 year - 1 day
+      const endDateObj = new Date(startDateObj);
+      endDateObj.setFullYear(endDateObj.getFullYear() + 1);
+      endDateObj.setDate(endDateObj.getDate() - 1);
+
+      // Format YYYY-MM-DD
+      const startDate = startDateObj.toISOString().split('T')[0];
+      const endDate = endDateObj.toISOString().split('T')[0];
 
       const category = allCategories.find(c => c._id === selectedCategory);
       const brand = allBrands.find(b => b._id === selectedBrand);
@@ -195,8 +212,8 @@ export default function AMCsPage() {
         amcPercentage: parseFloat(amcPercentage),
         amcAmount: calculateAMCAmount(),
         purchaseProof: formData.purchaseProof || `purchase_proof_${Date.now()}.pdf`,
-        startDate: new Date().toISOString().split('T')[0],
-        endDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1) - 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        startDate: startDate,
+        endDate: endDate,
         status: 'active',
         retailerId: user?.role === 'retailer' ? user.id : '',
         retailerName: user?.role === 'retailer' ? user.name : '',
@@ -206,7 +223,7 @@ export default function AMCsPage() {
         renewalCount: 0,
         lastServiceDate: null,
       };
-      
+
       console.log("newAMC==>newAMC==>", newAMC)
       const formDataToSend = new FormData();
 
@@ -310,138 +327,273 @@ export default function AMCsPage() {
   //  <tr><td>Tax (18%)</td><td>₹${(record.amcAmount * 0.18).toFixed(2)}</td></tr>
   //         <tr><td>Total</td><td><strong>₹${(record.amcAmount * 1.18).toFixed(2)}</strong></td></tr>
   const handleDownloadPdf = (record) => {
-    // Clone your HTML template and inject dynamic values
     console.log("GGGGGG:==>", record)
+
     const template = `
-  <div class="invoice-box">
-    <div class="header">
-      <div class="header-left">
-         <div class="logo">
-          <img src="${companySettings?.logo || ''}" alt="Company Logo" style="width:70px;height:70px;object-fit:contain;border-radius:8px;">
+    <div class="invoice-box">
+      <div class="header">
+        <div class="header-left">
+           <div class="logo">
+            <img src="${companySettings?.logo || ''}" alt="Company Logo" style="width:70px;height:70px;object-fit:contain;border-radius:8px;">
+          </div>
+          <div class="company-info">
+           <h2>${companySettings?.name || 'EMI PLUS CARE'}</h2>
+            <p>${companySettings?.address || 'C9/7 c-block diishad colony Delhi-95'}</p>
+            <p>${companySettings?.phone || '+91 8929391113'} | ${companySettings?.email || 'Support@emipluscare.in'}</p>
+          </div>
         </div>
-        <div class="company-info">
-          <h2>${companySettings?.name}</h2>
-          <p>${companySettings?.address}</p>
-          <p>${companySettings?.phone} | ${companySettings?.email}</p>
+        <div class="header-right">
+          <table class="meta-table">
+            <tr><td><strong>WEC No:</strong></td><td>${record?.id}</td></tr>
+            <tr><td><strong>Date:</strong></td><td>${new Date().toLocaleDateString('en-IN')}</td></tr>
+          </table>
         </div>
       </div>
-      <div class="header-right">
-        <table class="meta-table">
-          <tr><td><strong>WEC No:</strong></td><td>${record?.id}</td></tr>
-          <tr><td><strong>Date:</strong></td><td>${new Date().toLocaleDateString('en-IN')}</td></tr>
+  
+      <div class="invoice-title">Warranty Extended Contract (WEC)</div>
+  
+      <table class="customer-table">
+        <tr><th style="width: 30%;">Customer Name</th><td>${record.customerName}</td></tr>
+        <tr><th>Address</th><td>${record.customerAddress}</td></tr>
+        <tr><th>Contact No.</th><td>${record.customerMobile}</td></tr>
+        <tr><th>Email</th><td>${record.customerEmail}</td></tr>
+      </table>
+  
+      <table class="details-table">
+        <thead>
+          <tr>
+            <th style="width: 5%;">#</th>
+            <th style="width: 25%;">Product Name</th>
+            <th style="width: 15%;">Model</th>
+            <th style="width: 15%;">Serial No.</th>
+            <th style="width: 12%;">valid from  </th>
+            <th style="width: 12%;">valid till</th>
+            <th style="width: 12%;">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td>${record.productCategory} - ${record?.productBrand} ${record?.productType && record?.productType}</td>
+            <td>${record.productModel}</td>
+            <td>${record.serialNumber || 'N/A'}</td>
+            <td>${new Date(record.startDate).toLocaleDateString('en-IN')}</td>
+            <td>${new Date(record.endDate).toLocaleDateString('en-IN')}</td>
+            <td>₹${record.amcAmount.toLocaleString()}</td>
+          </tr>
+        </tbody>
+      </table>
+  
+      <div class="summary">
+        <table>
+          <tr><td>Subtotal</td><td>₹${record?.amcAmount}</td></tr>
         </table>
       </div>
+  
+      <div class="signature no-break">
+        <div><strong>Note:</strong> Under the extended warranty, claims are limited to a maximum of 80% of the product's value (excluding GST). Please check the attachment for what is covered under our Terms & Conditions.</div>
+      </div>
+
+      <div class="signature no-break">
+        <div>Thank you for choosing EMI PLUS CARE. For support, call us at +91 8929391113 or email us at support@emipluscare.in</div>
+      </div>
+  
+        <div class="terms-content">
+          ${teamAndConditions?.termsAndConditions || 'No terms and conditions available.'}
+        </div>
     </div>
-
-    <div class="invoice-title">Warranty Extended Contract (WEC)</div>
-
-    <table class="meta-table">
-      <tr><td>Customer Name</td><td>${record.customerName}</td></tr>
-      <tr><td>Address</td><td>${record.customerAddress}</td></tr>
-      <tr><td>Contact No.</td><td>${record.customerMobile}</td></tr>
-      <tr><td>Email</td><td>${record.customerEmail}</td></tr>
-    </table>
-
-    <table class="details-table">
-      <thead>
-        <tr>
-          <th>#</th><th>Product Name</th><th>Model</th><th>Serial No.</th>
-          <th>Original Warranty</th><th>Extended Till</th><th>Amount</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>1</td>
-          <td>${record.productCategory} - ${record?.productBrand} ${record?.productType}</td>
-          <td>${record.productModel}</td>
-          <td>${record.serialNumber || 'N/A'}</td>
-          <td>${new Date(record.startDate).toLocaleDateString('en-IN')}</td>
-          <td>${new Date(record.endDate).toLocaleDateString('en-IN')}</td>
-          <td>₹${record.amcAmount.toLocaleString()}</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <div class="summary">
-      <table>
-        <tr><td>Subtotal</td><td>₹${record.amcAmount}</td></tr>
-      </table>
-    </div>
-
-   <div className="terms"  style="page-break-before: always; margin-top: 20px;">
-  // <strong>Terms & Conditions:</strong>
-
-  <div
-    style={{
-      border: "1px solid #ccc",
-      padding: "15px",
-      borderRadius: "8px",
-      marginTop: "5000px",
-      background: "#fafafa",
-    }}
-    dangerouslySetInnerHTML={{ __html: ${teamAndConditions?.termsAndConditions} }}
-  />
-</div>
-
-    <div class="signature">
-      <div>Note:- Under the extended warranty, claims shall be limited to a maximum of 80% of the product’s value, excluding GST.</div>
-    </div>
-
-    <div class="footer">
-      Thank you for choosing ${record.companyName}. For support, call ${record.supportPhone} or email ${record.supportEmail}.
-    </div>
-  </div>
-  `;
+    `;
 
     // Create a temporary container to hold styled HTML
     const container = document.createElement("div");
     container.innerHTML = `
-  <html>
-  <head>
-    <style>
-      body {
-        font-family: "Poppins", Arial, sans-serif;
-        background: #f4f6f8;
-        margin: 0;
-        padding: 20px;
-      }
-      .invoice-box {
-        max-width: 850px;
-        margin: auto;
-        background: #fff;
-        padding: 25px 30px;
-        border: 1px solid #e0e0e0;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-        border-radius: 8px;
-      }
-      .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
-      .logo { width: 70px; height: 70px; background: #007bff; color: #fff; border-radius: 8px; font-weight: bold; font-size: 20px; display: flex; align-items: center; justify-content: center; }
-      .company-info h2 { margin: 0; color: #007bff; }
-      .invoice-title { text-align: center; font-size: 22px; font-weight: 600; color: #222; margin: 25px 0 10px; }
-      table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
-      th, td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 14px; }
-      th { background: #007bff; color: #fff; }
-      .summary table td { border: 1px solid #ddd; }
-      .terms { margin-top: 20px; font-size: 13px; color: #555; margin-top: 500px; }
-      .signature { display: flex; justify-content: space-between; margin-top: 40px; font-size: 14px; }
-      .sig-line { margin-top: 50px; border-top: 1px solid #000; width: 200px; }
-      .footer { text-align: center; font-size: 12px; color: #777; margin-top: 30px; border-top: 1px solid #eee; padding-top: 10px; }
-    </style>
-  </head>
-  <body>${template}</body>
-  </html>`;
+    <html>
+    <head>
+      <style>
+        @page {
+            margin: 15px;
+        }
+        
+        body {
+          font-family: "Poppins", Arial, sans-serif;
+          background: #fff;
+          margin: 0;
+          padding: 15px;
+          font-size: 12px;
+          line-height: 1.4;
+        }
+        
+        .invoice-box {
+          max-width: 800px;
+          margin: 0 auto;
+          background: #fff;
+          padding: 20px;
+          border: 1px solid #e0e0e0;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+          border-radius: 6px;
+          box-sizing: border-box;
+        }
+        
+        .header { 
+          display: flex; 
+          justify-content: space-between; 
+          align-items: flex-start; 
+          border-bottom: 2px solid #007bff; 
+          padding-bottom: 15px;
+          margin-bottom: 20px;
+        }
+        
+        .header-left {
+          display: flex;
+          align-items: flex-start;
+          gap: 15px;
+        }
+        
+        .company-info h2 { 
+          margin: 0 0 5px 0; 
+          color: #007bff; 
+          font-size: 16px;
+        }
+        
+        .company-info p {
+          margin: 2px 0;
+          font-size: 11px;
+        }
+        
+        .meta-table {
+          width: auto;
+          min-width: 180px;
+          font-size: 11px;
+        }
+        
+        .meta-table td {
+          padding: 4px 8px;
+          border: 1px solid #ddd;
+        }
+        
+        .invoice-title { 
+          text-align: center; 
+          font-size: 16px; 
+          font-weight: 600; 
+          color: #222; 
+          margin: 20px 0; 
+        }
+        
+        .customer-table {
+          width: 100%;
+          border-collapse: collapse;
+          margin: 15px 0;
+          font-size: 11px;
+        }
+        
+        .customer-table th, 
+        .customer-table td { 
+          border: 1px solid #ddd; 
+          padding: 6px 8px; 
+          text-align: left;
+        }
+        
+        .customer-table th { 
+          background: #007bff; 
+          color: #fff; 
+          font-weight: 600;
+        }
+        
+        .details-table {
+          width: 100%;
+          border-collapse: collapse;
+          margin: 15px 0;
+          font-size: 11px;
+        }
+        
+        .details-table th, 
+        .details-table td { 
+          border: 1px solid #ddd; 
+          padding: 6px 8px; 
+          text-align: left;
+          word-wrap: break-word;
+        }
+        
+        .details-table th { 
+          background: #007bff; 
+          color: #fff; 
+          font-weight: 600;
+        }
+        
+        .summary table {
+          width: auto;
+          margin-left: auto;
+          font-size: 11px;
+        }
+        
+        .summary td {
+          border: 1px solid #ddd;
+          padding: 6px 12px;
+        }
+        
+        .signature { 
+          margin: 15px 0;
+          padding: 8px;
+          font-size: 11px;
+          line-height: 1.3;
+        }
+        
+        .terms-section {
+          margin-top: 25px;
+          page-break-before: always;
+        }
+        
+        .terms-content {
+           page-break-before: always;
+            border: 1px solid #ccc;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 30px;
+            font-size: 10px;
+            line-height: 1.2;
+            text-align: justify;
+        }
+        
+        .terms-section strong {
+          font-size: 11px;
+        }
+        
+        /* Prevent text cutting and bad page breaks */
+        .no-break {
+          page-break-inside: avoid;
+        }
+        
+        /* Ensure images don't overflow */
+        img {
+          max-width: 100%;
+          height: auto;
+        }
+      </style>
+    </head>
+    <body>${template}</body>
+    </html>`;
 
-    // Generate the PDF
+    // Generate the PDF with proper margins
     const opt = {
       margin: 0.5,
       filename: `WEC_${record.id}_${record.customerName.replace(/\s+/g, "_")}.pdf`,
       image: { type: "jpeg", quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
+      html2canvas: {
+        scale: 2,
+        useCORS: true,
+        logging: false
+      },
+      jsPDF: {
+        unit: "in",
+        format: "a4",
+        orientation: "portrait"
+      },
+      pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
     };
 
     html2pdf().set(opt).from(container).save();
   };
+
 
   const fetchAMCs = async () => {
     try {
