@@ -142,7 +142,7 @@ export default function ReportsPage() {
             value={dateRange.end}
             onChange={(e) => setDateRange(prev => ({ ...prev, end: e.target.value }))}
           />
-          <div>
+          {/* <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Period</label>
             <div className="relative">
               <select
@@ -161,7 +161,7 @@ export default function ReportsPage() {
                 <i className="ri-arrow-down-s-line text-gray-400 w-4 h-4 flex items-center justify-center"></i>
               </div>
             </div>
-          </div>
+          </div> */}
           {/* <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Product Category</label>
             <div className="relative">
@@ -204,7 +204,8 @@ export default function ReportsPage() {
         />
         <StatCard
           title="Total Revenue"
-          value={formatAmount(totalRevenue)}
+          // value={formatAmount(totalRevenue)}
+          value={totalRevenue.toLocaleString()}
           icon="ri-money-dollar-circle-line"
           color="bg-purple-500"
         // change="+15% from last period"
@@ -215,7 +216,7 @@ export default function ReportsPage() {
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Monthly Sales Trend */}
-        <div className="bg-white rounded-lg shadow p-6">
+        {salesData && salesData.length > 0 && <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Monthly WEC Sales Trend</h3>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={salesData}>
@@ -230,10 +231,10 @@ export default function ReportsPage() {
               <Line type="monotone" dataKey="count" stroke="#10B981" strokeWidth={2} name="count" />
             </LineChart>
           </ResponsiveContainer>
-        </div>
+        </div>}
 
         {/* Product Distribution */}
-        <div className="bg-white rounded-lg shadow p-6">
+        {productData && productData.length > 0 && <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">WEC Distribution by Product</h3>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
@@ -253,7 +254,7 @@ export default function ReportsPage() {
               <Tooltip />
             </PieChart>
           </ResponsiveContainer>
-        </div>
+        </div>}
       </div>
 
       {/* Performance Tables */}
@@ -297,7 +298,7 @@ export default function ReportsPage() {
         </div>
       )}
 
-      {retailerPerformances.length > 0 && (
+      {retailerPerformances && retailerPerformances.length > 0 && (
         <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Performing Retailers</h3>
           <div className="overflow-x-auto">
@@ -344,7 +345,7 @@ export default function ReportsPage() {
       )}
 
       {/* Revenue Chart */}
-      <div className="bg-white rounded-lg shadow p-6">
+      {/* <div className="bg-white rounded-lg shadow p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Monthly Revenue Comparison</h3>
         <ResponsiveContainer width="100%" height={400}>
           <BarChart data={monthlySalesDatas}>
@@ -359,7 +360,7 @@ export default function ReportsPage() {
             <Bar dataKey="revenue" fill="#10B981" name="revenue" />
           </BarChart>
         </ResponsiveContainer>
-      </div>
+      </div> */}
     </div>
   );
 }

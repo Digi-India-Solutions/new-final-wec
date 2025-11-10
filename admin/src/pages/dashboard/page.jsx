@@ -130,7 +130,8 @@ export default function Dashboard() {
         />
         <StatCard
           title="Total Revenue"
-          value={`₹${formatAmount(totalRevenue)}`}
+          // value={`₹${formatAmount(totalRevenue)}`}
+          value={`₹${totalRevenue.toLocaleString()}`}
           icon="ri-money-dollar-circle-line"
           color="bg-purple-500"
         // change="+15% from last month"
@@ -149,7 +150,8 @@ export default function Dashboard() {
 
           <StatCard
             title="Distributors Wallets"
-            value={`₹${formatAmount(totalDistributorWalletAmount || 0).toLocaleString()}`}
+            // value={`₹${formatAmount(totalDistributorWalletAmount || 0).toLocaleString()}`}
+            value={`₹${totalDistributorWalletAmount.toLocaleString()}`}
             icon="ri-wallet-fill"
             color="bg-indigo-500"
             path="/users"
@@ -166,7 +168,8 @@ export default function Dashboard() {
 
           <StatCard
             title="Retailers Wallets"
-            value={`₹${formatAmount(totalRetailerWalletAmount || 0).toLocaleString()}`}
+            // value={`₹${formatAmount(totalRetailerWalletAmount || 0).toLocaleString()}`}
+            value={`₹${totalRetailerWalletAmount?.toLocaleString()}`}
             icon="ri-wallet-fill"
             color="bg-pink-500"
             path="/wallet"
@@ -186,7 +189,8 @@ export default function Dashboard() {
 
           <StatCard
             title="Retailers Wallets"
-            value={`₹${formatAmount(totalRetailerWalletAmount || 0).toLocaleString()}`}
+            // value={`₹${formatAmount(totalRetailerWalletAmount || 0).toLocaleString()}`}
+            value={`₹${totalRetailerWalletAmount.toLocaleString()}`}
             icon="ri-wallet-fill"
             color="bg-pink-500"
             path="/wallet"
@@ -202,22 +206,22 @@ export default function Dashboard() {
 
       {/* Charts */}
       {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-12"> */}
-        {/* Sales Trend */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">WEC Sales Trend</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={salesData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Line type="monotone" dataKey="sales" stroke="#3B82F6" strokeWidth={2} />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
+      {/* Sales Trend */}
+      {salesData && salesData.length > 0 && <div className="bg-white rounded-lg shadow p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">WEC Sales Trend</h3>
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart data={salesData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="month" />
+            <YAxis />
+            <Tooltip />
+            <Line type="monotone" dataKey="sales" stroke="#3B82F6" strokeWidth={2} />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>}
 
-        {/* Revenue Chart */}
-        {/* <div className="bg-white rounded-lg shadow p-6">
+      {/* Revenue Chart */}
+      {/* <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Monthly Revenue</h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={salesData}>
@@ -232,7 +236,7 @@ export default function Dashboard() {
       {/* </div> */}
 
       {/* Product Distribution */}
-      <div className="bg-white rounded-lg shadow p-6">
+      {productData && productData?.length > 0 && <div className="bg-white rounded-lg shadow p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">WEC Distribution by Product Category</h3>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <ResponsiveContainer width="100%" height={300}>
@@ -269,10 +273,10 @@ export default function Dashboard() {
             ))}
           </div>
         </div>
-      </div>
+      </div>}
 
       {/* Recent Activity */}
-      <div className="bg-white rounded-lg shadow p-6">
+      {recentActivities && recentActivities?.length > 0 && <div className="bg-white rounded-lg shadow p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
         <div className="space-y-4">
           {recentActivities.map((activity, index) => (
@@ -287,7 +291,7 @@ export default function Dashboard() {
             </div>
           ))}
         </div>
-      </div>
+      </div>}
     </div>
   );
 }

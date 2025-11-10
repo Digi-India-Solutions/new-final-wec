@@ -140,15 +140,16 @@ export default function RoleManagement() {
           setRoles((prev) => prev.map((r) => (r?._id === editingRole?._id ? roleData : r)));
           showToast('Role updated successfully', 'success');
         }
+        fetchRoles();
       } else {
         const respons = await postData('api/role/create-roles-by-admin', roleData);
         console.log("SSSSS:==>AAAA", respons)
-        if (respons?.status === false) {
+        if (respons?.status === true) {
           fetchRoles()
           setRoles((prev) => [...prev, roleData]);
           showToast('Role created successfully', 'success');
         }
-
+        fetchRoles();
       }
 
       setIsModalOpen(false);

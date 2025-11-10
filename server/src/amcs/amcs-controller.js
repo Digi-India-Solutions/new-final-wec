@@ -659,9 +659,8 @@ exports.deleteAmcByAdmin = catchAsyncErrors(async (req, res, next) => {
         // console.log("User:==>", user)
         if (user) {
             user.totalAMCs -= 1;
+            user.save();
         }
-
-        user.save();
 
         const deletedAmc = await AMC.findByIdAndDelete(id);
         if (!deletedAmc) return next(new ErrorHandler("AMC not found", 404));
