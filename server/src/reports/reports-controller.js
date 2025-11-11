@@ -180,78 +180,80 @@ exports.getAllReportsTotal = catchAsyncErrors(async (req, res, next) => {
         const totalRetailers = role === "distributor" ? await SuperAdmin.countDocuments({ 'createdByEmail.email': createdBy?.email, role: "retailer" }) :
             await SuperAdmin.countDocuments({ ...filter, role: "retailer" });
 
-        const filterSS = { "createdByEmail.email": createdBy?.email, type: 'debit', createdAt: { $gte: new Date(startDate), $lte: new Date(new Date(endDate).setHours(23, 59, 59)) } };
+        const filterSS = {
+            "createdByEmail.email": createdBy?.email, type: 'debit', description: { $not: /Return/i }, createdAt: { $gte: new Date(startDate), $lte: new Date(new Date(endDate).setHours(23, 59, 59)) }
+        };
 
         const usersTransactions = await Transactions.find({ ...filterSS })
 
-    const totalRevenue = usersTransactions.reduce((sum, transaction) => sum + transaction.amount, 0);
+        const totalRevenue = usersTransactions.reduce((sum, transaction) => sum + transaction.amount, 0);
 
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    const totalAmcData = await amcsModel.find({ ...filter });
-    const monthlyData = {};
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        const totalAmcData = await amcsModel.find({ ...filter });
+        const monthlyData = {};
 
-    totalAmcData.forEach(item => {
-        const date = new Date(item.createdAt);
-        const month = monthNames[date.getMonth()]; // e.g. "Oct"
+        totalAmcData.forEach(item => {
+            const date = new Date(item.createdAt);
+            const month = monthNames[date.getMonth()]; // e.g. "Oct"
 
-        if (!monthlyData[month]) {
-            monthlyData[month] = { month, sales: 0, revenue: 0 };
-        }
+            if (!monthlyData[month]) {
+                monthlyData[month] = { month, sales: 0, revenue: 0 };
+            }
 
-        monthlyData[month].sales += 1;
-        monthlyData[month].revenue += item.amcAmount || 0;
-    });
-
-
-    const salesData = monthNames.filter(m => monthlyData[m]).map(m => monthlyData[m]);
+            monthlyData[month].sales += 1;
+            monthlyData[month].revenue += item.amcAmount || 0;
+        });
 
 
-    ////////////////////////////////////// Product Data//////////////////////////////////////////////////////////////
-    const categoryCount = {};
-
-    totalAmcData.forEach(item => {
-        const category = item.productCategory || 'Others';
-        if (!categoryCount[category]) {
-            categoryCount[category] = 0;
-        }
-        categoryCount[category] += 1;
-    });
-
-    const productData = Object.entries(categoryCount).map(([name, value], index) => ({ name, value, color: colors[index % colors.length], }));
+        const salesData = monthNames.filter(m => monthlyData[m]).map(m => monthlyData[m]);
 
 
-    ////////////////////////////////////////////resentActivety//////////////////////////////////////////////////
-    const recentActivities = totalAmcData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 5).map(item => ({
-        action: `New AMC created for ${item.productBrand} ${item.productCategory}`,
-        user: item.createdByEmail?.name || "Unknown User",
-        time: dayjs(item.createdAt).fromNow(), // e.g. "2 hours ago"
-        icon: "ri-add-circle-line",
-        color: "text-green-600",
-    }));
+        ////////////////////////////////////// Product Data//////////////////////////////////////////////////////////////
+        const categoryCount = {};
 
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        totalAmcData.forEach(item => {
+            const category = item.productCategory || 'Others';
+            if (!categoryCount[category]) {
+                categoryCount[category] = 0;
+            }
+            categoryCount[category] += 1;
+        });
 
-    console.log("totalAmcData==>formattedData", formattedData);
+        const productData = Object.entries(categoryCount).map(([name, value], index) => ({ name, value, color: colors[index % colors.length], }));
 
-    // ✅ Respond
-    res.status(200).json({
-        success: true,
-        message: "AMC total fetched successfully",
-        data: {
-            totalAmc: amcCount,
-            totalActiveAccount: activeAccount,
-            totalExpiringThisMonth: expiringThisMonth,
-            distributorPerformances,
-            retailerPerformances,
-            totalRevenue,
-            amcSalesData: salesData,
-            amcProductData: productData,
-            amcRecentActivities: recentActivities,
-            formattedData,
-        },
-        filterUsed: filter,
-    });
-} catch (error) {
-    return next(new ErrorHandler(error.message, 500));
-}
+
+        ////////////////////////////////////////////resentActivety//////////////////////////////////////////////////
+        const recentActivities = totalAmcData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 5).map(item => ({
+            action: `New AMC created for ${item.productBrand} ${item.productCategory}`,
+            user: item.createdByEmail?.name || "Unknown User",
+            time: dayjs(item.createdAt).fromNow(), // e.g. "2 hours ago"
+            icon: "ri-add-circle-line",
+            color: "text-green-600",
+        }));
+
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+        console.log("totalAmcData==>formattedData", formattedData);
+
+        // ✅ Respond
+        res.status(200).json({
+            success: true,
+            message: "AMC total fetched successfully",
+            data: {
+                totalAmc: amcCount,
+                totalActiveAccount: activeAccount,
+                totalExpiringThisMonth: expiringThisMonth,
+                distributorPerformances,
+                retailerPerformances,
+                totalRevenue,
+                amcSalesData: salesData,
+                amcProductData: productData,
+                amcRecentActivities: recentActivities,
+                formattedData,
+            },
+            filterUsed: filter,
+        });
+    } catch (error) {
+        return next(new ErrorHandler(error.message, 500));
+    }
 });

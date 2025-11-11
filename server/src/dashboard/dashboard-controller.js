@@ -61,7 +61,8 @@ exports.getAllAmcTotal = catchAsyncErrors(async (req, res, next) => {
         if (role !== "distributor" || role !== "retailer") {
             TransactionsFilter["createdByEmail.email"] = createdBy?.email;
             TransactionsFilter.type = 'debit'
-        }
+        } 
+        TransactionsFilter.description = { $not: /Return/i };
 
         const usersTransactions = await Transactions.find({ ...TransactionsFilter, })
 
@@ -130,11 +131,12 @@ exports.getAllAmcTotal = catchAsyncErrors(async (req, res, next) => {
             { $group: { _id: "$_id", totalAmount: { $sum: "$walletBalance" } } },
         ]);
         const totalDistributorWalletAmounts = totalDistributorWalletAmount.reduce((sum, item) => sum + (item.totalAmount || 0), 0)
-
+        const totalRetailerWalletAmountFilter = role === "distributor" ? { role: "retailer", 'createdByEmail.email': createdBy?.email } : { role: "retailer" }
         const totalRetailerWalletAmount = await SuperAdmin.aggregate([
-            { $match: { role: "retailer" } },
+            { $match: { ...totalRetailerWalletAmountFilter } },
             { $group: { _id: "$_id", totalAmount: { $sum: "$walletBalance" } } },
         ]);
+
         const totalRetailerWalletAmounts = totalRetailerWalletAmount.reduce((sum, item) => sum + (item.totalAmount || 0), 0)
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
