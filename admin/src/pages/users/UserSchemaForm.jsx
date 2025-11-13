@@ -73,6 +73,11 @@ export default function SchemaForm({
       return;
     }
     
+    if(!formData?.address ){
+      showToast('Address is required', 'error');
+      return;
+    }
+    
     let data = {};
     if (activeTab === 'retailer') {
 
