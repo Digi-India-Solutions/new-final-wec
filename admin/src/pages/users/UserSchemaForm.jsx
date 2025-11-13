@@ -51,6 +51,28 @@ export default function SchemaForm({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    if(!editingUser &&!formData?.password || formData?.password === '' || formData?.password?.length < 6 ){
+      showToast('Password must be at least 6 characters', 'error');
+      return;
+    }
+     if(!formData?.email ){
+      showToast('Email is required', 'error');
+      return;
+    }
+    if(!formData?.name ){
+      showToast('Name is required', 'error');
+      return;
+    }
+    if(!formData?.phone ){
+      showToast('Phone is required', 'error');
+      return;
+    }
+    if(!formData?.ownerName ){
+      showToast('Distributor is required', 'error');
+      return;
+    }
+    
     let data = {};
     if (activeTab === 'retailer') {
 
@@ -77,6 +99,8 @@ export default function SchemaForm({
       data = { ...formData, role: user?.role === 'distributor' ? 'retailer' : activeTab || '', DistributorId: user?.name, createdByEmail: { name: user?.name, email: user?.email } }
     }
     console.log("SSSSSSSS:==>SSSSSSSS:==>", data)
+   
+    
     const q = editingUser ? `api/admin/update-admin-by-admin/${editingUser?._id}` : 'api/admin/create-admin-by-admin'
     const respons = await postData(q, data);
     // console.log("SSSSSSSS:==>", respons)

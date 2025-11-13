@@ -205,7 +205,7 @@ export default function ReportsPage() {
         <StatCard
           title="Total Revenue"
           // value={formatAmount(totalRevenue)}
-          value={`₹${totalRevenue.toLocaleString()}`}
+          value={`₹${Math.round(totalRevenue).toLocaleString()}`}
           icon="ri-money-dollar-circle-line"
           color="bg-purple-500"
         // change="+15% from last period"

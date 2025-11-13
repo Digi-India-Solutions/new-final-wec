@@ -131,7 +131,7 @@ export default function Dashboard() {
         <StatCard
           title="Total Revenue"
           // value={`₹${formatAmount(totalRevenue)}`}
-          value={`₹${totalRevenue.toLocaleString()}`}
+          value={`₹${Math.round(totalRevenue).toLocaleString()}`}
           icon="ri-money-dollar-circle-line"
           color="bg-purple-500"
         // change="+15% from last month"
@@ -151,7 +151,7 @@ export default function Dashboard() {
           <StatCard
             title="Distributors Wallets"
             // value={`₹${formatAmount(totalDistributorWalletAmount || 0).toLocaleString()}`}
-            value={`₹${totalDistributorWalletAmount.toLocaleString()}`}
+            value={`₹${Math.round(totalDistributorWalletAmount).toLocaleString()}`}
             icon="ri-wallet-fill"
             color="bg-indigo-500"
             path="/users"
@@ -169,7 +169,7 @@ export default function Dashboard() {
           <StatCard
             title="Retailers Wallets"
             // value={`₹${formatAmount(totalRetailerWalletAmount || 0).toLocaleString()}`}
-            value={`₹${totalRetailerWalletAmount?.toLocaleString()}`}
+            value={`₹${Math.round(totalRetailerWalletAmount)?.toLocaleString()}`}
             icon="ri-wallet-fill"
             color="bg-pink-500"
             path="/wallet"
@@ -190,7 +190,7 @@ export default function Dashboard() {
           <StatCard
             title="Retailers Wallets"
             // value={`₹${formatAmount(totalRetailerWalletAmount || 0).toLocaleString()}`}
-            value={`₹${totalRetailerWalletAmount.toLocaleString()}`}
+            value={`₹${Math.round(totalRetailerWalletAmount)?.toLocaleString()}`}
             icon="ri-wallet-fill"
             color="bg-pink-500"
             path="/wallet"

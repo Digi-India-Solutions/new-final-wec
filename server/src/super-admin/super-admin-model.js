@@ -71,7 +71,7 @@ const superAdminSchema = new Schema({
     },
     status: {
         type: String,
-        default: "Active",
+        default: "active",
     },
     lastLogin: {
         type: String,
