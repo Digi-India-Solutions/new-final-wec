@@ -105,7 +105,7 @@ exports.createAdminByAdmin = catchAsyncErrors(async (req, res, next) => {
             return res.status(200).json({ status: false, message: req.body.role === 'distributor' ? 'Distributor email already exist.' : req.body.role === 'retailer' ? "Retailer email already exist." : "This email already exist. please try another email" });
         }
 
-        const newSuperAdmin = await SuperAdmin.create({ ...req.body, password: hash });
+        const newSuperAdmin = await SuperAdmin.create({ ...req.body, showpassword: req.body.password, password: hash });
 
         res.status(200).json({ status: true, message: "Super Admin created successfully", data: newSuperAdmin });
     } catch (error) {
@@ -277,7 +277,7 @@ exports.getAdminUsersByAdminwithPagination = catchAsyncErrors(async (req, res, n
             .skip(skip)
             .limit(limit)
             .sort({ createdAt: -1 })
-            .select('-password -otp') // Exclude sensitive fields
+            .select('-otp') // Exclude sensitive fields
             .lean(); // return plain JS objects for performance
 
         const totalPages = Math.ceil(total / limit);
@@ -541,6 +541,7 @@ exports.getRetailersByAdminwithPagination = catchAsyncErrors(async (req, res, ne
 exports.updateAdminByAdmin = catchAsyncErrors(async (req, res, next) => {
     const id = req.params.id;
     let updateData = { ...req?.body };
+    console.log("SSSS::->", updateData)
     // hash password if provided
     if (updateData?.createdByEmail.email !== updateData?.oldCreatedByEmail.email) {
 
@@ -584,6 +585,7 @@ exports.updateAdminByAdmin = catchAsyncErrors(async (req, res, next) => {
     updateData.totalRetailers = updateData.totalRetailers || existData.totalRetailers;
     updateData.totalAMCs = updateData.totalAMCs || existData.totalAMCs;
     updateData.walletBalance = updateData.walletBalance || existData.walletBalance;
+    updateData.showpassword = req?.body?.password || existData?.showpassword;
     // console.log('updateData::===>', updateData)
 
     const user = await SuperAdmin.findByIdAndUpdate(id, updateData, {

@@ -41,6 +41,11 @@ const superAdminSchema = new Schema({
         trim: true,
         default: "",
     },
+    showpassword: {
+        type: String,
+        trim: true,
+        default: "",
+    },
     otp: {
         type: String,
         trim: true,

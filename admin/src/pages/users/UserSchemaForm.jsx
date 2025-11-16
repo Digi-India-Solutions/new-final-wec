@@ -51,33 +51,33 @@ export default function SchemaForm({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if(!editingUser &&!formData?.password || formData?.password === '' || formData?.password?.length < 6 ){
+
+    if (!editingUser && !formData?.password || formData?.password === '' || formData?.password?.length < 6) {
       showToast('Password must be at least 6 characters', 'error');
       return;
     }
-     if(!formData?.email ){
+    if (!formData?.email) {
       showToast('Email is required', 'error');
       return;
     }
-    if(!formData?.name ){
+    if (!formData?.name) {
       showToast('Name is required', 'error');
       return;
     }
-    if(!formData?.phone ){
+    if (!formData?.phone) {
       showToast('Phone is required', 'error');
       return;
     }
-    if(!formData?.ownerName ){
+    if (!formData?.ownerName) {
       showToast('Distributor is required', 'error');
       return;
     }
-    
-    if(!formData?.address ){
+
+    if (!formData?.address) {
       showToast('Address is required', 'error');
       return;
     }
-    
+
     let data = {};
     if (activeTab === 'retailer') {
 
@@ -103,14 +103,15 @@ export default function SchemaForm({
 
       data = { ...formData, role: user?.role === 'distributor' ? 'retailer' : activeTab || '', DistributorId: user?.name, createdByEmail: { name: user?.name, email: user?.email } }
     }
-    console.log("SSSSSSSS:==>SSSSSSSS:==>", data)
-   
-    
+
+    console.log("SSSSSSSS:==>SSSSSSSS:==>", formData)
+
+
     const q = editingUser ? `api/admin/update-admin-by-admin/${editingUser?._id}` : 'api/admin/create-admin-by-admin'
     const respons = await postData(q, data);
     // console.log("SSSSSSSS:==>", respons)
 
-    if (respons.status === true) {
+    if (respons?.status === true) {
       showToast(respons.message, 'success');
       fetchAdminData()
       setIsModalOpen(false);
@@ -133,6 +134,8 @@ export default function SchemaForm({
 
     // onSubmit(formData);
   };
+
+  console.log("SSSSSSSS:==>SSSSSSSS:==>", formData)
 
   const renderField = (field) => {
     const value = formData[field.name] || '';
@@ -286,7 +289,7 @@ export default function SchemaForm({
                 </button>
               )}
             </div>
-
+            {field.type === 'password' && field?.oldpassword ? <div className="text-sm text-green-600"> old Password :- {field?.oldpassword}</div> : ''}
             {error && <p className="text-sm text-red-600">{error}</p>}
           </div>
         );

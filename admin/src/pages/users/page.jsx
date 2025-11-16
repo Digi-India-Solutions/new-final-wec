@@ -9,7 +9,6 @@ import Input from '../../components/base/Input';
 import { useToast } from '../../components/base/Toast';
 import { getData } from '../../services/FetchNodeServices';
 
-
 export default function UsersPage() {
 
   const [user, setUser] = useState(() => {
@@ -68,7 +67,7 @@ export default function UsersPage() {
       }).toString();
 
       const response = await getData(`api/admin/getAdminUsersByAdminwithPagination?${queryParams}`);
-      // console.log('response==>', response)
+      // console.log('response==>ADMIN', response)
       if (response?.status) {
         if (activeTab === 'distributor') {
           setTotalData(response.pagination.total);
@@ -172,7 +171,7 @@ export default function UsersPage() {
     { name: 'name', label: 'Company Name', type: 'text', required: true },
     { name: 'email', label: 'Email', type: 'email', required: true },
     { name: 'phone', label: 'Mobile', type: 'number', required: true },
-    { name: 'password', label: 'Password', type: 'password', required: !editingUser },
+    { name: 'password', label: 'Password', type: 'password', required: !editingUser, oldpassword: user.role !== 'distributor' && editingUser?.showpassword },
     { name: 'address', label: 'Address', type: 'textarea', required: true },
     { name: 'gst', label: 'GST', type: 'text', required: false },
     {
@@ -188,7 +187,7 @@ export default function UsersPage() {
     { name: 'name', label: 'Store Name', type: 'text', required: true },
     { name: 'email', label: 'Email', type: 'email', required: true },
     { name: 'phone', label: 'Mobile', type: 'number', required: true },
-    { name: 'password', label: 'Password', type: 'password', required: !editingUser },
+    { name: 'password', label: 'Password', type: 'password', required: !editingUser, oldpassword: user.role !== 'retailer' && editingUser?.showpassword },
     { name: 'address', label: 'Address', type: 'textarea', required: false },
     { name: 'gst', label: 'GST', type: 'text', required: false },
     ...(user?.role !== 'distributor' && user?.role !== 'retailer' ? [{
@@ -249,7 +248,7 @@ export default function UsersPage() {
   const handleEdit = (user) => {
     // Remove password from editing data for security
     const { password, ...userWithoutPassword } = user;
-    // console.log("DDD:==>", userWithoutPassword.createdByEmail);
+    console.log("DDD:==>user", data, password);
     setEditingUser({ ...userWithoutPassword, oldCreatedByEmail: userWithoutPassword?.createdByEmail });
     setIsModalOpen(true);
   };
