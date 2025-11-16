@@ -363,6 +363,7 @@ function AppContent() {
       '/settings': 'settings',
       '/staff': 'staff',
       '/claims': 'claims',
+      '/alladmin': 'alladmin',
     };
 
     const matchedKey =

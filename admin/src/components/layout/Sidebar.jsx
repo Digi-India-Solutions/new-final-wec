@@ -225,6 +225,7 @@ export default function Sidebar({ activeKey, onMenuClick }) {
     { key: 'wallet', label: 'Wallet', icon: 'ri-wallet-line', path: '/wallet', module: 'Wallet Management', roles: ['admin', 'distributor', 'retailer'] },
     { key: 'reports', label: 'Reports', icon: 'ri-bar-chart-line', path: '/reports', module: 'Reports', roles: ['admin', 'distributor'] },
     { key: 'settings', label: 'Settings', icon: 'ri-settings-line', path: '/settings', module: 'Settings', roles: ['admin'] },
+    { key: 'alladmin', label: 'All Admin Management', icon: 'ri-shield-user-line', path: '/alladmin', module: 'Alladmin', roles: ['admin'] },
   ];
 
   // ✅ Fetch all roles and permissions

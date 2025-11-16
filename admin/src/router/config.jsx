@@ -85,6 +85,7 @@ import NotFound from "../pages/NotFound";
 import Login from "../pages/login/page.jsx";
 import Dashboard from "../pages/dashboard/page.jsx";
 import UsersPage from "../pages/users/page.jsx";
+import AllAdmin from "../pages/allAdmin/page.jsx";
 import StaffPage from "../pages/staff/page.jsx";
 import ClaimsPage from "../pages/claims/page.jsx";
 import ProductsPage from "../pages/products/page.jsx";
@@ -120,6 +121,10 @@ const routes = [
   {
     path: "/users",
     element: <UsersPage />,
+  },
+  {
+    path: "/alladmin",
+    element: <AllAdmin />
   },
   {
     path: "/staff",
