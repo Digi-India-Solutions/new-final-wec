@@ -996,7 +996,7 @@ export default function AMCsPage() {
                     <label className="text-sm font-medium text-gray-600">Distributor</label>
                     <p className="text-gray-900">{editingAMC.distributorName}</p>
                   </div>
-                  <div>
+                  {/* <div>
                     <label className="text-sm font-medium text-gray-600">Last Service</label>
                     <p className="text-gray-900">
                       {editingAMC.lastServiceDate ? new Date(editingAMC.lastServiceDate).toLocaleDateString('en-IN') : 'No service yet'}
@@ -1005,7 +1005,7 @@ export default function AMCsPage() {
                   <div>
                     <label className="text-sm font-medium text-gray-600">Renewal Count</label>
                     <p className="text-gray-900">{editingAMC.renewalCount || 0}</p>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>

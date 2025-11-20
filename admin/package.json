@@ -20,6 +20,7 @@
     "react-toastify": "^11.0.5",
     "recharts": "^2.13.3",
     "unplugin-auto-import": "^19.3.0",
+    "xlsx": "^0.18.5",
     "zustand": "^5.0.2"
   },
   "devDependencies": {

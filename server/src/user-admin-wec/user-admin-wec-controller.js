@@ -12,6 +12,7 @@ const transactionModel = require("../transaction/transaction-model");
 const Customers = require("../customer/customer-model");
 const { CompanySettings, AMCSettings } = require("../companyDetails/companyDetails-model");
 const { sendOrderNotification } = require("../../utils/mail");
+const ExcelJS = require("exceljs");
 
 exports.createAmcByAdmin = catchAsyncErrors(async (req, res, next) => {
     try {
@@ -100,6 +101,48 @@ exports.getAmcByAdminWithPagination = catchAsyncErrors(async (req, res, next) =>
     }
 });
 
+
+exports.downloadExcelWec = catchAsyncErrors(async (req, res, next) => {
+    try {
+        const { createdByEmail } = req.query;
+
+        if (!createdByEmail) {
+            return res.status(400).json({ status: false, message: "createdByEmail is required" });
+        }
+
+        const creator = JSON.parse(createdByEmail);
+
+        if (!creator?.email) {
+            return res.status(400).json({ status: false, message: "Invalid creator email" });
+        }
+
+        // Check if admin exists
+        const userAdmin = await UserAdmin.findOne({ email: creator.email });
+        if (!userAdmin) {
+            return res.status(404).json({ status: false, message: "Admin not found" });
+        }
+
+        // Fetch AMC data
+        const amcs = await AMC.find({
+            "admin.email": creator.email,
+            "admin.name": creator.name
+        }).lean();
+
+        if (!amcs.length) {
+            return res.status(200).json({
+                status: true,
+                message: "No AMC data found",
+                data: []
+            });
+        }
+
+
+        res.status(200).json({ status: true, data: amcs, message: "AMC Report Downloaded Successfully" });
+
+    } catch (err) {
+        return next(new ErrorHandler(err.message, 500));
+    }
+});
 
 // exports.getAmcByRetailerWithPagination = catchAsyncErrors(async (req, res, next) => {
 //     try {

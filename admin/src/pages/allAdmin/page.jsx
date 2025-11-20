@@ -7,9 +7,11 @@ import SchemaForm from './UserSchemaForm';
 import ConfirmDialog from '../../components/base/ConfirmDialog';
 import Input from '../../components/base/Input';
 import { useToast } from '../../components/base/Toast';
+import { ToastContainer, toast } from "react-toastify"
 import { getData, postData } from '../../services/FetchNodeServices';
 import AdminWalletCalculator from './AdminWalletCalculator';
 import html2pdf from "html2pdf.js";
+import * as XLSX from "xlsx";
 
 
 export default function UsersPage() {
@@ -692,6 +694,45 @@ export default function UsersPage() {
         html2pdf().set(opt).from(container).save();
     };
 
+const handleDownloadExcel = async (selectedUser) => {
+    try {
+        if (!selectedUser?.email) {
+            return toast.error("Invalid user selected");
+        }
+
+        const queryParams = new URLSearchParams({
+            createdByEmail: JSON.stringify({
+                email: selectedUser.email,
+                name: selectedUser.name
+            })
+        });
+
+        const response = await getData(`api/user-admin-wec/download-excel-wec?${queryParams}`);
+
+        if (response.status === true && Array.isArray(response.data)) {
+            const jsonData = response.data;
+
+            // Convert JSON → Excel Sheet
+            const worksheet = XLSX.utils.json_to_sheet(jsonData);
+
+            // Create Excel Workbook
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, "WEC Data");
+
+            // Generate Excel file and download
+            XLSX.writeFile(workbook, `WEC_Data_${selectedUser.name}.xlsx`);
+
+            toast.success("Excel downloaded successfully!");
+        } else {
+            toast.error("No data found to export");
+        }
+
+    } catch (error) {
+        console.log(error);
+        toast.error("Something went wrong!");
+    }
+};
+
 
     const renderAdminWECActions = (record) => (
         <div className="flex space-x-2">
@@ -1295,13 +1336,25 @@ export default function UsersPage() {
                                             <p className="text-sm text-gray-500">{selectedUser.email}</p>
                                         </div>
                                         <div className="text-right">
-                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${selectedUser.role === 'distributor' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
+
+                                            <span className={`px-2 py-1 rounded-full text-xs font-medium mr-10 ${selectedUser.role === 'distributor' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
                                                 }`}>
                                                 {selectedUser?.role?.charAt(0).toUpperCase() + selectedUser?.role?.slice(1)}
                                             </span>
                                             <p className="text-sm font-semibold text-green-600 mt-1">
                                                 Current Balance: ₹{selectedUser?.walletBalance?.toLocaleString()}
                                             </p>
+                                            <div className="mt-2">
+                                                <Button
+                                                    size="sm"
+                                                    variant="outline"
+                                                    className="flex items-center gap-2 text-blue-600 hover:text-blue-800"
+                                                    onClick={() => { handleDownloadExcel(selectedUser); }}
+                                                >
+                                                    <i className="ri-file-pdf-line text-lg"></i>
+                                                    Download PDF
+                                                </Button>
+                                            </div>
                                         </div>
                                     </div>
                                     <Button

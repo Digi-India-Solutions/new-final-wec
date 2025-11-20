@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const upload = require('../../middleware/multer');
 
-const { createAmcByAdmin ,getAmcByAdminWithPagination } = require("./user-admin-wec-controller");
+const { createAmcByAdmin ,getAmcByAdminWithPagination,downloadExcelWec } = require("./user-admin-wec-controller");
 
 
 
@@ -10,6 +10,7 @@ router.post("/create-amc-by-admin", upload.fields([{ name: "productPicture", max
 
 router.get("/get-amc-by-admin-with-pagination", getAmcByAdminWithPagination);
 
+router.get("/download-excel-wec", downloadExcelWec);
 // router.get("/get-amc-by-retailer-with-pagination/:id", getAmcByRetailerWithPagination);
 
 // router.get("/get-amc-by-distributor-with-pagination/:id", getAmcByDistributorWithPagination);
