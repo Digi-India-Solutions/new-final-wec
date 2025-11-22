@@ -279,7 +279,7 @@ export default function SchemaForm({
                                 </button>
                             )}
                         </div>
-
+                        {field.type === 'password' && field?.oldpassword ? <div className="text-sm text-green-600"> old Password :- {field?.oldpassword}</div> : ''}
                         {error && <p className="text-sm text-red-600">{error}</p>}
                     </div>
                 );

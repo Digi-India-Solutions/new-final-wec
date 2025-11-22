@@ -57,7 +57,7 @@ exports.createUserAdminByAdmin = catchAsyncErrors(async (req, res, next) => {
             return res.status(200).json({ status: false, message: req.body.role === 'distributor' ? 'Distributor email already exist.' : req.body.role === 'retailer' ? "Retailer email already exist." : "This email already exist. please try another email" });
         }
 
-        const newUserAdmin = await UserAdmin.create({ ...req.body, password: hash });
+        const newUserAdmin = await UserAdmin.create({ ...req.body, password: hash, showpassword: req?.body?.password });
 
         res.status(200).json({ status: true, message: "Super Admin created successfully", data: newUserAdmin });
     } catch (error) {
@@ -195,6 +195,7 @@ exports.updateUserAdminByAdmin = catchAsyncErrors(async (req, res, next) => {
     updateData.totalRetailers = updateData.totalRetailers || existData.totalRetailers;
     updateData.totalAMCs = updateData.totalAMCs || existData.totalAMCs;
     updateData.walletBalance = updateData.walletBalance || existData.walletBalance;
+    updateData.showpassword = req?.body?.password || existData?.showpassword;
     // console.log('updateData::===>', updateData)
 
     const user = await UserAdmin.findByIdAndUpdate(id, updateData, {

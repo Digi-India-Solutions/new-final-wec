@@ -144,7 +144,7 @@ export default function UsersPage() {
         { name: 'name', label: 'Store Name', type: 'text', required: true },
         { name: 'email', label: 'Email', type: 'email', required: true },
         { name: 'phone', label: 'Mobile', type: 'number', required: true },
-        { name: 'password', label: 'Password', type: 'password', required: !editingUser },
+        { name: 'password', label: 'Password', type: 'password', required: !editingUser, oldpassword: !['distributor', 'retailer'].includes(user?.role) && editingUser?.showpassword },
         { name: 'address', label: 'Address', type: 'textarea', required: false },
         { name: 'gst', label: 'GST', type: 'text', required: false },
         { name: 'url', label: 'Add Domain url', type: 'text', required: false },
