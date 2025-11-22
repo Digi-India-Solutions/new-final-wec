@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const upload = require('../../middleware/multer');
 
-const { createAmcByAdmin ,getAmcByAdminWithPagination,downloadExcelWec } = require("./user-admin-wec-controller");
+const { createAmcByAdmin, getAmcByAdminWithPagination, downloadExcelWec, deleteAmcByAdmin } = require("./user-admin-wec-controller");
 
 
 
@@ -19,6 +19,6 @@ router.get("/download-excel-wec", downloadExcelWec);
 
 // // router.post("/update-amc-by-admin/:id", upload.single("purchaseProof"), updateAmcByAdmin);
 
-// router.get("/delete-amc-by-admin/:id", deleteAmcByAdmin);
+router.post("/delete-amc-by-admin/:id", deleteAmcByAdmin);
 
 module.exports = router;

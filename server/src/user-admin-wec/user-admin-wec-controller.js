@@ -67,6 +67,8 @@ exports.getAmcByAdminWithPagination = catchAsyncErrors(async (req, res, next) =>
                 { productCategory: searchRegex },
                 { distributorName: searchRegex },
                 { retailerName: searchRegex },
+                { "admin.name": searchRegex },
+                { "admin.email": searchRegex },
             ];
         }
 
@@ -141,6 +143,29 @@ exports.downloadExcelWec = catchAsyncErrors(async (req, res, next) => {
 
     } catch (err) {
         return next(new ErrorHandler(err.message, 500));
+    }
+});
+
+// ✅ Delete AMC
+exports.deleteAmcByAdmin = catchAsyncErrors(async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const { admin } = req.body;
+        console.log('XXXXXXXXXXX::=>', admin)
+        const amc = await AMC.findOne({ id: id, 'admin.email': admin.email });
+        const user = await UserAdmin.findOne({ email: admin?.email });
+        console.log("AAAAAA:==>", amc)
+        console.log("User:==>SS", user)
+        if (user) {
+            user.totalAMCs -= 1;
+            user.save();
+        }
+
+        const deletedAmc = await AMC.findByIdAndDelete({ _id: amc._id });
+        if (!deletedAmc) return next(new ErrorHandler("AMC not found", 404));
+        res.status(200).json({ status: true, message: "AMC deleted successfully" })
+    } catch (error) {
+        return next(new ErrorHandler(error.message, 500));
     }
 });
 
@@ -400,27 +425,6 @@ exports.downloadExcelWec = catchAsyncErrors(async (req, res, next) => {
 //         if (!updatedAmc) return next(new ErrorHandler("AMC not found", 404));
 
 //         return sendResponse(res, true, 200, "AMC updated successfully", updatedAmc);
-//     } catch (error) {
-//         return next(new ErrorHandler(error.message, 500));
-//     }
-// });
-
-// // ✅ Delete AMC
-// exports.deleteAmcByAdmin = catchAsyncErrors(async (req, res, next) => {
-//     try {
-//         const { id } = req.params;
-//         const amc = await AMC.findById(id);
-//         const user = await SuperAdmin.findOne({ email: amc?.createdByEmail?.email });
-//         // console.log("AAAAAA:==>", amc)
-//         // console.log("User:==>", user)
-//         if (user) {
-//             user.totalAMCs -= 1;
-//             user.save();
-//         }
-
-//         const deletedAmc = await AMC.findByIdAndDelete(id);
-//         if (!deletedAmc) return next(new ErrorHandler("AMC not found", 404));
-//         res.status(200).json({ status: true, message: "AMC deleted successfully" })
 //     } catch (error) {
 //         return next(new ErrorHandler(error.message, 500));
 //     }

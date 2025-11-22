@@ -694,44 +694,44 @@ export default function UsersPage() {
         html2pdf().set(opt).from(container).save();
     };
 
-const handleDownloadExcel = async (selectedUser) => {
-    try {
-        if (!selectedUser?.email) {
-            return toast.error("Invalid user selected");
+    const handleDownloadExcel = async (selectedUser) => {
+        try {
+            if (!selectedUser?.email) {
+                return toast.error("Invalid user selected");
+            }
+
+            const queryParams = new URLSearchParams({
+                createdByEmail: JSON.stringify({
+                    email: selectedUser.email,
+                    name: selectedUser.name
+                })
+            });
+
+            const response = await getData(`api/user-admin-wec/download-excel-wec?${queryParams}`);
+
+            if (response.status === true && Array.isArray(response.data)) {
+                const jsonData = response.data;
+
+                // Convert JSON → Excel Sheet
+                const worksheet = XLSX.utils.json_to_sheet(jsonData);
+
+                // Create Excel Workbook
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, "WEC Data");
+
+                // Generate Excel file and download
+                XLSX.writeFile(workbook, `WEC_Data_${selectedUser.name}.xlsx`);
+
+                toast.success("Excel downloaded successfully!");
+            } else {
+                toast.error("No data found to export");
+            }
+
+        } catch (error) {
+            console.log(error);
+            toast.error("Something went wrong!");
         }
-
-        const queryParams = new URLSearchParams({
-            createdByEmail: JSON.stringify({
-                email: selectedUser.email,
-                name: selectedUser.name
-            })
-        });
-
-        const response = await getData(`api/user-admin-wec/download-excel-wec?${queryParams}`);
-
-        if (response.status === true && Array.isArray(response.data)) {
-            const jsonData = response.data;
-
-            // Convert JSON → Excel Sheet
-            const worksheet = XLSX.utils.json_to_sheet(jsonData);
-
-            // Create Excel Workbook
-            const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, "WEC Data");
-
-            // Generate Excel file and download
-            XLSX.writeFile(workbook, `WEC_Data_${selectedUser.name}.xlsx`);
-
-            toast.success("Excel downloaded successfully!");
-        } else {
-            toast.error("No data found to export");
-        }
-
-    } catch (error) {
-        console.log(error);
-        toast.error("Something went wrong!");
-    }
-};
+    };
 
 
     const renderAdminWECActions = (record) => (
@@ -1352,7 +1352,7 @@ const handleDownloadExcel = async (selectedUser) => {
                                                     onClick={() => { handleDownloadExcel(selectedUser); }}
                                                 >
                                                     <i className="ri-file-pdf-line text-lg"></i>
-                                                    Download PDF
+                                                    Download Excel
                                                 </Button>
                                             </div>
                                         </div>

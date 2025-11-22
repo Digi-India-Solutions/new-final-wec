@@ -4,7 +4,7 @@ const { Schema } = mongoose;
 const userAdminWECSchema = new Schema(
     {
 
-        id: { type: String, required: true, unique: true },
+        id: { type: String, required: true },
         customerName: { type: String, required: true, trim: true },
         customerAddress: { type: String, required: true },
         customerEmail: { type: String, required: true },
