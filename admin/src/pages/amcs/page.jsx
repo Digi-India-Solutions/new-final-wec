@@ -91,8 +91,12 @@ export default function AMCsPage() {
     { key: 'productBrand', title: 'Brand' },
     { key: 'productModel', title: 'Model' },
     { key: 'amcAmount', title: 'WEC Amount', render: (value) => `₹${value.toLocaleString()}` },
-    { key: 'startDate', title: 'Start Date', render: (value) => new Date(value).toLocaleDateString('en-IN') },
-    { key: 'endDate', title: 'End Date', render: (value) => new Date(value).toLocaleDateString('en-IN') },
+    { key: 'startDate', title: 'Start Date', 
+      // render: (value) => new Date(value).toLocaleDateString('en-IN')
+     },
+    { key: 'endDate', title: 'End Date', 
+      // render: (value) => new Date(value).toLocaleDateString('en-IN')
+     },
     {
       key: 'status', title: 'Status', render: (value) => {
         const colors = {
@@ -377,8 +381,8 @@ export default function AMCsPage() {
             <td>${record.productCategory} - ${record?.productBrand} ${record?.productType && record?.productType}</td>
             <td>${record.productModel}</td>
             <td>${record.serialNumber || 'N/A'}</td>
-            <td>${new Date(record.startDate).toLocaleDateString('en-IN')}</td>
-            <td>${new Date(record.endDate).toLocaleDateString('en-IN')}</td>
+            <td>${record.startDate}</td>
+            <td>${record.endDate}</td>
             <td>₹${record.amcAmount.toLocaleString()}</td>
           </tr>
         </tbody>
@@ -966,11 +970,11 @@ export default function AMCsPage() {
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-600">Start Date</label>
-                    <p className="text-gray-900">{new Date(editingAMC.startDate).toLocaleDateString('en-IN')}</p>
+                    <p className="text-gray-900">{editingAMC.startDate}</p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-600">End Date</label>
-                    <p className="text-gray-900">{new Date(editingAMC.endDate).toLocaleDateString('en-IN')}</p>
+                    <p className="text-gray-900">{editingAMC.endDate}</p>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-gray-600">Status</label>

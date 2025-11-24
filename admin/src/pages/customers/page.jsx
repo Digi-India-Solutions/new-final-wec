@@ -414,8 +414,8 @@ export default function CustomersPage() {
             <td>${record.productCategory} - ${record?.productBrand} ${record?.productType && record?.productType}</td>
             <td>${record.productModel}</td>
             <td>${record.serialNumber || 'N/A'}</td>
-            <td>${new Date(record.startDate).toLocaleDateString('en-IN')}</td>
-            <td>${new Date(record.endDate).toLocaleDateString('en-IN')}</td>
+            <td>${record.startDate}</td>
+            <td>${record.endDate}</td>
             <td>₹${record.amcAmount.toLocaleString()}</td>
           </tr>
         </tbody>
