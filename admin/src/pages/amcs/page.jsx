@@ -988,14 +988,16 @@ export default function AMCsPage() {
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Service Information</h3>
                 <div className="space-y-3">
-                  <div>
-                    <label className="text-sm font-medium text-gray-600">Retailer</label>
-                    <p className="text-gray-900">{editingAMC.retailerName}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-600">Distributor</label>
-                    <p className="text-gray-900">{editingAMC.distributorName}</p>
-                  </div>
+                  {editingAMC?.retailerName &&
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">Retailer</label>
+                      <p className="text-gray-900">{editingAMC.retailerName}</p>
+                    </div>}
+                  {editingAMC?.distributorName &&
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">Distributor</label>
+                      <p className="text-gray-900">{editingAMC.distributorName}</p>
+                    </div>}
                   {/* <div>
                     <label className="text-sm font-medium text-gray-600">Last Service</label>
                     <p className="text-gray-900">
