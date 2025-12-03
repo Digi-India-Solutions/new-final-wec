@@ -282,6 +282,7 @@ import routes from './router/config';
 import Sidebar from './components/layout/Sidebar';
 import Header from './components/layout/Header';
 import { jwtDecode } from 'jwt-decode';
+import { clsx } from 'clsx';
 
 function AppContent() {
   const navigate = useNavigate();
@@ -296,6 +297,7 @@ function AppContent() {
     return storedUser ? JSON.parse(storedUser) : null;
   });
   const [activeMenuKey, setActiveMenuKey] = useState('dashboard');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   /** 🔄 Make navigate globally available if needed */
   useEffect(() => {
@@ -379,9 +381,15 @@ function AppContent() {
     (key, path) => {
       setActiveMenuKey(key);
       navigate(path);
+      setSidebarOpen(false); // Close sidebar on mobile after navigation
     },
     [navigate]
   );
+
+  /** 📱 Toggle sidebar for mobile */
+  const toggleSidebar = useCallback(() => {
+    setSidebarOpen(prev => !prev);
+  }, []);
 
   /** 🧱 Layout Rendering */
   const isPublicPage =
@@ -403,11 +411,31 @@ function AppContent() {
 
   // Authenticated Layout
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      <Sidebar activeKey={activeMenuKey} onMenuClick={handleMenuClick} />
-      <div className="flex-1 flex flex-col">
-        <Header user={user} />
-        <main className="flex-1 overflow-auto p-4">{routing}</main>
+    <div className="h-screen bg-gray-50 flex overflow-hidden">
+      {/* Mobile sidebar overlay */}
+      {sidebarOpen && (
+        <div
+          className="sidebar-overlay md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar - fixed position, hidden on mobile, shown on md+ */}
+      <div className={clsx(
+        'sidebar-mobile md:relative md:transform-none md:flex md:flex-shrink-0',
+        sidebarOpen ? 'open' : ''
+      )}>
+        <Sidebar activeKey={activeMenuKey} onMenuClick={handleMenuClick} onClose={() => setSidebarOpen(false)} />
+      </div>
+
+      {/* Main content area - scrolls independently */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <Header user={user} onMenuToggle={toggleSidebar} />
+        <main className="flex-1 overflow-auto p-2 sm:p-4">
+          <div className="dashboard-scale">
+            {routing}
+          </div>
+        </main>
       </div>
     </div>
   );

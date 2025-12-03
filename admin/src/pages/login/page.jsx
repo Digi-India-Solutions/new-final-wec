@@ -108,26 +108,32 @@ export default function Login() {
               />
 
               {/* Password with Eye Toggle */}
-              <div className="relative">
-                <Input
-                  label="Password"
-                  type={showPassword ? 'text' : 'password'}
-                  value={formData.password}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
-                  placeholder="Enter your password"
-                  icon="ri-lock-line"
-                  required
-                />
-
-                {/* Eye / Eye-off toggle button */}
-                <button
-                  type="button"
-                  className="absolute right-3 top-9 text-gray-500 hover:text-gray-700"
-                  onClick={() => setShowPassword((prev) => !prev)}
-                  aria-label="Toggle password visibility"
-                >
-                  <i className={`ri-eye${showPassword ? '-off' : ''}-line text-lg`} />
-                </button>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Password
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i className="ri-lock-line text-gray-400"></i>
+                  </div>
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={formData.password}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
+                    placeholder="Enter your password"
+                    required
+                    className="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                  {/* Eye / Eye-off toggle button */}
+                  <button
+                    type="button"
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    aria-label="Toggle password visibility"
+                  >
+                    <i className={`ri-eye${showPassword ? '-off' : ''}-line text-lg`} />
+                  </button>
+                </div>
               </div>
 
               {/* Forgot Password link */}

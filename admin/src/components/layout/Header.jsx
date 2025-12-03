@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useAuthStore } from '../../store/authStore';
 
-export default function Header() {
+export default function Header({ onMenuToggle }) {
   const { user } = useAuthStore();
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -13,20 +13,29 @@ export default function Header() {
   ];
 
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+    <header className="bg-white shadow-sm border-b border-gray-200 px-4 sm:px-6 py-4">
       <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-semibold text-gray-900">
-            Welcome back, {user?.name}
-          </h2>
-          <p className="text-sm text-gray-600">
-            {new Date().toLocaleDateString('en-US', { 
-              weekday: 'long', 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
-            })}
-          </p>
+        <div className="flex items-center space-x-3">
+          {/* Hamburger menu button - visible only on mobile */}
+          <button
+            onClick={onMenuToggle}
+            className="md:hidden p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg cursor-pointer"
+          >
+            <i className="ri-menu-line text-xl w-6 h-6 flex items-center justify-center"></i>
+          </button>
+          <div>
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-900">
+              Welcome back, {user?.name}
+            </h2>
+            <p className="text-xs sm:text-sm text-gray-600">
+              {new Date().toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+              })}
+            </p>
+          </div>
         </div>
         
         <div className="flex items-center space-x-4">

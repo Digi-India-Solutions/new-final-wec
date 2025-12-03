@@ -1,7 +1,7 @@
 // import { useAuthStore } from '../../store/authStore';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
 import { getData } from '../../services/FetchNodeServices';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 export default function Dashboard() {
@@ -24,20 +24,20 @@ export default function Dashboard() {
   const navigate = useNavigate();
 
   const StatCard = ({ title, value, icon, color, change, path }) => (
-    <div className="bg-white rounded-lg shadow p-6" >
+    <div className="bg-white rounded-lg shadow p-4 sm:p-5" >
       <div className="flex items-center justify-between cursor-pointer" onClick={() => navigate(path)}>
         <div>
-          <p className="text-sm font-medium text-gray-600">{title}</p>
-          <p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>
+          <p className="text-xs sm:text-sm font-medium text-gray-600">{title}</p>
+          <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">{value}</p>
           {change && (
-            <p className="text-sm text-green-600 mt-1">
+            <p className="text-xs sm:text-sm text-green-600 mt-1">
               <i className="ri-arrow-up-line w-4 h-4 inline-flex items-center justify-center"></i>
               {change}
             </p>
           )}
         </div>
-        <div className={`w-12 h-12 ${color} rounded-lg flex items-center justify-center`}>
-          <i className={`${icon} text-white text-xl w-6 h-6 flex items-center justify-center`}></i>
+        <div className={`w-10 h-10 sm:w-12 sm:h-12 ${color} rounded-lg flex items-center justify-center`}>
+          <i className={`${icon} text-white text-lg sm:text-xl w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center`}></i>
         </div>
       </div>
     </div>
@@ -93,9 +93,9 @@ export default function Dashboard() {
 
   console.log("salesData ===>VVV", salesData)
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-5 space-y-4 sm:space-y-5">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Dashboard</h1>
         <div className="flex items-center space-x-3">
           {/* <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer whitespace-nowrap">
             <i className="ri-download-line mr-2 w-4 h-4 inline-flex items-center justify-center"></i>
@@ -105,7 +105,7 @@ export default function Dashboard() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         <StatCard
           title="Total WECs"
           value={amcs.toLocaleString()}
@@ -139,7 +139,7 @@ export default function Dashboard() {
       </div>
 
       {user?.role !== 'retailer' && user?.role !== 'distributor' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
           <StatCard
             title="Total Distributors"
             value={totalDistributors || 0}
@@ -178,7 +178,7 @@ export default function Dashboard() {
       )}
 
       {user?.role === 'distributor' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
           <StatCard
             title="My Retailers"
             value={totalRetailers || 0}
@@ -207,9 +207,9 @@ export default function Dashboard() {
       {/* Charts */}
       {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-12"> */}
       {/* Sales Trend */}
-      {salesData && salesData.length > 0 && <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">WEC Sales Trend</h3>
-        <ResponsiveContainer width="100%" height={300}>
+      {salesData && salesData.length > 0 && <div className="bg-white rounded-lg shadow p-4 sm:p-5">
+        <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">WEC Sales Trend</h3>
+        <ResponsiveContainer width="100%" height={250}>
           <LineChart data={salesData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="month" />
@@ -236,10 +236,10 @@ export default function Dashboard() {
       {/* </div> */}
 
       {/* Product Distribution */}
-      {productData && productData?.length > 0 && <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">WEC Distribution by Product Category</h3>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <ResponsiveContainer width="100%" height={300}>
+      {productData && productData?.length > 0 && <div className="bg-white rounded-lg shadow p-4 sm:p-5">
+        <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">WEC Distribution by Product Category</h3>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5">
+          <ResponsiveContainer width="100%" height={250}>
             <PieChart>
               <Pie
                 data={productData}
@@ -258,17 +258,17 @@ export default function Dashboard() {
             </PieChart>
           </ResponsiveContainer>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             {productData.map((item, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center space-x-3">
+              <div key={index} className="flex items-center justify-between p-2 sm:p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center space-x-2 sm:space-x-3">
                   <div
-                    className="w-4 h-4 rounded-full"
+                    className="w-3 h-3 sm:w-4 sm:h-4 rounded-full"
                     style={{ backgroundColor: item.color }}
                   ></div>
-                  <span className="font-medium text-gray-900">{item.name}</span>
+                  <span className="text-sm font-medium text-gray-900">{item.name}</span>
                 </div>
-                <span className="text-gray-600">{item.value}</span>
+                <span className="text-sm text-gray-600">{item.value}</span>
               </div>
             ))}
           </div>
@@ -276,16 +276,16 @@ export default function Dashboard() {
       </div>}
 
       {/* Recent Activity */}
-      {recentActivities && recentActivities?.length > 0 && <div className="bg-white rounded-lg shadow p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
-        <div className="space-y-4">
+      {recentActivities && recentActivities?.length > 0 && <div className="bg-white rounded-lg shadow p-4 sm:p-5">
+        <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">Recent Activity</h3>
+        <div className="space-y-3">
           {recentActivities.map((activity, index) => (
-            <div key={index} className="flex items-center space-x-4 p-3 hover:bg-gray-50 rounded-lg">
-              <div className={`w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center`}>
-                <i className={`${activity.icon} ${activity.color} w-5 h-5 flex items-center justify-center`}></i>
+            <div key={index} className="flex items-center space-x-3 sm:space-x-4 p-2 sm:p-3 hover:bg-gray-50 rounded-lg">
+              <div className={`w-8 h-8 sm:w-10 sm:h-10 bg-gray-100 rounded-full flex items-center justify-center`}>
+                <i className={`${activity.icon} ${activity.color} w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center`}></i>
               </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-gray-900">{activity.action}</p>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs sm:text-sm font-medium text-gray-900 truncate">{activity.action}</p>
                 <p className="text-xs text-gray-500">{activity.user} • {activity.time}</p>
               </div>
             </div>

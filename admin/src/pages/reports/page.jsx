@@ -104,11 +104,11 @@ export default function ReportsPage() {
   console.log("monthlySalesDatas ===>", totalRevenue);
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 max-w-full overflow-hidden">
       <ToastContainer />
 
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Reports & Analytics</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Reports & Analytics</h1>
         <div className="flex space-x-3">
           {/* <Button
             variant="secondary"

@@ -198,7 +198,7 @@ import { clsx } from 'clsx';
 import { useNavigate } from 'react-router-dom';
 import { getData } from '../../services/FetchNodeServices';
 
-export default function Sidebar({ activeKey, onMenuClick }) {
+export default function Sidebar({ activeKey, onMenuClick, onClose }) {
   const navigate = useNavigate();
   const [isAuthenticated, setIsAuthenticated] = useState(
     sessionStorage.getItem('isAuthenticated') === 'true'
@@ -301,24 +301,33 @@ export default function Sidebar({ activeKey, onMenuClick }) {
   }, [])
 
   return (
-    <div className="bg-gray-900 text-white w-64 min-h-screen flex flex-col">
-      {/* Header */}
-      <div className="p-6 border-b border-gray-700">
-        {companySettings?.logo ? (
-          <img
-            src={companySettings?.logo}
-            alt="Logo"
-            className="h-36 w-36 object-contain" // ⬅ 3x bigger logo
-          />
-        ) : (
-          <i className="ri-file-shield-line text-gray-700 text-[200px]"></i> // bigger fallback icon
-        )}
-        {companySettings?.name && <h1 className="text-xl font-bold">{companySettings?.name}</h1>}
-        <p className="text-sm text-gray-400 capitalize">{user?.role} Panel</p>
+    <div className="bg-gray-900 text-white w-64 h-screen flex flex-col overflow-hidden">
+      {/* Header - fixed at top */}
+      <div className="flex-shrink-0 p-4 sm:p-6 border-b border-gray-700">
+        <div className="flex items-center justify-between mb-2">
+          {companySettings?.logo ? (
+            <img
+              src={companySettings?.logo}
+              alt="Logo"
+              className="h-20 w-20 sm:h-28 sm:w-28 object-contain"
+            />
+          ) : (
+            <i className="ri-file-shield-line text-gray-700 text-5xl sm:text-6xl"></i>
+          )}
+          {/* Close button for mobile */}
+          <button
+            onClick={onClose}
+            className="md:hidden p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg"
+          >
+            <i className="ri-close-line text-xl w-5 h-5 flex items-center justify-center"></i>
+          </button>
+        </div>
+        {companySettings?.name && <h1 className="text-lg sm:text-xl font-bold">{companySettings?.name}</h1>}
+        <p className="text-xs sm:text-sm text-gray-400 capitalize">{user?.role} Panel</p>
       </div>
 
-      {/* Menu */}
-      <nav className="flex-1 p-4 overflow-y-auto">
+      {/* Menu - scrollable */}
+      <nav className="flex-1 p-4 overflow-y-auto min-h-0 sidebar-nav-scroll">
         <ul className="space-y-2">
           {filteredMenuItems.length > 0 ? (
             filteredMenuItems.map((item) => (
@@ -345,8 +354,8 @@ export default function Sidebar({ activeKey, onMenuClick }) {
         </ul>
       </nav>
 
-      {/* Footer */}
-      <div className="p-4 border-t border-gray-700">
+      {/* Footer - fixed at bottom */}
+      <div className="flex-shrink-0 p-4 border-t border-gray-700">
         <div className="flex items-center space-x-3 mb-4">
           <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
             <i className="ri-user-line w-5 h-5 flex items-center justify-center"></i>

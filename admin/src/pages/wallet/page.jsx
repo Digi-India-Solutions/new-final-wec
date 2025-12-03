@@ -446,14 +446,15 @@ export default function WalletPage() {
   }, [transactionCurrentPage, currentPage,])
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 max-w-full overflow-hidden">
       <ToastContainer />
 
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Wallet Management</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Wallet Management</h1>
         {(user?.role !== 'retailer' && canWrite) && (
-          <div className="flex space-x-3">
+          <div className="flex gap-2">
             <Button
+              size="sm"
               onClick={() => {
                 setTransactionType('credit');
                 setIsCreditModalOpen(true);
@@ -463,6 +464,7 @@ export default function WalletPage() {
               Add Points
             </Button>
             <Button
+              size="sm"
               variant="secondary"
               onClick={() => {
                 setTransactionType('debit');
