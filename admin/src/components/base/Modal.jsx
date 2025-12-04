@@ -1,17 +1,22 @@
 
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { clsx } from 'clsx';
 
 export default function Modal({ isOpen, onClose, title, children, size = 'md' }) {
   useEffect(() => {
     if (isOpen) {
+      const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
       document.body.style.overflow = 'hidden';
+      document.body.style.paddingRight = `${scrollbarWidth}px`;
     } else {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
     }
 
     return () => {
-      document.body.style.overflow = 'unset';
+      document.body.style.overflow = '';
+      document.body.style.paddingRight = '';
     };
   }, [isOpen]);
 
@@ -24,15 +29,15 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' })
     xl: 'max-w-4xl'
   };
 
-  return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
+  const modalContent = (
+    <div className="fixed inset-0 z-[9999] overflow-y-auto">
       <div className="flex min-h-screen items-center justify-center p-4">
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 transition-opacity"
+          className="fixed inset-0"
           onClick={onClose}
         />
         <div className={clsx(
-          'relative bg-white rounded-lg shadow-xl w-full',
+          'relative bg-white rounded-lg shadow-2xl w-full',
           sizes[size]
         )}>
           {title && (
@@ -53,4 +58,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' })
       </div>
     </div>
   );
+
+  // Render modal at the root level using portal
+  return createPortal(modalContent, document.body);
 }

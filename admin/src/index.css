@@ -2,11 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Slightly reduce overall dashboard size */
+/* Scale entire app */
+html {
+  font-size: 14px;
+}
+
 .dashboard-scale {
-  transform: scale(0.95);
-  transform-origin: top left;
-  width: 105.26%;
+  /* No longer needed */
 }
 
 /* Hide scrollbar on sidebar for larger screens but keep scrolling functionality */

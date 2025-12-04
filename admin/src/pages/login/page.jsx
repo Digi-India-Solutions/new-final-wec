@@ -71,7 +71,7 @@ export default function Login() {
   return (<>{
     forgotPassword ?
       <ForgotPasswordCom emails={formData?.email} />
-      : <div className="min-h-screen bg-gray-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      : <div className="h-screen bg-gray-50 flex items-center justify-center px-4 sm:px-6 lg:px-8 overflow-hidden">
         <ToastContainer />
         <div className="max-w-md w-full space-y-8">
           {/* Logo / Title */}
