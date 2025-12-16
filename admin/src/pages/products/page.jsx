@@ -19,7 +19,7 @@ export default function ProductsPage() {
   });
 
   const { showToast, ToastContainer } = useToast();
-  const [activeTab, setActiveTab] = useState('categories' || 'brands' || 'types');
+  const [activeTab, setActiveTab] = useState('categories' || 'brands' || 'types' || 'packages');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
@@ -31,7 +31,7 @@ export default function ProductsPage() {
   const [deletingItem, setDeletingItem] = useState(null);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState({ categoryPage: 1, categoryLimit: 10, brandPage: 1, brandLimit: 10, typePage: 1, typeLimit: 10, });
-  const [totalData, setTotalData] = useState({ categoryTotal: 0, brandTotal: 0, typeTotal: 0, modelTotal: 0 });
+  const [totalData, setTotalData] = useState({ categoryTotal: 0, brandTotal: 0, typeTotal: 0, modelTotal: 0, packagesTotal: 0 });
 
   // Mock data
   const [categories, setCategories] = useState([]);
@@ -39,6 +39,8 @@ export default function ProductsPage() {
   const [allCategoriesByBrand, setAllCategoriesByBrand] = useState([]);
   const [brands, setBrands] = useState([]);
   const [allBrands, setAllBrands] = useState([]);
+  const [packages, setPackages] = useState([]);
+  const [allPackages, setAllPackages] = useState([]);
   const [types, setTypes] = useState([]);
   const [allTypes, setAllTypes] = useState([]);
   const [filter, setFilter] = useState({});
@@ -66,36 +68,37 @@ export default function ProductsPage() {
   })();
 
 
-  const getCurrentData = () => {
-    switch (activeTab) {
-      case 'categories': return categories;
-      case 'brands': return brands;
-      case 'types': return types;
+  // const getCurrentData = () => {
+  //   switch (activeTab) {
+  //     case 'categories': return categories;
+  //     case 'brands': return brands;
+  //     case 'types': return types;
+  //     case 'packages': return packages;
 
-      default: return [];
-    }
-  };
+  //     default: return [];
+  //   }
+  // };
 
-  // Filter data
-  const filteredData = getCurrentData()
-    .filter(item => {
-      const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesStatus = statusFilter === 'all' || item.status === statusFilter;
+  // // Filter data
+  // const filteredData = getCurrentData()
+  //   .filter(item => {
+  //     const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase());
+  //     const matchesStatus = statusFilter === 'all' || item.status === statusFilter;
 
-      let matchesCategory = true;
-      let matchesBrand = true;
-      let matchesType = true;
+  //     let matchesCategory = true;
+  //     let matchesBrand = true;
+  //     let matchesType = true;
 
-      if (activeTab === 'brands' && categoryFilter !== 'all') {
-        matchesCategory = item.categoryId === categoryFilter;
-      }
-      if (activeTab === 'types' && brandFilter !== 'all') {
-        matchesBrand = item.brandId === brandFilter;
-      }
+  //     if (activeTab === 'brands' && categoryFilter !== 'all') {
+  //       matchesCategory = item.categoryId === categoryFilter;
+  //     }
+  //     if (activeTab === 'types' && brandFilter !== 'all') {
+  //       matchesBrand = item.brandId === brandFilter;
+  //     }
 
 
-      return matchesSearch && matchesStatus && matchesCategory && matchesBrand && matchesType;
-    });
+  //     return matchesSearch && matchesStatus && matchesCategory && matchesBrand && matchesType;
+  //   });
 
   const getFormFields = () => {
     const baseFields = [
@@ -138,6 +141,32 @@ export default function ProductsPage() {
             name: 'brandId', label: 'Brand', type: 'select', required: true, options:
               allBrands.filter(b => b.status === 'active').map(b => ({ value: b.name, label: b.name }))
           },
+          {
+            name: 'status', label: 'Status', type: 'select', required: true, options: [
+              { value: 'active', label: 'Active' },
+              { value: 'inactive', label: 'Inactive' }
+            ]
+          }
+        ];
+
+      case 'packages':
+        return [
+          { name: 'name', label: 'Package Name', type: 'text', required: true },
+          {
+            name: 'categoryId',
+            label: 'Category',
+            type: 'select',
+            required: true,
+            options: editingItem ? allCategories.filter(b => b.status === 'active').map(b => ({ value: b.name, label: b.name })) : allCategories.filter((cat) => !allPackages.some((pkg) => String(pkg.categoryIds._id) === String(cat._id))).map((cat) => ({ value: cat.name, label: cat.name, })),
+          },
+          {
+            name: 'validFrom', label: 'Valid From', type: 'select', required: true, options:
+              ['Same Day', 'after 365 day'].map(b => ({ value: b, label: b }))
+          },
+          // {
+          //   name: 'brandId', label: 'Brand', type: 'select', required: true, options:
+          //     allBrands.filter(b => b.status === 'active').map(b => ({ value: b.name, label: b.name }))
+          // },
           {
             name: 'status', label: 'Status', type: 'select', required: true, options: [
               { value: 'active', label: 'Active' },
@@ -193,6 +222,28 @@ export default function ProductsPage() {
       //     { key: 'categoryId', title: 'Category', sortable: true }
       //   ];
 
+      case 'packages':
+        return [
+          ...baseColumns,
+          { key: 'categoryId', title: 'Category', sortable: true },
+
+          { key: 'validFrom', title: 'Valid From', sortable: true },
+
+          {
+            key: 'packages',
+            title: 'Packages',
+            sortable: false,
+            render: (value) =>
+              Array.isArray(value) && value.length > 0
+                ? value
+                  .map(
+                    (pkg) => `${pkg.validity} - ${pkg.percentage}%`
+                  )
+                  .join(', ')
+                : 'No Packages Available',
+          },
+
+        ];
       default:
         return baseColumns;
     }
@@ -205,6 +256,12 @@ export default function ProductsPage() {
   };
 
   const handleEdit = (item) => {
+    // if (activeTab === 'packages') {
+    //   setEditingItem({
+    //     ...item,
+    //     packages: item.packages.map(pkg => ({ ...pkg, validity: pkg.validity, percentage: pkg.percentage }))
+    //   })
+    // }
     setEditingItem(item);
     setIsModalOpen(true);
   };
@@ -266,6 +323,8 @@ export default function ProductsPage() {
         q = `api/category/delete-category-by-admin/${deletingItem?._id}`
       } else if (activeTab === 'brands') {
         q = `api/brand/delete-brand-by-admin/${deletingItem?._id}`
+      } else if (activeTab === 'packages') {
+        q = `api/packages/delete-packages-by-admin/${deletingItem?._id}`
       }
       // else if (activeTab === 'types') {
       //   q = `api/type/delete-type-by-admin/${deletingItem?._id}`
@@ -275,6 +334,7 @@ export default function ProductsPage() {
         fetchCategoryData()
         fetchBrandData()
         fetchTypeData()
+        fetchPackageData()
         showToast(`${activeTab.slice(0, -1)} deleted successfully`, 'success');
         setIsDeleteDialogOpen(false);
         setDeletingItem(null);
@@ -307,7 +367,7 @@ export default function ProductsPage() {
   const fetchAllCategories = async () => {
     try {
       const response = await getData(`api/category/get-All-category`);
-      console.log("response==>get-All-category=>", response)
+      // console.log("response==>get-All-category=>", response)
       if (response?.status === true) {
         setAllCategories(response?.data);
       }
@@ -334,7 +394,7 @@ export default function ProductsPage() {
   const fetchAllBrand = async () => {
     try {
       const response = await getData(`api/brand/get-All-brand`);
-      console.log("response==>get-All-category=>", response)
+      // console.log("response==>get-All-category=>", response)
       if (response?.status === true) {
         setAllBrands(response?.data);
       }
@@ -362,7 +422,7 @@ export default function ProductsPage() {
   const fetchAllType = async () => {
     try {
       const response = await getData(`api/type/get-All-type`);
-      console.log("response==>get-All-category=>", response)
+      // console.log("response==>get-All-category=>", response)
       if (response?.status === true) {
         setAllTypes(response?.data);
       }
@@ -386,6 +446,34 @@ export default function ProductsPage() {
     }
   }
 
+  const fetchAllPackage = async () => {
+    try {
+      const response = await getData(`api/packages/get-All-packages`);
+      console.log("response==>get-All-category=>", response)
+      if (response?.status === true) {
+        setAllPackages(response?.data);
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+  const fetchPackageData = async () => {
+    try {
+      const response = await getData(`api/packages/get-packages-by-admin-with-pagination?limit=${page.typeLimit}&page=${page?.typePage}&search=${searchTerm}&status=${statusFilter}&category=${categoryFilter}&brand=${brandFilter}`);
+      console.log("response==>yyyYYYY++>", response.data)
+      if (response?.status === true) {
+        setPackages(response?.data);
+        setTotalData((prev) => ({
+          ...prev, packagesTotal: response?.pagination?.totalPackages || 0,
+        }));
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  }
+
+
   useEffect(() => {
     fetchCategoryData()
   }, [])
@@ -399,6 +487,9 @@ export default function ProductsPage() {
 
     fetchTypeData()
     fetchAllType();
+
+    fetchPackageData()
+    fetchAllPackage();
 
     fetchUserRoleData()
 
@@ -449,7 +540,7 @@ export default function ProductsPage() {
       {/* Tabs */}
       <div className="border-b border-gray-200">
         <nav className="-mb-px flex space-x-8">
-          {(['categories', 'brands',
+          {(['categories', 'brands', 'packages'
             // 'types',
           ]).map((tab) => (
             <button
@@ -460,7 +551,7 @@ export default function ProductsPage() {
                 : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
             >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)} ({tab === 'categories' && totalData?.categoryTotal || tab === 'brands' && totalData?.brandTotal || tab === 'types' && totalData?.typeTotal})
+              {tab.charAt(0).toUpperCase() + tab.slice(1)} ({tab === 'categories' && totalData?.categoryTotal || tab === 'brands' && totalData?.brandTotal || tab === 'types' && totalData?.typeTotal || tab === 'packages' && totalData?.packagesTotal})
             </button>
           ))}
         </nav>
@@ -579,6 +670,18 @@ export default function ProductsPage() {
         />
       )}
 
+      {activeTab === 'packages' && (
+        <DataTable
+          data={packages}
+          columns={getColumns()}
+          actions={canEdit === true || canDelete === true ? renderActions : ''}
+          setCurrentPage={(newPage) => setPage((prev) => ({ ...prev, brandPage: newPage }))}
+          currentPage={page.brandPage}
+          totalPages={Math.ceil(totalData.brandTotal / page.brandLimit)}
+          pageSize={page.brandLimit}
+        />
+      )}
+
       {/* {activeTab === 'types' && (
         <DataTable
           data={types}
@@ -611,6 +714,8 @@ export default function ProductsPage() {
           fetchCategoryData={fetchCategoryData}
           fetchBrandData={fetchBrandData}
           fetchTypeData={fetchTypeData}
+          fetchPackageData={fetchPackageData}
+          allPackages={allPackages}
         />
       </Modal>
 

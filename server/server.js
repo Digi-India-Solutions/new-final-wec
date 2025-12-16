@@ -30,6 +30,7 @@ const reportsRoutes = require("./src/reports/reports-routes");
 const userAdminRoutes = require("./src/user-admin/user-admin-routes");
 const UserAdminTransactionRoutes = require("./src/user-admin-transaction/user-admin-transaction-routes");
 const userAdminWecRoutes = require("./src/user-admin-wec/user-admin-wec-routes");
+const packagesRoutes = require("./src/packages/packages-routes");
 // const usersRoutes = require("./src/users/users-routes");
 
 
@@ -49,6 +50,8 @@ app.use("/api/reports", reportsRoutes);
 app.use("/api/user-admin", userAdminRoutes);
 app.use("/api/user-admin-transaction", UserAdminTransactionRoutes);
 app.use("/api/user-admin-wec", userAdminWecRoutes)
+
+app.use("/api/packages", packagesRoutes)
 // app.use("/api/user", usersRoutes);
 
 const connectDatabase = require("./db/database");

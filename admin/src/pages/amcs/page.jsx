@@ -30,6 +30,7 @@ export default function AMCsPage() {
   const [loading, setLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedBrand, setSelectedBrand] = useState('');
+  const [selectedPackage, setSelectedPackage] = useState({ name: '', percentage: '', validity: '' });
   const [selectedType, setSelectedType] = useState('');
   const [selectedModel, setSelectedModel] = useState('');
   const [purchaseValue, setPurchaseValue] = useState('');
@@ -43,11 +44,17 @@ export default function AMCsPage() {
   const [totalExpired, setTotalExpired] = useState(0);
   const [allCategories, setAllCategories] = useState([]);
   const [allBrands, setAllBrands] = useState([]);
+  const [allPackages, setAllPackages] = useState([]);
   const [allTypes, setAllTypes] = useState([]);
   const [teamAndConditions, setSetTeamAndConditions] = useState('');
   const [companySettings, setCompanySettings] = useState('');
   // Mock data
   const [amcs, setAmcs] = useState([]);
+
+  const [packageForms, setPackageForms] = useState([
+    { packageId: '', durationId: '', packageData: null, },
+  ]);
+  const [totalPercentage, setTotalPersentage] = useState(0);
 
 
   // Filter AMCs based on user role
@@ -69,7 +76,7 @@ export default function AMCsPage() {
   // Calculate AMC amount
   const calculateAMCAmount = () => {
     const value = parseFloat(purchaseValue) || 0;
-    const percentage = parseFloat(amcPercentage) || 0;
+    const percentage = parseFloat(totalPercentage) || 0;
     return (value * percentage) / 100;
   };
 
@@ -91,12 +98,14 @@ export default function AMCsPage() {
     { key: 'productBrand', title: 'Brand' },
     { key: 'productModel', title: 'Model' },
     { key: 'amcAmount', title: 'WEC Amount', render: (value) => `₹${value.toLocaleString()}` },
-    { key: 'startDate', title: 'Start Date', 
+    {
+      key: 'startDate', title: 'Start Date',
       // render: (value) => new Date(value).toLocaleDateString('en-IN')
-     },
-    { key: 'endDate', title: 'End Date', 
+    },
+    {
+      key: 'endDate', title: 'End Date',
       // render: (value) => new Date(value).toLocaleDateString('en-IN')
-     },
+    },
     {
       key: 'status', title: 'Status', render: (value) => {
         const colors = {
@@ -182,6 +191,13 @@ export default function AMCsPage() {
     try {
       await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
 
+      // const pkg = allPackages?.[0]?.find(
+      //   (item) => String(item._id) === String(selectedId)
+      // );
+      console.log("AAAAA>>=>", allPackages?.find(
+        (item) => String(item.categoryIds._id) === String(selectedCategory)
+      ))
+
       const today = new Date();
 
       // startDate = today + 1 year
@@ -213,7 +229,7 @@ export default function AMCsPage() {
         typeId: selectedType,
         productModel: selectedModel || '',
         purchaseValue: parseFloat(purchaseValue),
-        amcPercentage: parseFloat(amcPercentage),
+        amcPercentage: parseFloat(totalPercentage || amcPercentage),
         amcAmount: calculateAMCAmount(),
         purchaseProof: formData.purchaseProof || `purchase_proof_${Date.now()}.pdf`,
         startDate: startDate,
@@ -238,6 +254,7 @@ export default function AMCsPage() {
       formDataToSend.append("productType", newAMC?.productType || "");
       formDataToSend.append("productModel", newAMC?.productModel || ""); formDataToSend.append("serialNumber", newAMC?.serialNumber || "");
       formDataToSend.append("purchaseValue", newAMC?.purchaseValue || ""); formDataToSend.append("amcPercentage", newAMC?.amcPercentage || ""); formDataToSend.append("amcAmount", newAMC?.amcAmount || "");
+      formDataToSend.append("PackageForms", JSON.stringify(packageForms) || newAMC?.PackageForms || "");
       formDataToSend.append("startDate", newAMC?.startDate || ""); formDataToSend.append("endDate", newAMC?.endDate || ""); formDataToSend.append("status", newAMC?.status || "active"); formDataToSend.append("retailerId", newAMC?.retailerId || "");
       formDataToSend.append("retailerName", newAMC?.retailerName || ""); formDataToSend.append("distributorId", newAMC?.distributorId || ""); formDataToSend.append("distributorName", newAMC?.distributorName || "");
       formDataToSend.append("createdDate", newAMC?.createdDate || ""); formDataToSend.append("renewalCount", newAMC?.renewalCount || 0); formDataToSend.append("lastServiceDate", newAMC?.lastServiceDate || "");
@@ -262,7 +279,7 @@ export default function AMCsPage() {
         showToast('WEC created successfully', 'success');
         setIsModalOpen(false);
       } else {
-        showToast(response?.message || 'WEC creation failed', 'error');
+        showToast(response?.massage || 'WEC creation failed', 'error');
       }
 
     } catch (error) {
@@ -330,8 +347,37 @@ export default function AMCsPage() {
   console.log("companySettings:===>", companySettings)
   //  <tr><td>Tax (18%)</td><td>₹${(record.amcAmount * 0.18).toFixed(2)}</td></tr>
   //         <tr><td>Total</td><td><strong>₹${(record.amcAmount * 1.18).toFixed(2)}</strong></td></tr>
+  const getSelectedPackage = (pkg) =>
+    pkg.packageData?.packages?.find(
+      (p) => String(p._id) === String(pkg.durationId)
+    );
+  const formatDate = (date) =>
+    date ? new Date(date) : '—';
+
+
   const handleDownloadPdf = (record) => {
     console.log("GGGGGG:==>", record)
+
+    const packageRows = record.PackageForms?.map((pkg, index) => {
+      const selectedPkg = getSelectedPackage(pkg);
+
+      return `
+      <tr>
+        <td>${index + 1}</td>
+        <td>
+          ${record.productCategory} - ${record.productBrand}
+          ${record.productType ? `(${record.productType})` : ''}
+        </td>
+        <td>${record.productModel}</td>
+        <td>${record.serialNumber || 'N/A'}</td>
+        <td>${pkg.packageData?.name || '—'}</td>
+        <td>${selectedPkg?.validity || '—'}</td>
+        <td>${(pkg.startDate.split('T')[0])}</td>
+        <td>${(pkg.endDate.split('T')[0])}</td>
+       
+      </tr>
+    `;
+    }).join('');
 
     const template = `
     <div class="invoice-box">
@@ -365,26 +411,21 @@ export default function AMCsPage() {
   
       <table class="details-table">
         <thead>
-          <tr>
-            <th style="width: 5%;">#</th>
-            <th style="width: 25%;">Product Name</th>
-            <th style="width: 15%;">Model</th>
-            <th style="width: 15%;">Serial No.</th>
-            <th style="width: 12%;">valid from  </th>
-            <th style="width: 12%;">valid till</th>
-            <th style="width: 12%;">Amount</th>
+    
+
+         <tr>
+            <th>#</th>
+            <th>Product</th>
+            <th>Model</th>
+            <th>Serial No.</th>
+            <th>Package Name</th>
+            <th>Validity</th>
+            <th>Valid From</th>
+            <th>Valid Till</th>
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <td>1</td>
-            <td>${record.productCategory} - ${record?.productBrand} ${record?.productType && record?.productType}</td>
-            <td>${record.productModel}</td>
-            <td>${record.serialNumber || 'N/A'}</td>
-            <td>${record.startDate}</td>
-            <td>${record.endDate}</td>
-            <td>₹${record.amcAmount.toLocaleString()}</td>
-          </tr>
+          ${packageRows || '<tr><td colspan="9">No Packages Found</td></tr>'}
         </tbody>
       </table>
   
@@ -598,7 +639,6 @@ export default function AMCsPage() {
     html2pdf().set(opt).from(container).save();
   };
 
-
   const fetchAMCs = async () => {
     try {
       let response = ''
@@ -667,9 +707,18 @@ export default function AMCsPage() {
   const fetchAllBrandsByCategory = async () => {
     try {
       const response = await getData(`api/brand/get-brand-by-category/${selectedCategory}`);
-      console.log("response==>get-brand-by-category=>", response)
+      const response2 = await getData(`api/packages/get-packages-by-category/${selectedCategory}`);
+      console.log("response==>get-brand-by-category=>", response2?.data)
       if (response?.status === true) {
         setAllBrands(response?.data);
+      }
+      if (response2?.status === true) {
+        if (response2?.data?.length > 0) {
+          setAllPackages(response2?.data);
+        } else {
+          setAllPackages([])
+        }
+
       }
     } catch (error) {
       console.log(error)
@@ -693,8 +742,154 @@ export default function AMCsPage() {
     fetchAllTypesByBrand();
   }, [selectedCategory, selectedBrand, selectedType]);
 
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+  const addPackageForm = () => {
+    setPackageForms((prev) => [
+      ...prev,
+      { packageId: '', durationId: '', packageData: null },
+    ]);
+  };
+
+
+  const removePackageForm = (index) => {
+    setPackageForms((prev) => prev.filter((_, i) => i !== index));
+
+    const totalPercentage = packageForms.filter((_, i) => i !== index).reduce((sum, item) => {
+      const selectedPkg = item.packageData?.packages?.find(
+        (p) => String(p._id) === String(item.durationId)
+      );
+
+      return sum + Number(selectedPkg?.percentage || 0);
+    }, 0);
+    setTotalPersentage(totalPercentage)
+
+  };
+
+  const handlePackageNameChange = (index, value) => {
+    const selectedPkg = allPackages.find((p) => p._id === value);
+    const updated = [...packageForms];
+    updated[index].packageId = value;
+    updated[index].durationId = '';
+    updated[index].packageData = selectedPkg;
+
+    setPackageForms(updated);
+  };
+
+  // const handlePackageDurationChange = (index, value) => {
+  //   const updated = [...packageForms];
+  //   const selectedPkg = updated.map((item) => item.packageData.packages.find((p) => p._id === value));
+  //   updated[index].durationId = value;
+
+  //   console.log("selectedPkg=>", updated[index].packageData.validFrom, selectedPkg)
+  //   // updated[index].packageData = selectedPkg;
+  //   if (updated[index].packageData.validFrom === 'Same Day') {
+  //     updated[index].startDate = new Date();// today  example: 2025-09-12
+  //     if (selectedPkg[0]?.validity === "1 year") {
+  //       updated[index].endDate = new Date(selectedPkg[0]?.validTo); //add 12 month  example: 2026-09-12
+  //     }
+  //     if (selectedPkg[0]?.validity === "2 year") {
+  //       updated[index].endDate = new Date(selectedPkg[0]?.validTo); //add 24 month  example: 2026-09-12
+  //     }
+  //     if (selectedPkg[0]?.validity === "6 months") {
+  //       updated[index].endDate = new Date(selectedPkg[0]?.validTo); //add 6 month  example: 2026-09-12
+  //     }
+
+  //   } else if (updated[index].packageData.validFrom === 'after 365 day') {
+  //     updated[index].startDate = new Date(); // after 365 day  example: 2026-09-12
+  //     if (selectedPkg[0]?.validity === "1 year") {
+  //       updated[index].endDate = new Date(selectedPkg[0]?.validTo); //add 12 month  example: 2027-09-11
+  //     }
+  //     if (selectedPkg[0]?.validity === "2 year") {
+  //       updated[index].endDate = new Date(selectedPkg[0]?.validTo); //add 24 month  example: 2028-09-11
+  //     }
+  //     if (selectedPkg[0]?.validity === "6 months") {
+  //       updated[index].endDate = new Date(selectedPkg[0]?.validTo); //add 6 month  example: 2027-03-11
+  //     }
+  //   }
+
+  //   const totalPercentage = updated.reduce((sum, item) => {
+  //     const selectedPkg = item.packageData?.packages?.find(
+  //       (p) => String(p._id) === String(item.durationId)
+  //     );
+
+  //     return sum + Number(selectedPkg?.percentage || 0);
+  //   }, 0);
+  //   setTotalPersentage(totalPercentage)
+  //   setPackageForms(updated);
+
+
+  //   console.log("XXXXXXX:=>", totalPercentage)
+  // };
+
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  const addDays = (date, days) => {
+    const d = new Date(date);
+    d.setDate(d.getDate() + days);
+    return d;
+  };
+
+  const addMonths = (date, months) => {
+    const d = new Date(date);
+    d.setMonth(d.getMonth() + months);
+    return d;
+  };
+
+  const validityToMonths = (validity) => {
+    if (!validity) return 0;
+    if (validity.includes('month')) return parseInt(validity);
+    if (validity.includes('year')) return parseInt(validity) * 12;
+    return 0;
+  };
+  const handlePackageDurationChange = (index, value) => {
+    const updated = [...packageForms];
+    const row = updated[index];
+
+    // find selected duration package
+    const selectedDuration = row.packageData?.packages?.find(
+      (p) => String(p._id) === String(value)
+    );
+
+    if (!selectedDuration) return;
+
+    // save durationId
+    row.durationId = value;
+
+    // calculate start date
+    const today = new Date();
+    let startDate = today;
+
+    if (row.packageData.validFrom === 'after 365 day') {
+      startDate = addDays(today, 365);
+    }
+
+    // calculate end date
+    const months = validityToMonths(selectedDuration.validity);
+    const endDate = addMonths(startDate, months);
+
+    // save calculated values
+    row.startDate = startDate;
+    row.endDate = endDate;
+
+    row.selectedPackage = {
+      _id: selectedDuration._id,
+      validity: selectedDuration.validity,
+      percentage: Number(selectedDuration.percentage),
+    };
+
+    // calculate total percentage
+    const totalPercentage = updated.reduce((sum, item) => {
+      return sum + Number(item.selectedPackage?.percentage || 0);
+    }, 0);
+
+    setTotalPersentage(totalPercentage);
+    setPackageForms(updated);
+
+    console.log('Updated Row:', row);
+    console.log('Total Percentage:', totalPercentage);
+  };
+
+  console.log("amcs=>", amcs);
   return (
     <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 max-w-full overflow-hidden">
       <ToastContainer />
@@ -960,7 +1155,7 @@ export default function AMCsPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-4">WEC Details</h3>
                 <div className="space-y-3">
@@ -987,6 +1182,7 @@ export default function AMCsPage() {
                     </span>
                   </div>
                 </div>
+
               </div>
 
               <div>
@@ -1002,19 +1198,102 @@ export default function AMCsPage() {
                       <label className="text-sm font-medium text-gray-600">Distributor</label>
                       <p className="text-gray-900">{editingAMC.distributorName}</p>
                     </div>}
-                  {/* <div>
-                    <label className="text-sm font-medium text-gray-600">Last Service</label>
-                    <p className="text-gray-900">
-                      {editingAMC.lastServiceDate ? new Date(editingAMC.lastServiceDate).toLocaleDateString('en-IN') : 'No service yet'}
-                    </p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-600">Renewal Count</label>
-                    <p className="text-gray-900">{editingAMC.renewalCount || 0}</p>
-                  </div> */}
+                
                 </div>
               </div>
+
+
+            </div> */}
+
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Package Information
+              </h3>
+
+              <div className="space-y-4">
+                {/* Retailer */}
+                {editingAMC?.retailerName && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Retailer</label>
+                    <p className="text-gray-900">
+                      {editingAMC.retailerName || 'N/A'}
+                    </p>
+                  </div>
+                )}
+
+                {/* Distributor */}
+                {editingAMC?.distributorName && (
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Distributor</label>
+                    <p className="text-gray-900">{editingAMC.distributorName}</p>
+                  </div>
+                )}
+
+                {/* Packages */}
+                {editingAMC?.PackageForms?.length > 0 ? (
+                  editingAMC.PackageForms.map((pkg, index) => {
+                    const selectedPkg = pkg.packageData?.packages?.find(
+                      (p) => p._id === pkg.durationId
+                    );
+
+                    return (
+                      <div
+                        key={pkg._id || index}
+                        className="border rounded-lg p-4 bg-gray-50 space-y-2"
+                      >
+                        <div className="flex justify-between">
+                          <span className="text-sm font-medium text-gray-700">
+                            Package #{index + 1}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            {pkg.packageData?.name}
+                          </span>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                          <div style={{ display: 'flex' }}>
+                            <label className="text-gray-600">Validity :- </label>
+                            <p className="text-gray-900">
+                              {selectedPkg?.validity || '—'}
+                            </p>
+                          </div>
+
+                          {/* <div>
+                <label className="text-gray-600">Percentage</label>
+                <p className="text-gray-900">
+                  {selectedPkg?.percentage
+                    ? `${selectedPkg.percentage}%`
+                    : '—'}
+                </p>
+              </div> */}
+
+                          <div style={{ display: 'flex' }}>
+                            <label className="text-gray-600">Start Date :- </label>
+                            <p className="text-gray-900">
+                              {pkg.startDate
+                                ? new Date(pkg.startDate).toLocaleDateString('en-IN')
+                                : '—'}
+                            </p>
+                          </div>
+
+                          <div style={{ display: 'flex' }}>
+                            <label className="text-gray-600">End Date :- </label>
+                            <p className="text-gray-900">
+                              {pkg.endDate
+                                ? new Date(pkg.endDate).toLocaleDateString('en-IN')
+                                : '—'}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <p className="text-sm text-gray-500">No packages assigned</p>
+                )}
+              </div>
             </div>
+
 
             <div className="flex justify-end space-x-3">
               <Button
@@ -1073,6 +1352,36 @@ export default function AMCsPage() {
                     </div>
                   </div>
                 </div>
+
+                {/* <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Packages (Duration) *
+                  </label>
+
+                  <div className="relative">
+                    <select
+                      required
+                      value={selectedPackage?._id || ''}
+                      onChange={handlePackageChange}
+                      disabled={!selectedCategory}
+                      className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm
+                 focus:border-blue-500 focus:outline-none focus:ring-1
+                 focus:ring-blue-500 pr-8 disabled:bg-gray-100"
+                    >
+                      <option value="">Select Package</option>
+
+                      {allPackages?.[0]?.map((item) => (
+                        <option key={item._id} value={item._id}>
+                          {item.validity}
+                        </option>
+                      ))}
+                    </select>
+
+                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                      <i className="ri-arrow-down-s-line text-gray-400"></i>
+                    </div>
+                  </div>
+                </div> */}
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Brand *</label>
@@ -1160,7 +1469,7 @@ export default function AMCsPage() {
                 /> */}
               </div>
 
-              {purchaseValue && amcPercentage && (
+              {purchaseValue && totalPercentage && (
                 <div className="mt-4 bg-blue-50 rounded-lg p-4">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium text-gray-600">WEC Amount:</span>
@@ -1174,6 +1483,94 @@ export default function AMCsPage() {
                 </div>
               )}
             </div>
+
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Package Information
+              </h3>
+
+              {packageForms.map((item, index) => (
+                <div
+                  key={index}
+                  className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 p-4 border rounded-lg"
+                >
+                  {/* Package Name */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Package Name *
+                    </label>
+                    <select
+                      value={item.packageId}
+                      onChange={(e) =>
+                        handlePackageNameChange(index, e.target.value)
+                      }
+                      className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
+                    >
+                      <option value="">Select Package</option>
+                      {allPackages.map((pkg) => (
+                        <option key={pkg._id} value={pkg._id}>
+                          {pkg.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Package Duration */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Packages (Duration) *
+                    </label>
+                    <select
+                      value={item.durationId}
+                      onChange={(e) =>
+                        handlePackageDurationChange(index, e.target.value)
+                      }
+                      disabled={!item.packageId}
+                      className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm disabled:bg-gray-100"
+                    >
+                      <option value="">Select Duration</option>
+                      {allPackages
+                        .find((p) => p._id === item.packageId)
+                        ?.packages?.map((p) => (
+                          <option key={p._id} value={p._id}>
+                            {p.validity}
+                            {/* ({p.percentage}%) */}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+
+                  {/* Display Selected Package Info */}
+                  {/* {item.packageData && (
+                    <div className="md:col-span-2 text-sm text-gray-600">
+                      <strong>Validity:</strong> {item.packageData.packages.filter((p) => p._id === item.durationId)?.validity} |{' '}
+                      <strong>Discount:</strong> {item.packageData.percentage}%
+                    </div>
+                  )} */}
+
+                  {/* Remove Button */}
+                  {packageForms.length > 1 && (
+                    <button
+                      type="button"
+                      onClick={() => removePackageForm(index)}
+                      className="md:col-span-2 text-red-500 text-sm"
+                    >
+                      Remove Package
+                    </button>
+                  )}
+                </div>
+              ))}
+
+              {/* Add Button */}
+              <button
+                type="button"
+                onClick={addPackageForm}
+                className="text-blue-600 text-sm font-medium"
+              >
+                + Add Another Package
+              </button>
+            </div>
+
           </div>
         )}
       </Modal>

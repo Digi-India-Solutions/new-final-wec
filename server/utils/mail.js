@@ -876,7 +876,7 @@ exports.sendThankYouEmailAdmin = async ({ email, name, phone }) => {
 //       <div class="signature">
 //         <div >Thank you for choosing EMI PLUS CARE. For support, call us at ‪+91 8929391113‬ or email us at support@emipluscare.in </div>
 //      </div>
-    
+
 
 //    <div class="terms-box">
 //     ${termsAndConditions || "No terms available."}
@@ -961,17 +961,26 @@ exports.sendThankYouEmailAdmin = async ({ email, name, phone }) => {
 
 
 exports.sendOrderNotification = async ({ email, name, customer, companySettings, record, termsAndConditions }) => {
-    const rows = record?.amcs?.map((item, index) => `
-    <tr>
+    const rows =
+        record?.PackageForms?.map((pkg, index) => {
+            const selectedPkg = getSelectedPackage(pkg);
+
+            return `
+      <tr>
         <td>${index + 1}</td>
-        <td>${item.productCategory} - ${item.productBrand} ${item.productType}</td>
-        <td>${item.productModel}</td>
-        <td>${item.serialNumber || "N/A"}</td>
-        <td>${new Date(item.startDate).toLocaleDateString("en-IN")}</td>
-        <td>${new Date(item.endDate).toLocaleDateString("en-IN")}</td>
-        <td>₹${item.amcAmount}</td>
-    </tr>
-`).join("") || "";
+        <td>
+          ${record.productCategory} - ${record.productBrand}
+          ${record.productType ? `(${record.productType})` : ''}
+        </td>
+        <td>${record.productModel}</td>
+        <td>${record.serialNumber || 'N/A'}</td>
+        <td>${pkg.packageData?.name || '—'}</td>
+        <td>${selectedPkg?.validity || '—'}</td>
+        <td>${formatDate(pkg.startDate)}</td>
+        <td>${formatDate(pkg.endDate)}</td>
+      </tr>
+    `;
+        }).join('') || '';
 
     // ✅ Fixed HTML with proper page breaks and margins
     const html = `
@@ -1124,16 +1133,17 @@ exports.sendOrderNotification = async ({ email, name, customer, companySettings,
     <div class="no-break" style="margin: 15px 0;">
         <table>
             <thead>
-                <tr>
-                    <th style="width: 5%;">#</th>
-                    <th style="width: 25%;">Product</th>
-                    <th style="width: 15%;">Model</th>
-                    <th style="width: 15%;">Serial</th>
-                    <th style="width: 10%;">Start</th>
-                    <th style="width: 10%;">End</th>
-                    <th style="width: 10%;">Amount</th>
-                </tr>
-            </thead>
+  <tr>
+    <th style="width:5%;">#</th>
+    <th style="width:20%;">Product</th>
+    <th style="width:10%;">Model</th>
+    <th style="width:12%;">Serial</th>
+    <th style="width:15%;">Package</th>
+    <th style="width:10%;">Validity</th>
+    <th style="width:10%;">Start</th>
+    <th style="width:10%;">End</th>
+  </tr>
+</thead>
             <tbody>
                 ${rows}
             </tbody>
@@ -1169,11 +1179,11 @@ exports.sendOrderNotification = async ({ email, name, customer, companySettings,
     await page.setContent(html, { waitUntil: "networkidle0" });
 
     const pdfPath = path.join(__dirname, "../uploads", `WEC_${record?.amcs[0]?.id || uuidv4()}.pdf`);
-    
+
     // ✅ Fixed PDF generation with proper margins
-    await page.pdf({ 
-        path: pdfPath, 
-        format: "A4", 
+    await page.pdf({
+        path: pdfPath,
+        format: "A4",
         printBackground: true,
         margin: {
             top: '20px',
@@ -1183,7 +1193,7 @@ exports.sendOrderNotification = async ({ email, name, customer, companySettings,
         },
         displayHeaderFooter: false
     });
-    
+
     await browser.close();
 
     const downloadLink = `${process.env.serverURL}/uploads/${path.basename(pdfPath)}`;

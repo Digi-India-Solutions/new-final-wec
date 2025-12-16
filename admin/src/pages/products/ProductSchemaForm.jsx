@@ -11,6 +11,8 @@ export default function SchemaForm({
   fetchCategoryData,
   fetchBrandData,
   fetchTypeData,
+  fetchPackageData,
+  allPackages,
   onCancel,
   allCategories = [],
   allBrands = [],
@@ -23,12 +25,21 @@ export default function SchemaForm({
   const [categoryIds, setCategoryIds] = useState(initialData?.categoryId || []);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [packages, setPackages] = useState(
+    initialData?.packages || [{ validity: '', percentage: '' }]
+  );
   const user = JSON.parse(sessionStorage.getItem('user') || '{}');
 
   // 🔹 Generic field handler
   const handleChange = (name, value) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }));
+  };
+
+  const handlePackageChange = (index, field, value) => {
+    const updated = [...packages];
+    updated[index] = { ...updated[index], [field]: value };
+    setPackages(updated);
   };
 
   // 🔹 Dynamic type name handling
@@ -52,6 +63,10 @@ export default function SchemaForm({
   };
   const addCategoryField = () => setCategoryIds([...categoryIds, '']);
   const removeCategoryField = (index) => setCategoryIds(categoryIds.filter((_, i) => i !== index));
+
+  const addPackageField = () => setPackages([...packages, '']);
+  const removePackageField = (index) => setPackages(packages.filter((_, i) => i !== index));
+
 
   // 🔹 Submit logic
   const handleSubmit = async (e) => {
@@ -81,7 +96,7 @@ export default function SchemaForm({
           categoryId: selectedId,
           createdByEmail: { name: user?.name, email: user?.email },
         };
-        console.log("SSS:==>SD", data)
+        // console.log("SSS:==>SD", data)
 
         endpoint = editingItem
           ? `api/brand/update-brand-by-admin/${editingItem?._id}`
@@ -97,9 +112,22 @@ export default function SchemaForm({
           brandIds: brand?._id,
           createdByEmail: { name: user?.name, email: user?.email },
         };
+
         endpoint = editingItem
           ? `api/type/update-type-by-admin/${editingItem?._id}`
           : `api/type/create-type-by-admin`;
+      } else if (activeTab === 'packages') {
+        const category = allCategories.find((c) => c.name === formData?.categoryId);
+        data = {
+          ...formData,
+          packages,
+          categoryIds: category?._id,
+          createdByEmail: { name: user?.name, email: user?.email },
+        };
+        console.log("SSS:==>SD+++>>", data)
+        endpoint = editingItem
+          ? `api/packages/update-package-by-admin/${editingItem?._id}`
+          : `api/packages/create-package-by-admin`;
       }
 
       const response = await postData(endpoint, data);
@@ -108,6 +136,7 @@ export default function SchemaForm({
         fetchCategoryData?.();
         fetchBrandData?.();
         fetchTypeData?.();
+        fetchPackageData?.();
         onCancel?.();
       } else {
         showToast(response?.message || 'Something went wrong', 'error');
@@ -147,6 +176,7 @@ export default function SchemaForm({
                 </option>
               ))}
             </select>
+           
             {error && <p className="text-xs text-red-500">{error}</p>}
           </div>
         );
@@ -238,6 +268,59 @@ export default function SchemaForm({
           ))}
 
           <Button type="button" variant="secondary" onClick={addCategoryField} className="mt-2">
+            <i className="ri-add-line mr-1"></i> Add More
+          </Button>
+        </div>
+      )}
+
+      {activeTab === 'packages' && (
+        <div className="col-span-2 space-y-2">
+          <label className="block text-sm font-medium text-gray-700">
+            Packages <span className="text-red-500">*</span>
+          </label>
+
+          {packages?.map((selected, idx) => (
+            <div key={idx} className="flex space-x-2">
+              <div className="flex space-x-2  ">
+
+                <div className="flex-1">
+                  <select
+                    value={packages[idx]?.validity}
+                    onChange={(e) => handlePackageChange(idx, "validity", e.target.value)}
+                    className="flex-1 rounded-lg border px-3 py-2 text-sm border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Select Validity</option>
+                    {['6 months', '1 year', '2 year']?.map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="flex-1">
+                  <input
+                    type="text"
+                    value={packages[idx]?.percentage}
+                    onChange={(e) => {
+                      const numericValue = e.target.value.replace(/\D/g, '');
+                      handlePackageChange(idx, 'percentage', numericValue);
+                    }}
+                    placeholder={`Percentage ${idx + 1}`}
+                    className="flex-1 rounded-lg border px-3 py-2 text-sm border-gray-300 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+              </div>
+
+              {idx > 0 && (
+                <Button type="button" variant="danger" onClick={() => removePackageField(idx)}>
+                  <i className="ri-delete-bin-line"></i>
+                </Button>
+              )}
+            </div>
+
+          ))}
+
+          <Button type="button" variant="secondary" onClick={addPackageField} className="mt-2">
             <i className="ri-add-line mr-1"></i> Add More
           </Button>
         </div>

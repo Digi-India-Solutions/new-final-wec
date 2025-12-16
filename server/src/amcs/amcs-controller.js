@@ -16,7 +16,7 @@ exports.createAmcByAdmin = catchAsyncErrors(async (req, res, next) => {
     try {
         console.log("Incoming AMC Create Request:=>", req.body);
 
-        const { userId, purchaseValue, amcPercentage, amcAmount } = req.body;
+        const { userId, purchaseValue, amcPercentage, amcAmount, PackageForms } = req.body;
 
         // ✅ Validate essential fields
         if (!userId || !purchaseValue || !amcPercentage || !amcAmount) {
@@ -133,6 +133,7 @@ exports.createAmcByAdmin = catchAsyncErrors(async (req, res, next) => {
         const amc = await AMC.create({
             ...req.body,
             id: nextId,
+            PackageForms: JSON.parse(req.body.PackageForms),
             purchaseProof: imageUrl,
             productPicture: imageUrl2,
             createdAt: new Date(),
@@ -427,9 +428,10 @@ exports.getAmcByDistributorWithPagination = catchAsyncErrors(async (req, res, ne
         let userList = [];
         if (createdByEmail) {
             userList = await SuperAdmin.find({
-                "createdByEmail.email": typeof createdByEmail === "string" ? createdByEmail : createdByEmail?.email
+                "email": typeof createdByEmail === "string" ? createdByEmail : createdByEmail?.email
             }).lean();
         }
+        // console.log("userList====>", userList, createdByEmail, createdByEmail?.email ,typeof createdByEmail === "string")
         if (!userList.length) {
             return next(new ErrorHandler("No users found under this creator", 400));
         }
