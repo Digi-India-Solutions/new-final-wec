@@ -157,7 +157,9 @@ export default function ProductsPage() {
             label: 'Category',
             type: 'select',
             required: true,
-            options: editingItem ? allCategories.filter(b => b.status === 'active').map(b => ({ value: b.name, label: b.name })) : allCategories.filter((cat) => !allPackages.some((pkg) => String(pkg.categoryIds._id) === String(cat._id))).map((cat) => ({ value: cat.name, label: cat.name, })),
+             options:  allCategories.filter(b => b.status === 'active').map(b => ({ value: b.name, label: b.name })),
+        
+            // options: editingItem ? allCategories.filter(b => b.status === 'active').map(b => ({ value: b.name, label: b.name })) : allCategories.filter((cat) => !allPackages.some((pkg) => String(pkg.categoryIds._id) === String(cat._id))).map((cat) => ({ value: cat.name, label: cat.name, })),
           },
           {
             name: 'validFrom', label: 'Valid From', type: 'select', required: true, options:

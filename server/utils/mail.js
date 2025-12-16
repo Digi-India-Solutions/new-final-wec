@@ -961,6 +961,15 @@ exports.sendThankYouEmailAdmin = async ({ email, name, phone }) => {
 
 
 exports.sendOrderNotification = async ({ email, name, customer, companySettings, record, termsAndConditions }) => {
+    const getSelectedPackage = (pkg) =>
+        pkg.packageData?.packages?.find(
+            (p) => String(p._id) === String(pkg.durationId)
+        );
+
+    const formatDate = (date) =>
+        date ? new Date(date) : '—';
+
+    console.log("XXXXXXX::=>CCCCCCCC", record)
     const rows =
         record?.PackageForms?.map((pkg, index) => {
             const selectedPkg = getSelectedPackage(pkg);
@@ -969,11 +978,13 @@ exports.sendOrderNotification = async ({ email, name, customer, companySettings,
       <tr>
         <td>${index + 1}</td>
         <td>
-          ${record.productCategory} - ${record.productBrand}
+          ${(record.productCategory || record?.amcs?.[0]?.productCategory || '—')}
+          -
+          ${(record.productBrand || record?.amcs?.[0]?.productBrand || '—')}
           ${record.productType ? `(${record.productType})` : ''}
         </td>
-        <td>${record.productModel}</td>
-        <td>${record.serialNumber || 'N/A'}</td>
+        <td>${record.productModel || record?.amcs?.[0]?.productModel || '—'}</td>
+        <td>${record.serialNumber || record?.amcs?.[0]?.serialNumber || 'N/A'}</td>
         <td>${pkg.packageData?.name || '—'}</td>
         <td>${selectedPkg?.validity || '—'}</td>
         <td>${formatDate(pkg.startDate)}</td>

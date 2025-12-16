@@ -206,7 +206,8 @@ exports.createAmcByAdmin = catchAsyncErrors(async (req, res, next) => {
                     purchaseProof: imageUrl,
                     productPicture: imageUrl2,
                     createdAt: new Date(),
-                }]
+                }],
+                PackageForms: JSON.parse(req.body.PackageForms),
             },
             termsAndConditions: termsAndConditions.termsAndConditions
         })

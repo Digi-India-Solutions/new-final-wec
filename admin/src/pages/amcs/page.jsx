@@ -771,8 +771,10 @@ export default function AMCsPage() {
     updated[index].packageId = value;
     updated[index].durationId = '';
     updated[index].packageData = selectedPkg;
-
     setPackageForms(updated);
+    // console.log("XXXXXXX::=>", allPackages.filter((p) => p._id !== value) )
+    // setAllPackages(allPackages.filter((p) => p._id !== value));
+
   };
 
   // const handlePackageDurationChange = (index, value) => {
@@ -1507,11 +1509,18 @@ export default function AMCsPage() {
                       className="block w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
                     >
                       <option value="">Select Package</option>
-                      {allPackages.map((pkg) => (
-                        <option key={pkg._id} value={pkg._id}>
-                          {pkg.name}
-                        </option>
-                      ))}
+                      {allPackages
+                        .filter((pkg) =>
+                          !packageForms.some(
+                            (p, i) =>
+                              i !== index && String(p.packageId) === String(pkg._id)
+                          )
+                        )
+                        .map((pkg) => (
+                          <option key={pkg._id} value={pkg._id}>
+                            {pkg.name}
+                          </option>
+                        ))}
                     </select>
                   </div>
 
