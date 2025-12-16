@@ -973,7 +973,6 @@ exports.sendOrderNotification = async ({ email, name, customer, companySettings,
     const rows =
         record?.PackageForms?.map((pkg, index) => {
             const selectedPkg = getSelectedPackage(pkg);
-
             return `
       <tr>
         <td>${index + 1}</td>
@@ -987,8 +986,8 @@ exports.sendOrderNotification = async ({ email, name, customer, companySettings,
         <td>${record.serialNumber || record?.amcs?.[0]?.serialNumber || 'N/A'}</td>
         <td>${pkg.packageData?.name || '—'}</td>
         <td>${selectedPkg?.validity || '—'}</td>
-        <td>${formatDate(pkg.startDate)}</td>
-        <td>${formatDate(pkg.endDate)}</td>
+        <td>${(pkg.startDate).split('T')[0] || "_"}</td>
+        <td>${(pkg.endDate).split('T')[0] || "_"}</td>
       </tr>
     `;
         }).join('') || '';
@@ -1075,6 +1074,16 @@ exports.sendOrderNotification = async ({ email, name, customer, companySettings,
             padding: 10px;
             page-break-before: avoid;
         }
+         .summary table {
+          width: auto;
+          margin-left: auto;
+          font-size: 11px;
+        }
+        
+        .summary td {
+          border: 1px solid #ddd;
+          padding: 6px 12px;
+        }
         
         .signature div {
             font-size: 11px;
@@ -1159,6 +1168,11 @@ exports.sendOrderNotification = async ({ email, name, customer, companySettings,
                 ${rows}
             </tbody>
         </table>
+          <div class="summary">
+        <table>
+          <tr><td>Subtotal</td><td>₹${record?.amcs[0]?.amcAmount || amcAmount}</td></tr>
+        </table>
+      </div>
     </div>
 
     <div class="signature no-break">
@@ -1234,7 +1248,7 @@ We are committed to providing you with reliable technical support and service th
 <p><strong>For any inquiry, assistance or technical support, please contact:</strong></p>
 
 <p>
-Support Phone: 8929391113, 8929391114, 8929391115, 8929391116 <br>
+Support Phone: 8929391113, 8929391115, 8929391116 <br>
 Support Email: support@emipluscare.in
 </p>
 
