@@ -33,7 +33,6 @@ const userAdminWecRoutes = require("./src/user-admin-wec/user-admin-wec-routes")
 const packagesRoutes = require("./src/packages/packages-routes");
 // const usersRoutes = require("./src/users/users-routes");
 
-
 app.use("/api/admin", superAdminRoutes);
 app.use("/api/claims", claimsRoutes);
 app.use("/api/category", categoryRoutes);

@@ -12,6 +12,7 @@ const connectDatabase = () => {
 module.exports = connectDatabase;
 
 
+
 // import mongoose from 'mongoose';
 
 // const connectDb = async (URL) => {
