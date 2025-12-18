@@ -1193,10 +1193,18 @@ exports.sendOrderNotification = async ({ email, name, customer, companySettings,
 </html>
 `;
 
+    // const browser = await puppeteer.launch({
+    //     headless: "new",
+    //     args: ["--no-sandbox", "--disable-setuid-sandbox"]
+    // });
     const browser = await puppeteer.launch({
-        headless: "new",
-        args: ["--no-sandbox", "--disable-setuid-sandbox"]
-    });
+    executablePath: '/root/.cache/puppeteer/chrome/linux-142.0.7444.59/chrome-linux64/chrome',
+    headless: "new",
+    args: [
+        "--no-sandbox",
+        "--disable-setuid-sandbox"
+    ]
+});
 
     const page = await browser.newPage();
     page.setDefaultNavigationTimeout(0);
