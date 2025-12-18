@@ -27,6 +27,7 @@ exports.createAmcByAdmin = catchAsyncErrors(async (req, res, next) => {
 
         const amc = await AMC.create({
             ...req.body,
+            PackageForms: JSON.parse(req.body.PackageForms),
         });
 
         res.status(200).json({ status: true, message: "AMC created successfully", data: amc });

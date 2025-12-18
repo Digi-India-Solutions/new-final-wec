@@ -8,7 +8,7 @@ const UserAdminTransaction = require("./user-admin-transaction-model");
 exports.createTransactionByAdmin = catchAsyncErrors(async (req, res, next) => {
     try {
         const { userId, amount, type, createdByEmail, role } = req.body;
-        console.log("DD::=>", req.body)
+        console.log("BODY:=>", req.body)
         if (!userId || !type || !amount) {
             return res.status(400).json({ status: false, message: "Required fields missing" });
         }
@@ -16,10 +16,9 @@ exports.createTransactionByAdmin = catchAsyncErrors(async (req, res, next) => {
         const user = await UserAdmin.findById(userId);
         if (!user) return next(new ErrorHandler("Target user not found", 404));
 
-        const creator = await SuperAdmin.findOne({
-            name: createdByEmail?.name,
-            email: createdByEmail?.email,
-        });
+        const creator = await SuperAdmin.findOne({ email: createdByEmail?.email , name: createdByEmail?.name }).lean();
+
+        // console.log("DD::=>X", user, creator, createdByEmail?.name, createdByEmail?.email)
 
         if (!creator) return next(new ErrorHandler("Creator user not found", 404));
 
@@ -62,7 +61,7 @@ exports.createTransactionByAdmin = catchAsyncErrors(async (req, res, next) => {
         user.walletBalance = targetNewBalance;
         creator.walletBalance = creatorNewBalance;
         await user.save();
-        await creator.save();
+        // await creator.save();
 
         // ✅ Create Transaction for Retailer/User
         const userTransaction = await UserAdminTransaction.create({

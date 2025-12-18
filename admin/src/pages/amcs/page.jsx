@@ -411,8 +411,6 @@ export default function AMCsPage() {
   
       <table class="details-table">
         <thead>
-    
-
          <tr>
             <th>#</th>
             <th>Product</th>

@@ -220,6 +220,7 @@ exports.createAmcByAdmin = catchAsyncErrors(async (req, res, next) => {
         return next(new ErrorHandler(error.message || "Internal Server Error", 500));
     }
 });
+
 // ✅ Get AMC with pagination + search + status filter
 exports.getAmcByAdminWithPagination = catchAsyncErrors(async (req, res, next) => {
     try {
@@ -683,7 +684,6 @@ exports.getAmcByAdmin = catchAsyncErrors(async (req, res, next) => {
         return next(new ErrorHandler(error.message, 500));
     }
 });
-
 
 exports.getAmcByCustomer = catchAsyncErrors(async (req, res, next) => {
     try {
