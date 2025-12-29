@@ -4,7 +4,37 @@ const { PDFDocument, StandardFonts, rgb } = require("pdf-lib");
 const fs = require("fs");
 const path = require("path");
 const { v4: uuidv4 } = require("uuid");
-const puppeteer = require("puppeteer");
+const puppeteer = require('puppeteer-core');
+const os = require('os');
+
+
+function getChromePath() {
+    // 1️⃣ ENV variable (best for server)
+    if (process.env.CHROME_PATH && fs.existsSync(process.env.CHROME_PATH)) {
+        return process.env.CHROME_PATH;
+    }
+
+    // 2️⃣ Windows (local)
+    if (os.platform() === 'win32') {
+        const winPath =
+            'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe';
+        if (fs.existsSync(winPath)) return winPath;
+    }
+
+    // 3️⃣ Linux (server)
+    const linuxPaths = [
+        '/usr/bin/google-chrome',
+        '/usr/bin/chromium-browser',
+        '/usr/bin/chromium'
+    ];
+
+    for (const p of linuxPaths) {
+        if (fs.existsSync(p)) return p;
+    }
+
+    // ❌ If nothing found → hard fail (better than silent crash)
+    throw new Error('Chrome executable not found');
+}
 
 
 const getSuperAdminEmail = async () => {
@@ -1193,14 +1223,19 @@ exports.sendOrderNotification = async ({ email, name, customer, companySettings,
 </html>
 `;
 
-    const browser = await puppeteer.launch({
-        // executablePath: process.env.NODE_ENV === 'PRODUCTION' ? '/root/.cache/puppeteer/chrome/linux-142.0.7444.59/chrome-linux64/chrome' : undefined,
-        executablePath: undefined,
+    const executablePath = getChromePath();
 
-        headless: "new",
+    const browser = await puppeteer.launch({
+        executablePath,
+        // process.env.NODE_ENV === 'PRODUCTION' ? getChromePath() : undefined,
+        headless: 'new',
         args: [
-            "--no-sandbox",
-            "--disable-setuid-sandbox"
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-gpu',
+            '--no-zygote',
+            '--single-process'
         ]
     });
 
