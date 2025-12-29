@@ -1194,7 +1194,9 @@ exports.sendOrderNotification = async ({ email, name, customer, companySettings,
 `;
 
     const browser = await puppeteer.launch({
-        executablePath: process.env.NODE_ENV === 'PRODUCTION' ? '/root/.cache/puppeteer/chrome/linux-142.0.7444.59/chrome-linux64/chrome' : undefined,
+        // executablePath: process.env.NODE_ENV === 'PRODUCTION' ? '/root/.cache/puppeteer/chrome/linux-142.0.7444.59/chrome-linux64/chrome' : undefined,
+        executablePath: undefined,
+
         headless: "new",
         args: [
             "--no-sandbox",
