@@ -30,7 +30,7 @@ export default function ProductsPage() {
   const [editingItem, setEditingItem] = useState(null);
   const [deletingItem, setDeletingItem] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState({ categoryPage: 1, categoryLimit: 10, brandPage: 1, brandLimit: 10, typePage: 1, typeLimit: 10, });
+  const [page, setPage] = useState({ categoryPage: 1, categoryLimit: 10, brandPage: 1, brandLimit: 10, typePage: 1, typeLimit: 10, packagePage: 1, packageLimit: 10 });
   const [totalData, setTotalData] = useState({ categoryTotal: 0, brandTotal: 0, typeTotal: 0, modelTotal: 0, packagesTotal: 0 });
 
   // Mock data
@@ -157,8 +157,8 @@ export default function ProductsPage() {
             label: 'Category',
             type: 'select',
             required: true,
-             options:  allCategories.filter(b => b.status === 'active').map(b => ({ value: b.name, label: b.name })),
-        
+            options: allCategories.filter(b => b.status === 'active').map(b => ({ value: b.name, label: b.name })),
+
             // options: editingItem ? allCategories.filter(b => b.status === 'active').map(b => ({ value: b.name, label: b.name })) : allCategories.filter((cat) => !allPackages.some((pkg) => String(pkg.categoryIds._id) === String(cat._id))).map((cat) => ({ value: cat.name, label: cat.name, })),
           },
           {
@@ -462,7 +462,7 @@ export default function ProductsPage() {
 
   const fetchPackageData = async () => {
     try {
-      const response = await getData(`api/packages/get-packages-by-admin-with-pagination?limit=${page.typeLimit}&page=${page?.typePage}&search=${searchTerm}&status=${statusFilter}&category=${categoryFilter}&brand=${brandFilter}`);
+      const response = await getData(`api/packages/get-packages-by-admin-with-pagination?limit=${page.packageLimit}&page=${page?.packagePage}&search=${searchTerm}&status=${statusFilter}&category=${categoryFilter}&brand=${brandFilter}`);
       console.log("response==>yyyYYYY++>", response.data)
       if (response?.status === true) {
         setPackages(response?.data);
@@ -496,7 +496,9 @@ export default function ProductsPage() {
     fetchUserRoleData()
 
   }, [searchTerm, statusFilter, page?.categoryPage, page?.brandPage,
-    page?.typePage, activeTab, categoryFilter, brandFilter, typeFilter]);
+    page.packagePage, activeTab, categoryFilter, brandFilter, typeFilter]);
+
+  console.log("XXXXXXX::=>", page)
   const renderActions = (record) => (
     <div className="flex space-x-2">
       {canEdit && <Button
@@ -653,9 +655,11 @@ export default function ProductsPage() {
           data={categories}
           columns={getColumns()}
           actions={canEdit === true || canDelete === true ? renderActions : ''}
-          setCurrentPage={(newPage) => setPage((prev) => ({ ...prev, categoryPage: newPage }))}
+           setCurrentPage={(newPage) =>
+            setPage((prev) => ({ ...prev, categoryPage: newPage }))
+          }
           currentPage={page.categoryPage}
-          totalPages={Math.ceil(totalData.categoryTotal / page.categoryLimit)}
+          totalItems={totalData.categoryTotal}
           pageSize={page.categoryLimit}
         />
       )}
@@ -665,9 +669,11 @@ export default function ProductsPage() {
           data={brands}
           columns={getColumns()}
           actions={canEdit === true || canDelete === true ? renderActions : ''}
-          setCurrentPage={(newPage) => setPage((prev) => ({ ...prev, brandPage: newPage }))}
+          setCurrentPage={(newPage) =>
+            setPage((prev) => ({ ...prev, brandPage: newPage }))
+          }
           currentPage={page.brandPage}
-          totalPages={Math.ceil(totalData.brandTotal / page.brandLimit)}
+          totalItems={totalData.brandTotal}
           pageSize={page.brandLimit}
         />
       )}
@@ -676,11 +682,13 @@ export default function ProductsPage() {
         <DataTable
           data={packages}
           columns={getColumns()}
-          actions={canEdit === true || canDelete === true ? renderActions : ''}
-          setCurrentPage={(newPage) => setPage((prev) => ({ ...prev, brandPage: newPage }))}
-          currentPage={page.brandPage}
-          totalPages={Math.ceil(totalData.brandTotal / page.brandLimit)}
-          pageSize={page.brandLimit}
+          actions={canEdit || canDelete ? renderActions : null}
+          setCurrentPage={(newPage) =>
+            setPage((prev) => ({ ...prev, packagePage: newPage }))
+          }
+          currentPage={page.packagePage}
+          totalItems={totalData.packagesTotal}
+          pageSize={page.packageLimit}
         />
       )}
 

@@ -29,6 +29,7 @@ const packageSchema = new Schema(
                 required: true,
             },
         }],
+
         validFrom: {
             type: String,
             required: true,
@@ -38,6 +39,7 @@ const packageSchema = new Schema(
             type: String,
             default: "active",
         },
+        
     },
     {
         timestamps: true, // automatically adds createdAt, updatedAt

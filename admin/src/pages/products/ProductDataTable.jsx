@@ -1,22 +1,11 @@
 import { ReactNode, useState } from 'react';
 import Button from '../../components/base/Button';
 
+export default function DataTable({ data = [], columns = [], loading = false, actions, setCurrentPage, currentPage = 1, totalItems = 0, pageSize = 10 }) {
 
-export default function DataTable({
-  data,
-  columns,
-  loading = false,
-  pagination,
-  actions,
-  setCurrentPage,
-  currentPage,
-  totalPages,
-  pageSize
-  
-}) {
   const [sortField, setSortField] = useState('');
   const [sortOrder, setSortOrder] = useState('asc');
-  console.log("XXXXXX:=>data", data)
+
   const handleSort = (field) => {
     if (sortField === field) {
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
@@ -25,6 +14,12 @@ export default function DataTable({
       setSortOrder('asc');
     }
   };
+
+
+  const totalPages = Math.ceil(totalItems / pageSize);
+  const startItem = (currentPage - 1) * pageSize + 1;
+  const endItem = Math.min(currentPage * pageSize, totalItems);
+
 
   const sortedData = [...data].sort((a, b) => {
     if (!sortField) return 0;
@@ -98,7 +93,7 @@ export default function DataTable({
         </table>
       </div>
 
-      {totalPages > 1 && (
+      {/* {totalPages > 1 && (
         <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
           <div className="flex-1 flex justify-between sm:hidden">
             <Button
@@ -121,7 +116,7 @@ export default function DataTable({
               <p className="text-sm text-gray-700">
                 Showing{' '}
                 <span className="font-medium">
-                  {(currentPage - 1) *pageSize + 1}
+                  {(currentPage - 1) * pageSize + 1}
                 </span>{' '}
                 to{' '}
                 <span className="font-medium">
@@ -155,7 +150,39 @@ export default function DataTable({
             </div>
           </div>
         </div>
+      )} */}
+      {totalPages > 1 && (
+        <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+          <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+            <p className="text-sm text-gray-700">
+              Showing <span className="font-medium">{startItem}</span> to{' '}
+              <span className="font-medium">{endItem}</span> of{' '}
+              <span className="font-medium">{totalItems}</span> results
+            </p>
+
+            <div className="flex gap-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(currentPage - 1)}
+              >
+                <i className="ri-arrow-left-s-line" />
+              </Button>
+
+              <Button
+                variant="secondary"
+                size="sm"
+                disabled={currentPage === totalPages}
+                onClick={() => setCurrentPage(currentPage + 1)}
+              >
+                <i className="ri-arrow-right-s-line" />
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
+
     </div>
   );
 }
