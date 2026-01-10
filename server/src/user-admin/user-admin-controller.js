@@ -152,16 +152,19 @@ exports.updateUserAdminByAdmin = catchAsyncErrors(async (req, res, next) => {
     const id = req.params.id;
     let updateData = { ...req?.body };
     // hash password if provided
+
     if (updateData?.createdByEmail.email !== updateData?.oldCreatedByEmail.email) {
 
         if (updateData.oldCreatedByEmail) {
+
             const oldUser = await UserAdmin.findOne({ email: updateData?.oldCreatedByEmail?.email });
             if (oldUser && Number(oldUser?.totalRetailers) > 0) {
                 console.log('oldUser::===>', oldUser)
                 oldUser.totalRetailers = Number(oldUser?.totalRetailers - 1);
+                oldUser.save();
             }
             console.log('oldUser::===>------>', oldUser.totalRetailers)
-            oldUser.save();
+
         }
 
         if (updateData?.createdByEmail) {
@@ -169,11 +172,13 @@ exports.updateUserAdminByAdmin = catchAsyncErrors(async (req, res, next) => {
             if (oldUser && Number(oldUser?.totalRetailers) >= 0) {
                 console.log('oldUser::===>', oldUser)
                 oldUser.totalRetailers = Number(oldUser.totalRetailers + 1) || oldUser?.totalRetailers;
+                oldUser.save();
             }
             console.log('oldUser::===>++++++', oldUser.totalRetailers)
-            oldUser.save();
+            
         }
     }
+
     const existData = await UserAdmin.findById(id)
     // console.log('updateData::===>kkk', updateData, existData.password)
     if (updateData.password) {
@@ -192,7 +197,7 @@ exports.updateUserAdminByAdmin = catchAsyncErrors(async (req, res, next) => {
     updateData.DistributorId = updateData.DistributorId || existData.DistributorId;
     updateData.address = updateData.address || existData.address;
     updateData.dateOfJoining = updateData.dateOfJoining || existData.dateOfJoining;
-    updateData.totalRetailers = updateData.totalRetailers || existData.totalRetailers;
+    updateData.totalRetailers = updateData.totalRetailers || existData.totalRetailers || 0;
     updateData.totalAMCs = updateData.totalAMCs || existData.totalAMCs;
     updateData.walletBalance = updateData.walletBalance || existData.walletBalance;
     updateData.showpassword = req?.body?.password || existData?.showpassword;
