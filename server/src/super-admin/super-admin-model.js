@@ -13,6 +13,12 @@ const superAdminSchema = new Schema({
         trim: true,
         default: "",
     },
+    createdId: {
+        type: mongoose.Schema.Types.ObjectId,
+        trim: true,
+        ref: "SuperAdmin",
+        default: null
+    },
     createdByEmail: {
         name: {
             type: String,

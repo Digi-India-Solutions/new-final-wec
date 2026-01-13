@@ -11,13 +11,14 @@ dayjs.extend(relativeTime);
 exports.getAllAmcTotal = catchAsyncErrors(async (req, res, next) => {
     try {
         const { userId, role, createdByEmail } = req.query;
+        
         const today = new Date();
         const currentYear = today.getFullYear();
         const currentMonth = today.getMonth() + 1;
         const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
         const colors = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#6366F1', '#14B8A6'];
 
-        console.log("Incoming Query:==", req.query, currentMonth, currentYear);
+        console.log("Incoming Query:==>", req.query, currentMonth, currentYear);
 
         // 🧠 Parse createdByEmail JSON safely
         let createdBy = {};
@@ -41,9 +42,9 @@ exports.getAllAmcTotal = catchAsyncErrors(async (req, res, next) => {
             }
         }
 
-        if (createdBy?.email && role === "distributor" || role === "retailer") {
-            filter["createdByEmail.email"] = createdBy.email;
-        }
+        // if (createdBy?.email && role === "distributor" || role === "retailer") {
+        //     filter["createdByEmail.email"] = createdBy.email;
+        // }
 
         // 📊 Total AMC count
         const amcCount = await amcsModel.countDocuments(filter);

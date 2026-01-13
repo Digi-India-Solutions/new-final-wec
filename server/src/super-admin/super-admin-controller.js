@@ -84,10 +84,11 @@ exports.createAdminByAdmin = catchAsyncErrors(async (req, res, next) => {
                 await user.save();
             }
         }
+        let creteId = null
         if (req.body?.createdByEmail) {
             const user = await SuperAdmin.findOne({ email: req.body.createdByEmail.email, name: req.body.createdByEmail.name });
             // console.log('req.body::==>', user)
-
+            creteId = user._id
             if (user) {
                 if (req.body.role === 'distributor') {
                     user.totalDistributors += 1;
@@ -105,7 +106,7 @@ exports.createAdminByAdmin = catchAsyncErrors(async (req, res, next) => {
             return res.status(200).json({ status: false, message: req.body.role === 'distributor' ? 'Distributor email already exist.' : req.body.role === 'retailer' ? "Retailer email already exist." : "This email already exist. please try another email" });
         }
 
-        const newSuperAdmin = await SuperAdmin.create({ ...req.body, showpassword: req.body.password, password: hash });
+        const newSuperAdmin = await SuperAdmin.create({ ...req.body, createdId: creteId, showpassword: req.body.password, password: hash });
 
         res.status(200).json({ status: true, message: "Super Admin created successfully", data: newSuperAdmin });
     } catch (error) {
