@@ -63,9 +63,10 @@ app.use("/", (req, res) => {
   return res.send("app is running")
 })
 
-//create server//
-const PORT = process.env.PORT || 8000;
 
-const server = app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+const PORT = process.env.PORT || 8000;
+const HOST = "127.0.0.1";   // only local connections
+
+const server = app.listen(PORT, HOST, () => {
+  console.log(`Server running on http://${HOST}:${PORT}`);
 });
