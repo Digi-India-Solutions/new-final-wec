@@ -235,7 +235,7 @@ export default function SchemaForm({
               >
                 <option value="">Select {field.label}</option>
                 {field.options?.map(option => (
-                  <option key={option.name || option.value} value={option.name || option.value}>
+                  <option key={option?.name || option?.value} value={option.name || option.value}>
                     {field.name === 'DistributorId' || field.name === 'RetailerId' ? `${option.name || option.label} (${option?.ownerName})` : option.name || option.label}
                   </option>
                 ))}

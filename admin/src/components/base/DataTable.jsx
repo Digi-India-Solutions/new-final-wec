@@ -49,9 +49,9 @@ export default function DataTable({
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              {columns.map((column) => (
+              {columns.map((column,index) => (
                 <th
-                  key={String(column.key)}
+                  key={index}
                   className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                 >
                   <div className="flex items-center space-x-1">
@@ -77,8 +77,8 @@ export default function DataTable({
           <tbody className="bg-white divide-y divide-gray-200">
             {sortedData.map((record, index) => (
               <tr key={index} className="hover:bg-gray-50">
-                {columns.map((column) => (
-                  <td key={String(column.key)} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                {columns.map((column ,index) => (
+                  <td key={index} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {column.render
                       ? column.render(record[String(column.key)], record)
                       : record[String(column.key)]
