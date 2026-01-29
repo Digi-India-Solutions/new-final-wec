@@ -51,6 +51,8 @@ export default function WalletPage() {
     if (['admin'].includes(user?.role)) return [true, true, true, true];
     if (['distributor'].includes(user?.role)) return [true, true, true, true];
     if (['retailer'].includes(user?.role)) return [false, false, false, false];
+    if (['superStockist'].includes(user?.role)) return [true, true, true, true];
+    if (['TSM-ASM'].includes(user?.role)) return [true, true, true, true];
 
     // Dynamic staff role permissions
     const modulePerm = rolePermissions?.find(
@@ -67,7 +69,7 @@ export default function WalletPage() {
   })();
 
   const availableUsers = user.role === 'admin' ? [...retailers] : retailers;
-  // console.log('availableUsers==>', availableUsers)
+  console.log('availableUsers==>', [...retailers])
   // Filter transactions
   const filteredTransactions = transactions.filter(t => {
     const matchesSearch = t.userName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -81,13 +83,35 @@ export default function WalletPage() {
     return matchesSearch;
   });
 
+  const getUserColor = (tab) => {
+    switch (tab) {
+      case 'distributor':
+        return 'bg-blue-100 text-blue-800';
+
+      case 'superStockist':
+        return 'bg-indigo-100 text-indigo-800';
+
+      case 'retailer':
+        return 'bg-green-100 text-green-800';
+
+      case 'promoter':
+        return 'bg-emerald-100 text-emerald-800';
+
+      case 'TSM-ASM':
+        return 'bg-purple-100 text-purple-800';
+
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
 
   const balanceColumns = [
     { key: 'name', title: 'Name', sortable: true },
+    { key: 'name', title: 'Admin/Super Stockist name', sortable: true },
+    { key: 'name', title: 'Distributor name', sortable: true },
     {
       key: 'role', title: 'role', render: (value) => (
-        <span className={`px-2 py-1 rounded-full text-xs font-medium ${value === 'distributor' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
-          }`}>
+        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getUserColor(value)}`}>
           {value?.charAt(0)?.toUpperCase() + value?.slice(1)}
         </span>
       )
@@ -165,6 +189,7 @@ export default function WalletPage() {
     setSelectedUser(user);
     setIsTranjectionModalOpen(true);
   }
+
   const handleWalletTransaction = async (clientAmount, percentage, finalAmount) => {
     setLoading(true);
     try {
@@ -240,8 +265,6 @@ export default function WalletPage() {
     }
   };
 
-
-
   const renderBalanceActions = (record) => (
     <div className="flex space-x-2">
       {canWrite && <Button
@@ -252,7 +275,7 @@ export default function WalletPage() {
         <i className="ri-add-line mr-1 w-4 h-4 flex items-center justify-center"></i>
         Add
       </Button>}
-      {canEdit && <Button
+      {user.role !== 'superStockist' && user?.role !== 'TSM-ASM' && canEdit && <Button
         size="sm"
         variant="secondary"
         onClick={() => handleDebit(record)}
@@ -274,7 +297,6 @@ export default function WalletPage() {
     </div>
   );
 
-
   ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   const fetchDistributors = async () => {
     try {
@@ -286,6 +308,7 @@ export default function WalletPage() {
       console.log(e)
     }
   }
+
   const fetchRetailers = async () => {
     try {
       let queryParamsObj = {
@@ -297,17 +320,15 @@ export default function WalletPage() {
       };
 
       // If user is NOT retailer AND NOT distributor -> treat as admin
-      if (user?.role !== 'retailer' && user?.role !== 'distributor') {
+      if (user?.role !== 'retailer' && user?.role !== 'distributor' && user?.role !== 'superStockist' && user?.role !== 'TSM-ASM') {
         queryParamsObj.role = "admin";
         queryParamsObj.createdByEmail = "Tanyasharma5535.ts@gmail.com";
       }
 
       // Now convert to URLSearchParams
       const queryParams = new URLSearchParams(queryParamsObj).toString();
-
-
       const response = await getData(`api/admin/getRetailersByDistributorwithPagination?${queryParams}`);
-      console.log("response===>CCC==>", response?.data)
+      // console.log("response===>CCC==>", response?.data)
       if (response?.status) {
         setRetailers(response?.data?.filter((item) => item?.name != user?.name));
         setTransactionUserId((prev) => {
@@ -327,6 +348,7 @@ export default function WalletPage() {
       console.log(e)
     }
   }
+
   console.log('user:==>user:==>', totalData)
 
   const fetchTransactions = async () => {
@@ -339,7 +361,7 @@ export default function WalletPage() {
       };
 
       // if user is NOT retailer AND NOT distributor -> treat as admin
-      if (user?.role !== 'retailer' && user?.role !== 'distributor') {
+      if (user?.role !== 'retailer' && user?.role !== 'distributor' && user?.role !== 'superStockist') {
         queryParamsObj.role = "admin";
         queryParamsObj.createdByEmail = "Tanyasharma5535.ts@gmail.com";
       }
@@ -444,6 +466,7 @@ export default function WalletPage() {
     fetchWalletManagement()
     fetchUserRoleData()
   }, [transactionCurrentPage, currentPage,])
+
   ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   return (
     <div className="p-4 sm:p-6 space-y-4 sm:space-y-6 max-w-full overflow-hidden">
@@ -463,7 +486,7 @@ export default function WalletPage() {
               <i className="ri-add-line mr-2 w-4 h-4 flex items-center justify-center"></i>
               Add Points
             </Button>
-            <Button
+            {user?.role !== 'superStockist' && user?.role !== 'TSM-ASM' && canWrite && <Button
               size="sm"
               variant="secondary"
               onClick={() => {
@@ -473,14 +496,14 @@ export default function WalletPage() {
             >
               <i className="ri-subtract-line mr-2 w-4 h-4 flex items-center justify-center"></i>
               Remove Points
-            </Button>
+            </Button>}
           </div>
         )}
       </div>
 
       {/* Summary Cards */}
       {
-        user?.role === 'distributor' || user?.role === 'retailer' ?
+        user?.role === 'distributor' || user?.role === 'retailer' || user?.role === 'superStockist' ?
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="bg-white rounded-lg shadow p-6">
               <div className="flex items-center justify-between">

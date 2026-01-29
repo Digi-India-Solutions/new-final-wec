@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 
-const { createSuperAdmin, superAdminLogin, sendResetPasswordEmail, resetPassword, createAdminByAdmin,
+const { createSuperAdmin, superAdminLogin, sendResetPasswordEmail, resetPassword, createAdminByAdmin,getAdminUsersByAdmin,
     getAdminUsersByAdminwithPagination, updateAdminByAdmin, deleteAdminUserByAdmin, getDistributorsByAdmin, getRetailersByAdminwithPagination,
-    getRetailersByDistributor ,getAllStaffByAdmin,getAdminUsersById } = require("./super-admin-controller.js");
+    getRetailersByDistributor ,getAllStaffByAdmin,getAdminUsersById ,getRetailerByEmail,getAllUserDataWithPagination,getTSMASMByAdmin ,getAllUserDataByTSMASMWithPagination } = require("./super-admin-controller.js");
 
 
 /////////////////////////////////////// crud operation by admin ////////////////////////////////////////////////////
@@ -13,9 +13,17 @@ router.post("/admin-login", superAdminLogin);
 
 router.get("/getAdminUsersByAdminwithPagination", getAdminUsersByAdminwithPagination);
 
+router.get("/get-All-Users-By-Admin", getAdminUsersByAdmin);
+
+router.get("/getAllUserDataWithPagination", getAllUserDataWithPagination);
+
+router.get("/getAllUserDataByTSMASMWithPagination", getAllUserDataByTSMASMWithPagination);
+
 router.get("/getRetailersByAdminwithPagination", getRetailersByAdminwithPagination);
 
 router.get("/getDistributorsByAdmin", getDistributorsByAdmin);
+
+router.get("/getTSMASMByAdmin", getTSMASMByAdmin);
 
 router.get("/getRetailersByDistributorwithPagination", getRetailersByDistributor);
 
@@ -27,12 +35,15 @@ router.get("/get-all-staff-by-admin", getAllStaffByAdmin)
 
 router.get("/get-admin-users-by-id/:id", getAdminUsersById)
 
+router.get("/get-reteailer-by-email", getRetailerByEmail)
+
 router.post("/send-reset-password-email", sendResetPasswordEmail);
 
 router.post("/reset-password", resetPassword);
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 router.post("/create-admin", createSuperAdmin);
+
 
 
 

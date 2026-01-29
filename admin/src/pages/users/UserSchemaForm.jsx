@@ -1,9 +1,9 @@
 
-import { ReactNode, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import Button from '../../components/base/Button';
 import Input from '../../components/base/Input';
 import { clsx } from 'clsx';
-import { postData } from '../../services/FetchNodeServices';
+import { getData, postData } from '../../services/FetchNodeServices';
 import { t } from 'i18next';
 import { useToast } from '../../components/base/Toast';
 
@@ -17,18 +17,30 @@ export default function SchemaForm({
   onCancel,
   activeTab,
   setIsModalOpen,
-  loading = false,
+  // loading = false,
   submitText = 'Save',
-  cancelText = 'Cancel'
+  cancelText = 'Cancel',
+  setRetailers,
+  retailers
 }) {
   const { showToast, ToastContainer } = useToast();
   const [formData, setFormData] = useState(initialData);
   const [errors, setErrors] = useState({});
   const user = JSON.parse(sessionStorage.getItem('user') || '{}');
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [retailersMultiple, setRetailersMultiple] = useState(initialData?.RetailerId || []);
   const handleChange = (name, value) => {
-    // console.log("SSSSSSSS:==>", name, value)
-    setFormData(prev => ({ ...prev, [name]: value }));
+    console.log("SSSSSSSS:==>", name, value)
+    if (name === 'RetailerId') {
+      setRetailersMultiple(prev =>
+        prev.includes(value) ? prev : [...prev, value]
+      );
+      return;
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
+
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
@@ -68,16 +80,16 @@ export default function SchemaForm({
       showToast('Phone is required', 'error');
       return;
     }
-    if (!formData?.ownerName) {
+    if (!formData?.ownerName && !activeTab === 'TSM-ASM' && !activeTab === 'promoter') {
       showToast('Distributor is required', 'error');
       return;
     }
 
-    if (!formData?.address) {
+    if (!formData?.address && !activeTab === 'TSM-ASM' && !activeTab === 'promoter') {
       showToast('Address is required', 'error');
       return;
     }
-
+    setLoading(true)
     let data = {};
     if (activeTab === 'retailer') {
 
@@ -95,16 +107,41 @@ export default function SchemaForm({
           data = { ...formData, role: activeTab, DistributorId: user?.name, createdByEmail: { name: user?.name, email: user?.email }, admin: { name: user?.name, email: user?.email } }
         }
 
-      } else if (user.role === 'distributor') {
-        data = { ...formData, role: activeTab, DistributorId: user?.name, createdByEmail: { name: user?.name, email: user?.email } }
+      }
+      else if (user.role === 'TSM-ASM') {
+        data = { ...formData, role: activeTab, retailerByTSMASM: { name: user?.name, email: user?.email, id: user?._id }, createrByUserName: u?._id, DistributorId: u?.name, createdByEmail: { name: u?.name, email: u?.email } }
+      }
+      else if (user.role === 'distributor') {
+        data = { ...formData, role: activeTab, createrByUserName: user?.name, DistributorId: user?.name, createdByEmail: { name: user?.name, email: user?.email } }
       }
 
-    } else {
+    }
+    else if (activeTab === "superStockist") {
+      data = { ...formData, role: activeTab || '', createrByUserId: user?.id, createrByUserName: user?.name, createdByEmail: { name: user?.name, email: user?.email } }
+    }
+    else if (activeTab === "promoter") {
+      const u = distributors.find((d) => d.name === formData?.DistributorId);
+      const selectedRetailers = retailers.filter(r => retailersMultiple.includes(r.name));
 
-      data = { ...formData, role: user?.role === 'distributor' ? 'retailer' : activeTab || '', DistributorId: user?.name, createdByEmail: { name: user?.name, email: user?.email } }
+      data = { ...formData, role: activeTab || '', RetailerId: selectedRetailers.map(r => r.name), RetailerName: selectedRetailers.map(r => r._id), DistributorName: u?._id, DistributorId: u?.name, createrByUserId: user?.id, createrByUserName: user?.name, createdByEmail: { name: user?.name, email: user?.email } }
+
+    }
+    else if (activeTab === "TSM-ASM") {
+      data = { ...formData, role: activeTab || '', createrByUserId: user?.id, createrByUserName: user?.name, createdByEmail: { name: user?.name, email: user?.email } }
+    }
+    else if (activeTab === "distributor") {
+      if (user.role === 'admin' && editingUser) {
+        data = { ...formData, }
+      } else {
+        data = { ...formData, role: user?.role === 'distributor' ? 'retailer' : activeTab || '', createrByUserId: user?.id, createrByUserName: user?.name, DistributorId: user?.name, createdByEmail: { name: user?.name, email: user?.email } }
+      }
+    }
+    else {
+      data = { ...formData, role: user?.role === 'distributor' ? 'retailer' : activeTab || '', createrByUserId: user?.id, createrByUserName: user?.name, DistributorId: user?.name, createdByEmail: { name: user?.name, email: user?.email } }
     }
 
-    console.log("SSSSSSSS:==>SSSSSSSS:==>", formData)
+    // console.log("SSSSSSSS:==>SSSSSSSS:==>", formData)
+    console.log("SSSSSSSS:==>SSSSSSSS:==>data=>", { data })
 
 
     const q = editingUser ? `api/admin/update-admin-by-admin/${editingUser?._id}` : 'api/admin/create-admin-by-admin'
@@ -112,13 +149,17 @@ export default function SchemaForm({
     // console.log("SSSSSSSS:==>", respons)
 
     if (respons?.status === true) {
+      setLoading(false)
       showToast(respons.message, 'success');
       fetchAdminData()
       setIsModalOpen(false);
     } else {
+      setLoading(false)
       showToast(respons.message, 'error');
     }
+
     fetchAdminData()
+    setLoading(false)
     // Validate required fields
     // const missingFields = fields.filter(field => 
     //   field.required && (!formData[field.name] || formData[field.name] === '')
@@ -135,7 +176,21 @@ export default function SchemaForm({
     // onSubmit(formData);
   };
 
-  console.log("SSSSSSSS:==>SSSSSSSS:==>", formData)
+  const fetchRetailerById = async (u) => {
+    const res = await getData(`api/admin/get-reteailer-by-email?email=${u?.email}`);
+    if (res?.status === true) {
+      setRetailers(res?.data)
+    }
+
+  }
+  useEffect(() => {
+    const u = distributors.find((d) => d?.name === formData?.DistributorId);
+    fetchRetailerById(u)
+  }, [formData?.DistributorId])
+
+  const handleRemove = (value) => {
+    setRetailersMultiple(prev => prev.filter(r => r !== value));
+  };
 
   const renderField = (field) => {
     const value = formData[field.name] || '';
@@ -158,6 +213,7 @@ export default function SchemaForm({
               rows={3}
               placeholder={`Enter ${field.label.toLowerCase()}`}
             />
+
             {error && <p className="text-sm text-red-600">{error}</p>}
           </div>
         );
@@ -180,7 +236,7 @@ export default function SchemaForm({
                 <option value="">Select {field.label}</option>
                 {field.options?.map(option => (
                   <option key={option.name || option.value} value={option.name || option.value}>
-                    {option.name || option.label}
+                    {field.name === 'DistributorId' || field.name === 'RetailerId' ? `${option.name || option.label} (${option?.ownerName})` : option.name || option.label}
                   </option>
                 ))}
               </select>
@@ -188,6 +244,81 @@ export default function SchemaForm({
                 <i className="ri-arrow-down-s-line text-gray-400 w-4 h-4 flex items-center justify-center"></i>
               </div>
             </div>
+
+            {user.role === 'admin' && editingUser && field.name === 'DistributorId' && value &&
+              <div className="flex flex-wrap gap-2 mt-2">
+                <div
+                  key={value}
+                  className="flex items-center gap-1 bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-sm"
+                >
+                  <span>{value}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleRemove(r)}
+                    className="hover:text-red-600"
+                  >
+                    <i className="ri-close-line"></i>
+                  </button>
+                </div>
+              </div>}
+            {error && <p className="text-sm text-red-600">{error}</p>}
+          </div>
+        );
+
+      case 'multiselect':
+        return (
+          <div key={field.name} className="space-y-1">
+            <label className="block text-sm font-medium text-gray-700">
+              {field.label} {field.required && <span className="text-red-500">*</span>}
+            </label>
+
+            <div className="relative">
+              <select
+                value=""
+                onChange={(e) => handleChange(field.name, e.target.value)}
+                className={`block w-full rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1 pr-8 ${error
+                  ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
+                  : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                  }`}
+              >
+                <option value="">Select {field.label}</option>
+
+                {field.options?.map(option => (
+                  <option
+                    key={option.name || option.value}
+                    value={option.name || option.value}
+                  >
+                    {option.name || option.label}
+                  </option>
+                ))}
+              </select>
+
+              <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                <i className="ri-arrow-down-s-line text-gray-400"></i>
+              </div>
+            </div>
+
+            {/* ✅ Selected Retailers (Chips) */}
+            {field.name === 'RetailerId' && retailersMultiple.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-2">
+                {retailersMultiple.map((r) => (
+                  <div
+                    key={r}
+                    className="flex items-center gap-1 bg-blue-100 text-blue-700 px-2 py-1 rounded-full text-sm"
+                  >
+                    <span>{r}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemove(r)}
+                      className="hover:text-red-600"
+                    >
+                      <i className="ri-close-line"></i>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
             {error && <p className="text-sm text-red-600">{error}</p>}
           </div>
         );

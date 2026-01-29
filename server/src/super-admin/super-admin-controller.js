@@ -77,9 +77,14 @@ exports.createAdminByAdmin = catchAsyncErrors(async (req, res, next) => {
             if (user) {
                 if (req.body.role === 'distributor') {
                     user.totalDistributors += 1;
-                }
-                else if (req.body.role === 'retailer') {
+                } else if (req.body.role === 'retailer') {
                     user.totalRetailers += 1;
+                } else if (req.body.role === 'TSM-ASM') {
+                    user.totalTSMAMC += 1;
+                } else if (req.body.role === 'promoter') {
+                    user.totalRetailers += 1;
+                } else if (req.body.role === 'superStockist') {
+                    user.totalSuperStockist += 1;
                 }
                 await user.save();
             }
@@ -92,9 +97,14 @@ exports.createAdminByAdmin = catchAsyncErrors(async (req, res, next) => {
             if (user) {
                 if (req.body.role === 'distributor') {
                     user.totalDistributors += 1;
-                }
-                else if (req.body.role === 'retailer') {
+                } else if (req.body.role === 'retailer') {
                     user.totalRetailers += 1;
+                } else if (req.body.role === 'TSM-ASM') {
+                    user.totalTSMAMC += 1;
+                } else if (req.body.role === 'promoter') {
+                    user.totalRetailers += 1;
+                } else if (req.body.role === 'superStockist') {
+                    user.totalSuperStockist += 1;
                 }
                 await user.save();
             }
@@ -141,6 +151,12 @@ exports.getDistributorsByAdmin = catchAsyncErrors(async (req, res) => {
     // sendResponse(res, 200, 'Admin users fetched successfully', users);
 });
 
+exports.getTSMASMByAdmin = catchAsyncErrors(async (req, res) => {
+    const users = await SuperAdmin.find({ role: 'TSM-ASM' });
+    res.status(200).json({ status: true, message: 'Admin users fetched successfully', data: users });
+    // sendResponse(res, 200, 'Admin users fetched successfully', users);
+});
+
 
 exports.getRetailersByDistributor = catchAsyncErrors(async (req, res, next) => {
     try {
@@ -149,8 +165,9 @@ exports.getRetailersByDistributor = catchAsyncErrors(async (req, res, next) => {
         // ✅ Sanitize pagination values
         page = Math.max(1, parseInt(page, 10));
         limit = Math.max(1, parseInt(limit, 10));
-
+        const existUser = await SuperAdmin.findOne({ _id: userId });
         // ✅ Base filter (always restrict to retailers)
+        console.log("XX::+=>>XXXX=>", existUser.DistributorId, req.query)
 
         let filter = {};
         if (role !== 'admin') {
@@ -166,12 +183,34 @@ exports.getRetailersByDistributor = catchAsyncErrors(async (req, res, next) => {
                         { 'createdByEmail.name': createdByRegex }
                     ];
                 }
+            } else if (role === 'superStockist') {
+                if (createdByEmail && createdByEmail.trim() !== '') {
+                    const createdByRegex = new RegExp(createdByEmail.trim(), 'i');
+                    filter.$or = [
+                        { 'createdByEmail.email': createdByRegex },
+                        { 'createdByEmail.name': createdByRegex }
+                    ];
+                }
+            } else if (role === 'TSM-ASM') {
+                if (createdByEmail && createdByEmail.trim() !== '') {
+                    const createdByRegex = new RegExp(createdByEmail.trim(), 'i');
+                    const retailerByTSMASMRegex = new RegExp(existUser.DistributorId.trim(), 'i');
+                    filter.$or = [
+                        { 'createdByEmail.email': createdByRegex },
+                        { 'createdByEmail.name': retailerByTSMASMRegex },
+                        { 'retailerByTSMASM.email': createdByRegex },
+                        { 'retailerByTSMASM.name': createdByRegex },
+
+                    ];
+                }
             } else {
                 filter._id = userId;
             }
-
         }
-
+        if (role === 'admin') {
+            filter.role = { $ne: 'promoter' };  // ✅ show all except promoter
+        }
+        console.log("XX::+=>>", filter)
         // ✅ Status filter (optional)
         if (status && status !== 'all') {
             filter.status = new RegExp(`^${status}$`, 'i');
@@ -270,6 +309,10 @@ exports.getAdminUsersByAdminwithPagination = catchAsyncErrors(async (req, res, n
         // Count total documents matching filters
         const total = await SuperAdmin.countDocuments(filter);
         const totalRetailers = await SuperAdmin.countDocuments({ role: 'retailer' });
+        const totalDistributors = await SuperAdmin.countDocuments({ role: 'distributor' });
+        const totalSuperStockists = await SuperAdmin.countDocuments({ role: 'superStockist' });
+        const totalPromoters = await SuperAdmin.countDocuments({ role: 'promoter' });
+        const totalTSMASM = await SuperAdmin.countDocuments({ role: 'TSM-ASM' });
         // Pagination skip calculation
         const skip = (page - 1) * limit;
 
@@ -299,6 +342,10 @@ exports.getAdminUsersByAdminwithPagination = catchAsyncErrors(async (req, res, n
             pagination: {
                 total,
                 totalRetailers,
+                totalDistributors,
+                totalSuperStockists,
+                totalPromoters,
+                totalTSMASM,
                 totalPages,
                 currentPage: page,
                 pageSize: limit,
@@ -307,6 +354,7 @@ exports.getAdminUsersByAdminwithPagination = catchAsyncErrors(async (req, res, n
             },
             filtersUsed: { search, role, status }
         });
+
     } catch (error) {
         console.error('Fetch Admin Users Error:', error);
         return next(new ErrorHandler(error.message, 500));
@@ -361,93 +409,183 @@ exports.resetPassword = catchAsyncErrors(async (req, res, next) => {
     }
 });
 
-// exports.getRetailersByAdminwithPagination = catchAsyncErrors(async (req, res, next) => {
-//     try {
-//         // Extract query parameters safely
-//         let { page = 1, limit = 10, search = '', role = '', status = '', createdByEmail = '' } = req.query;
+exports.getAllUserDataWithPagination = catchAsyncErrors(async (req, res, next) => {
+    try {
+        // Extract and sanitize query parameters
+        let { page = 1, limit = 10, search = '', role = '', status = '', createdByEmail = '' } = req.query;
+        console.log('req.query::===>>AA', req.query)
+        // Convert page/limit safely to numbers
+        page = Math.max(1, parseInt(page, 10));
+        limit = Math.max(1, parseInt(limit, 10));
 
-//         // Convert pagination values to numbers safely
-//         page = Math.max(1, parseInt(page, 10));
-//         limit = Math.max(1, parseInt(limit, 10));
+        // Build dynamic filter object
+        const filter = {};
 
-//         // Build dynamic filter
-//         const filter = {};
+        if (createdByEmail && createdByEmail !== 'all') {
+            filter['createdByEmail.email'] = createdByEmail.trim()
+        }
+        if (role && role !== 'all') {
+            filter.role = role.trim();
+        }
 
-//         // CreatedByEmail filtering (match name or email)
-//         if (createdByEmail && createdByEmail.trim() !== '') {
-//             const createdByRegex = new RegExp(createdByEmail.trim(), 'i');
-//             filter.$or = [
-//                 { 'createdByEmail.email': createdByRegex },
-//                 { 'createdByEmail.name': createdByRegex }
-//             ];
-//         }
+        if (status && status !== 'all') {
+            filter.status = new RegExp(`^${status}$`, 'i'); // Case-insensitive exact match
+        }
 
-//         // Role filter
-//         if (role && role !== 'all') {
-//             filter.role = role.trim();
-//         }
+        if (search && search.trim() !== '') {
+            const searchRegex = new RegExp(search.trim(), 'i');
+            filter.$or = [
+                { name: searchRegex },
+                { email: searchRegex },
+                { DistributorId: searchRegex },
+                { phone: searchRegex }
+            ];
+        }
 
-//         // Status filter
-//         if (status && status !== 'all') {
-//             filter.status = new RegExp(`^${status}$`, 'i');
-//         }
+        // Count total documents matching filters
+        const total = await SuperAdmin.countDocuments(filter);
+        const totalRetailers = await SuperAdmin.countDocuments({ ...filter, role: 'retailer' });
+        const totalDistributors = await SuperAdmin.countDocuments({ ...filter, role: 'distributor' });
+        const totalSuperStockists = await SuperAdmin.countDocuments({ ...filter, role: 'superStockist' });
+        const totalPromoters = await SuperAdmin.countDocuments({ ...filter, role: 'promoter' });
+        const totalTSMASM = await SuperAdmin.countDocuments({ ...filter, role: 'TSM-ASM' });
+        // Pagination skip calculation
+        const skip = (page - 1) * limit;
 
-//         // Search filter (name, email, phone)
-//         if (search && search.trim() !== '') {
-//             const searchRegex = new RegExp(search.trim(), 'i');
-//             filter.$or = [
-//                 ...(filter.$or || []),
-//                 { name: searchRegex },
-//                 { email: searchRegex },
-//                 { phone: searchRegex }
-//             ];
-//         }
+        // Fetch paginated, filtered data
+        const users = await SuperAdmin.find(filter)
+            .skip(skip)
+            .limit(limit)
+            .sort({ createdAt: -1 })
+            .select('-otp') // Exclude sensitive fields
+            .lean(); // return plain JS objects for performance
 
-//         // Count total matching documents
-//         const total = await SuperAdmin.countDocuments(filter);
+        const totalPages = Math.ceil(total / limit);
 
-//         // Pagination logic
-//         const skip = (page - 1) * limit;
-//         const totalPages = Math.ceil(total / limit);
+        // Prevent 304 caching by forcing no-cache headers
+        res.set({
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+            'Surrogate-Control': 'no-store'
+        });
 
-//         // Fetch paginated users
-//         const users = await SuperAdmin.find(filter)
-//             .skip(skip)
-//             .limit(limit)
-//             .sort({ createdAt: -1 })
-//             .collation({ locale: 'en', strength: 2 }) // for case-insensitive sorting
-//             .select('-password -otp -__v') // exclude sensitive/unnecessary fields
-//             .lean();
+        // ✅ Always send fresh data
+        return res.status(200).json({
+            status: true,
+            message: 'Admin users fetched successfully',
+            data: users,
+            pagination: {
+                total,
+                totalRetailers,
+                totalDistributors,
+                totalSuperStockists,
+                totalPromoters,
+                totalTSMASM,
+                totalPages,
+                currentPage: page,
+                pageSize: limit,
+                hasNextPage: page < totalPages,
+                hasPrevPage: page > 1
+            },
+            filtersUsed: { search, role, status }
+        });
 
-//         // Set headers to prevent caching
-//         res.set({
-//             'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-//             'Pragma': 'no-cache',
-//             'Expires': '0',
-//             'Surrogate-Control': 'no-store'
-//         });
+    } catch (error) {
+        console.error('Fetch Admin Users Error:', error);
+        return next(new ErrorHandler(error.message, 500));
+    }
+});
 
-//         // ✅ Send response
-//         return res.status(200).json({
-//             status: true,
-//             message: 'Admin users fetched successfully',
-//             data: users,
-//             pagination: {
-//                 total,
-//                 totalPages,
-//                 currentPage: page,
-//                 pageSize: limit,
-//                 hasNextPage: page < totalPages,
-//                 hasPrevPage: page > 1
-//             },
-//             filtersUsed: { search, role, status, createdByEmail }
-//         });
+exports.getAllUserDataByTSMASMWithPagination = catchAsyncErrors(async (req, res, next) => {
+    try {
+        // Extract and sanitize query parameters
+        let { page = 1, limit = 10, search = '', role = '', status = '', createdByEmail = '', retailerByTSMASM = '' } = req.query;
+        console.log('req.query::===>>AAXXXX=>', req.query)
+        // Convert page/limit safely to numbers
 
-//     } catch (error) {
-//         console.error('Fetch Admin Users Error:', error);
-//         return next(new ErrorHandler(error.message || 'Internal Server Error', 500));
-//     }
-// });
+        page = Math.max(1, parseInt(page, 10));
+        limit = Math.max(1, parseInt(limit, 10));
+        // const createrData = await SuperAdmin.findOne({ 'email': retailerByTSMASM });
+        // console.log('req.query::===>>AAXXXX=>', createrData, retailerByTSMASM)
+        // Build dynamic filter object
+        const filter = {};
+
+        if (retailerByTSMASM && retailerByTSMASM !== 'all') {
+            filter['retailerByTSMASM.email'] = retailerByTSMASM.trim()
+        }
+        if (role && role !== 'all') {
+            filter.role = role.trim();
+        }
+
+        if (status && status !== 'all') {
+            filter.status = new RegExp(`^${status}$`, 'i'); // Case-insensitive exact match
+        }
+
+        if (search && search.trim() !== '') {
+            const searchRegex = new RegExp(search.trim(), 'i');
+            filter.$or = [
+                { name: searchRegex },
+                { email: searchRegex },
+                { DistributorId: searchRegex },
+                { phone: searchRegex }
+            ];
+        }
+
+        // Count total documents matching filters
+        const total = await SuperAdmin.countDocuments(filter);
+        const totalRetailers = await SuperAdmin.countDocuments({ ...filter, role: 'retailer' });
+        const totalDistributors = await SuperAdmin.countDocuments({ ...filter, role: 'distributor' });
+        const totalSuperStockists = await SuperAdmin.countDocuments({ ...filter, role: 'superStockist' });
+        const totalPromoters = await SuperAdmin.countDocuments({ ...filter, role: 'promoter' });
+        const totalTSMASM = await SuperAdmin.countDocuments({ ...filter, role: 'TSM-ASM' });
+        // Pagination skip calculation
+        const skip = (page - 1) * limit;
+
+        // Fetch paginated, filtered data
+        const users = await SuperAdmin.find(filter)
+            .skip(skip)
+            .limit(limit)
+            .sort({ createdAt: -1 })
+            .select('-otp') // Exclude sensitive fields
+            .lean(); // return plain JS objects for performance
+
+        const totalPages = Math.ceil(total / limit);
+
+        // Prevent 304 caching by forcing no-cache headers
+        res.set({
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0',
+            'Surrogate-Control': 'no-store'
+        });
+
+        // ✅ Always send fresh data
+        return res.status(200).json({
+            status: true,
+            message: 'Admin users fetched successfully',
+            data: users,
+            pagination: {
+                total,
+                totalRetailers,
+                totalDistributors,
+                totalSuperStockists,
+                totalPromoters,
+                totalTSMASM,
+                totalPages,
+                currentPage: page,
+                pageSize: limit,
+                hasNextPage: page < totalPages,
+                hasPrevPage: page > 1
+            },
+            filtersUsed: { search, role, status }
+        });
+
+    } catch (error) {
+        console.error('Fetch Admin Users Error:', error);
+        return next(new ErrorHandler(error.message, 500));
+    }
+});
 
 exports.getRetailersByAdminwithPagination = catchAsyncErrors(async (req, res, next) => {
     try {
@@ -606,11 +744,80 @@ exports.updateAdminByAdmin = catchAsyncErrors(async (req, res, next) => {
 });
 
 // Delete Admin User
+// exports.deleteAdminUserByAdmin = catchAsyncErrors(async (req, res, next) => {
+//     const id = req.params.id;
+//     const user = {}
+//     const existData = await SuperAdmin.findById(id);
+//     console.log("DDDDD::=>", existData.createdByEmail)
+//     if (existData) {
+//         if (req.body?.createdByEmail) {
+//             const ExistUser = await SuperAdmin.findOne({ email: existData.createdByEmail.email, name: existData.createdByEmail.name });
+//             console.log('req.body::==>', ExistUser)
+
+//             if (ExistUser) {
+//                 if (existData.role === 'distributor') {
+//                     ExistUser.totalDistributors -= 1;
+//                 } else if (existData.role === 'retailer') {
+//                     ExistUser.totalRetailers -= 1;
+//                 } else if (existData.role === 'TSM-ASM') {
+//                     ExistUser.totalTSMAMC -= 1;
+//                 } else if (existData.role === 'promoter') {
+//                     ExistUser.totalRetailers -= 1;
+//                 } else if (existData.role === 'superStockist') {
+//                     ExistUser.totalSuperStockist -= 1;
+//                 }
+//                 await ExistUser.save();
+//             }
+//         }
+
+//         user = await SuperAdmin.findByIdAndDelete(id);
+//     }
+//     if (!user) return next(new ErrorHandler('Admin user not found', 404));
+//     sendResponse(res, 200, 'Admin user deleted successfully', user);
+// });
+
 exports.deleteAdminUserByAdmin = catchAsyncErrors(async (req, res, next) => {
-    const id = req.params.id;
-    const user = await SuperAdmin.findByIdAndDelete(id);
-    if (!user) return next(new ErrorHandler('Admin user not found', 404));
-    sendResponse(res, 200, 'Admin user deleted successfully', user);
+    const { id } = req.params;
+
+    // 1️⃣ Find user to delete
+    const userToDelete = await SuperAdmin.findById(id);
+    if (!userToDelete) {
+        return next(new ErrorHandler('Admin user not found', 404));
+    }
+
+    // 2️⃣ Update creator counters safely
+    const creatorEmail = userToDelete?.createdByEmail?.email;
+    const creatorName = userToDelete?.createdByEmail?.name;
+
+    if (creatorEmail && creatorName) {
+        const creator = await SuperAdmin.findOne({
+            email: creatorEmail,
+            name: creatorName
+        });
+
+        if (creator) {
+            const roleCounterMap = {
+                distributor: 'totalDistributors',
+                retailer: 'totalRetailers',
+                promoter: 'totalPromoter',
+                "TSM-ASM": 'totalTSMAMC',
+                superStockist: 'totalSuperStockist'
+            };
+
+            const counterField = roleCounterMap[userToDelete.role];
+
+            if (counterField && creator[counterField] > 0) {
+                creator[counterField] -= 1;
+                // console.log('creator::===>', creator)
+                await creator.save();
+            }
+        }
+    }
+
+    // 3️⃣ Delete user
+    const deletedUser = await SuperAdmin.findByIdAndDelete(id);
+
+    sendResponse(res, 200, 'Admin user deleted successfully', deletedUser);
 });
 
 
@@ -658,6 +865,37 @@ exports.getAdminUsersById = catchAsyncErrors(async (req, res, next) => {
         return next(new ErrorHandler(error.message || 'Server Error', 500));
     }
 })
+
+exports.getRetailerByEmail = catchAsyncErrors(async (req, res, next) => {
+    try {
+        const { email } = req.query;
+        if (!email) {
+            return next(new ErrorHandler("Email is required", 400));
+        }
+
+        const retailer = await SuperAdmin.find({
+            "createdByEmail.email": email,
+            role: "retailer"
+        }).select("-password -__v"); // hide sensitive fields
+
+        if (!retailer) {
+            return next(new ErrorHandler("Retailer not found", 404));
+        }
+
+        res.status(200).json({
+            status: true,
+            message: "Retailer fetched successfully",
+            data: retailer
+        });
+    } catch (error) {
+        return next(new ErrorHandler(error.message || 'Server Error', 500));
+    }
+
+
+
+});
+
+
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 

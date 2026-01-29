@@ -65,6 +65,8 @@ export default function AMCsPage() {
       return amcs;
     } else if (user?.role === 'retailer') {
       return amcs.filter(amc => amc.retailerId === user.id);
+    } else if (user?.role === 'promoter') {
+      return amcs.filter(amc => amc.promoterId === user.id);
     } else {
       return amcs;
     }
@@ -126,15 +128,14 @@ export default function AMCsPage() {
   // Add retailer/distributor columns for admin
   if (user?.role === 'admin') {
     columns.splice(-1, 0,
-      { key: 'retailerName', title: 'Retailer' },
+      { key: 'retailerName', title: 'Retailer/Promoter' },
       { key: 'distributorName', title: 'Distributor' }
     );
   } else if (user?.role === 'distributor') {
-    columns.splice(-1, 0, { key: 'retailerName', title: 'Retailer' }, { key: 'distributorName', title: 'Distributor' });
-
+    columns.splice(-1, 0, { key: 'retailerName', title: 'Retailer/Promoter' }, { key: 'distributorName', title: 'Distributor' });
   } else if (user?.role !== 'retailer' && user?.role !== 'distributor') {
     columns.splice(-1, 0,
-      { key: 'retailerName', title: 'Retailer' },
+      { key: 'retailerName', title: 'Retailer/Promoter' },
       { key: 'distributorName', title: 'Distributor' }
     );
   }
@@ -896,7 +897,7 @@ export default function AMCsPage() {
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <h1 className="text-xl sm:text-2xl font-bold text-gray-900">WEC Management</h1>
-        {(user?.role === 'retailer' || user?.role === 'distributor') && (
+        {(user?.role === 'retailer' || user?.role === 'distributor' || user?.role === 'promoter') && (
           <Button onClick={handleAdd}>
             <i className="ri-add-line mr-2 w-4 h-4 flex items-center justify-center"></i>
             Create WEC

@@ -215,14 +215,14 @@ export default function Sidebar({ activeKey, onMenuClick, onClose }) {
 
   // ✅ All sidebar menu items
   const menuItems = [
-    { key: 'dashboard', label: 'Dashboard', icon: 'ri-dashboard-line', path: '/dashboard', module: 'Dashboard', roles: ['admin', 'distributor', 'retailer'] },
-    { key: 'users', label: 'User Management', icon: 'ri-user-line', path: '/users', module: 'User Management', roles: ['admin', 'distributor'] },
+    { key: 'dashboard', label: 'Dashboard', icon: 'ri-dashboard-line', path: '/dashboard', module: 'Dashboard', roles: ['admin', 'distributor', 'retailer', 'superStockist', 'TSM-ASM','promoter'] },
+    { key: 'users', label: 'User Management', icon: 'ri-user-line', path: '/users', module: 'User Management', roles: ['admin', 'distributor', 'superStockist', 'TSM-ASM'] },
     { key: 'staff', label: 'Staff Management', icon: 'ri-team-line', path: '/staff', module: 'Staff Management', roles: ['admin'] },
     { key: 'claims', label: 'Claims Management', icon: 'ri-file-shield-line', path: '/claims', module: 'Claims Management', roles: ['admin'] },
     { key: 'products', label: 'Products', icon: 'ri-product-hunt-line', path: '/products', module: 'Products', roles: ['admin'] },
-    { key: 'amcs', label: 'WEC Management', icon: 'ri-file-shield-line', path: '/amcs', module: 'WEC Management', roles: ['admin', 'distributor', 'retailer'] },
+    { key: 'amcs', label: 'WEC Management', icon: 'ri-file-shield-line', path: '/amcs', module: 'WEC Management', roles: ['admin', 'distributor', 'retailer', 'superStockist', 'promoter'] },
     { key: 'customers', label: 'Customers', icon: 'ri-user-heart-line', path: '/customers', module: 'Customers', roles: ['admin'] },
-    { key: 'wallet', label: 'Wallet', icon: 'ri-wallet-line', path: '/wallet', module: 'Wallet Management', roles: ['admin', 'distributor', 'retailer'] },
+    { key: 'wallet', label: 'Wallet', icon: 'ri-wallet-line', path: '/wallet', module: 'Wallet Management', roles: ['admin', 'distributor', 'retailer', 'superStockist', 'TSM-ASM'] },
     { key: 'reports', label: 'Reports', icon: 'ri-bar-chart-line', path: '/reports', module: 'Reports', roles: ['admin', 'distributor'] },
     { key: 'settings', label: 'Settings', icon: 'ri-settings-line', path: '/settings', module: 'Settings', roles: ['admin'] },
     { key: 'alladmin', label: 'All Admin Management', icon: 'ri-shield-user-line', path: '/alladmin', module: 'Alladmin', roles: ['admin'] },
@@ -251,7 +251,7 @@ export default function Sidebar({ activeKey, onMenuClick, onClose }) {
   };
 
   useEffect(() => {
-    if (user && !['admin', 'distributor', 'retailer'].includes(user.role)) {
+    if (user && !['admin', 'distributor', 'retailer', 'superStockist', 'TSM-ASM','promoter'].includes(user.role)) {
       // Only fetch for dynamic staff roles
       fetchRoles();
     }
@@ -260,7 +260,7 @@ export default function Sidebar({ activeKey, onMenuClick, onClose }) {
   // ✅ Filter menu items
   const filteredMenuItems = menuItems.filter(item => {
     // If user is admin/distributor/retailer → use static role-based visibility
-    if (['admin', 'distributor', 'retailer'].includes(user?.role)) {
+    if (['admin', 'distributor', 'retailer', 'superStockist', 'TSM-ASM','promoter'].includes(user?.role)) {
       return item.roles.includes(user.role);
     }
 

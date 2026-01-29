@@ -31,11 +31,22 @@ const superAdminSchema = new Schema({
             default: "",
         }
     },
+    createrByUserName: {
+        type: String,
+        trim: true,
+        default: ""
+    },
     DistributorId: {
         type: String,
         trim: true,
         default: "",
     },
+    RetailerId: [{
+        type: String,
+        trim: true,
+        default: "",
+    }],
+
     email: {
         type: String,
         unique: true,
@@ -80,6 +91,23 @@ const superAdminSchema = new Schema({
         ref: "AdminRole",
         required: false
     },
+    retailerByTSMASM: {
+        name: {
+            type: String,
+            trim: true,
+            default: "",
+        },
+        email: {
+            type: String,
+            trim: true,
+            default: "",
+        },
+        id: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "SuperAdmin",
+            default: null
+        },
+    },
     status: {
         type: String,
         default: "active",
@@ -101,6 +129,18 @@ const superAdminSchema = new Schema({
         default: 0,
     },
     totalDistributors: {
+        type: Number,
+        default: 0,
+    },
+    totalSuperStockist: {
+        type: Number,
+        default: 0,
+    },
+    totalTSMAMC: {
+        type: Number,
+        default: 0,
+    },
+    totalPromoter: {
         type: Number,
         default: 0,
     },
